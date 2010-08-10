@@ -1,80 +1,52 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>Smoothie Charts</title>
+    <script type="text/javascript" src="smoothie.js"></script>
+    <style type="text/css">
+      body { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <h1>Smoothie Charts</h1>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <canvas id="chart" width="500" height="100"></canvas>
 
-	<title>joewalnes/smoothie @ GitHub</title>
-	
-	<style type="text/css">
-		body {
-  		margin-top: 1.0em;
-  		background-color: #9f559b;
-		  font-family: "Helvetica,Arial,FreeSans";
-  		color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-		h1 { font-size: 3.8em; color: #60aa64; margin-bottom: 3px; }
-		h1 .small { font-size: 0.4em; }
-		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; color: #60aa64; }
-    h3 { text-align: center; color: #60aa64; }
-    a { color: #60aa64; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-		pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-	</style>
-	
-</head>
+    <p><b>Smoothie Charts</b> is a really small chartling library designed for <i>live streaming data</i>. I build it to reduce
+    the headaches I was getting from watching charts jerkily updating every second. What you're looking up now is pretty much all
+    it does. If you like that, then read on.</p>
 
-<body>
-  <a href="http://github.com/joewalnes/smoothie"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+    <p>It currently only works on Chrome.</p>
 
-  <div id="container">
+    <h2>Getting started</h2>
+    <ul>
+      <li><a href="examples/example1.html">Hello world example</a></li>
+      <li><a href="examples/server-load.html">Another example (server CPU usage)</a></li>
+      <li><a href="tutorial.html"><b>Tutorial</b></a></li>
+      <li><a href="http://github.com/joewalnes/smoothie/raw/master/smoothie.js"><code>smoothie.js</code></a> source code</li>
+      <li>Code: <code>git clone git@github.com:joewalnes/smoothie.git</code></li>
+    </ul>
 
-    <div class="download">
-      <a href="http://github.com/joewalnes/smoothie/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/joewalnes/smoothie/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
-    </div>
+    <p>For help, use the <a href="http://groups.google.com/group/smoothie-charts">Smoothie Charts Google Group</a>.</p>
 
-    <h1><a href="http://github.com/joewalnes/smoothie">smoothie</a>
-      <span class="small">by <a href="http://github.com/joewalnes">joewalnes</a></span></h1>
+    <p><em>-Joe Walnes</em></p>
 
-    <div class="description">
-      Smoothie Charts
-    </div>
+    <script type="text/javascript">
+      var dataSet1 = new TimeSeries(), dataSet2 = new TimeSeries(), dataSet3 = new TimeSeries();
 
-    <h2>Authors</h2>
-<p>Joe Walnes (joe@walnes.com)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Joe Walnes (joe@truemesh.com)<br/>      </p>
+      setInterval(function() {
+        var now = new Date().getTime();
+        dataSet1.append(now, Math.random());
+        dataSet2.append(now, Math.random());
+        dataSet3.append(now, Math.random());
+      }, 1000);
 
+      // Build the timeline
+      var smoothie = new SmoothieChart({ millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+      smoothie.addTimeSeries(dataSet1, { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.2)', lineWidth: 3 });
+      smoothie.addTimeSeries(dataSet2, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 3 });
+      smoothie.addTimeSeries(dataSet3, { strokeStyle: 'rgba(0, 0, 255, 1)', fillStyle: 'rgba(0, 0, 255, 0.2)', lineWidth: 3 });
+      smoothie.streamTo(document.getElementById('chart'), 1000);
 
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/joewalnes/smoothie/zipball/master">zip</a> or
-      <a href="http://github.com/joewalnes/smoothie/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/joewalnes/smoothie</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/joewalnes/smoothie">joewalnes/smoothie</a>
-    </div>
-
-  </div>
-
-  
-</body>
+    </script>
+  </body>
 </html>
