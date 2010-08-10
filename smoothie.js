@@ -21,11 +21,8 @@
 // THE SOFTWARE.
 
 /**
- * Smoothie Charts
- *
- * 2010, Joe Walnes, joe@walnes.com
- * Code: http://github.com/joewalnes/smoothie
- * Community: http://groups.google.com/group/smoothie-charts
+ * Smoothie Charts - http://smoothiecharts.org/
+ * (c) 2010, Joe Walnes
  */
 
 function TimeSeries() {
