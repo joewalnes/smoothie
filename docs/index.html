@@ -1,0 +1,51 @@
+<html>
+  <head>
+    <title>Smoothie Charts</title>
+    <script type="text/javascript" src="../smoothie.js"></script>
+    <style type="text/css">
+      body { font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <h1>Smoothie Charts</h1>
+
+    <canvas id="chart" width="500" height="100"></canvas>
+
+    <p><b>Smoothie Charts</b> is a really small chartling library designed for <i>live streaming data</i>. I build it to reduce
+    the headaches I was getting from watching charts jerkily updating every second. What you're looking up now is pretty much all
+    it does. If you like that, then read on.</p>
+
+    <p>It currently only works on Chrome.</p>
+
+    <h2>Getting started</h2>
+    <ul>
+      <li><a href="../examples/example1.html">Hello world example</a></li>
+      <li><a href="../examples/server-load.html">Another example (server CPU usage)</a></li>
+      <li><a href="tutorial.html"><b>Tutorial</b></a></li>
+      <li><a href="../smoothie.js"><code>smoothie.js</code></a> source code</li>
+      <li>Code: <code>git clone git@github.com:joewalnes/smoothie.git</code></li>
+    </ul>
+
+    <p>For help, use the <a href="http://groups.google.com/group/smoothie-charts">Smoothie Charts Google Group</a>.</p>
+
+
+    <script type="text/javascript">
+      var dataSet1 = new TimeSeries(), dataSet2 = new TimeSeries(), dataSet3 = new TimeSeries();
+
+      setInterval(function() {
+        var now = new Date().getTime();
+        dataSet1.append(now, Math.random());
+        dataSet2.append(now, Math.random());
+        dataSet3.append(now, Math.random());
+      }, 1000);
+
+      // Build the timeline
+      var smoothie = new SmoothieChart({ millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+      smoothie.addTimeSeries(dataSet1, { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.2)', lineWidth: 3 });
+      smoothie.addTimeSeries(dataSet2, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 3 });
+      smoothie.addTimeSeries(dataSet3, { strokeStyle: 'rgba(0, 0, 255, 1)', fillStyle: 'rgba(0, 0, 255, 0.2)', lineWidth: 3 });
+      smoothie.streamTo(document.getElementById('chart'), 1000);
+
+    </script>
+  </body>
+</html>

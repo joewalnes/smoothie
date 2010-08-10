@@ -1,0 +1,153 @@
+<html>
+  <head>
+    <title>Smoothie Chart</title>
+    <style type="text/css">
+      .holder {
+        border: 1px solid black;
+        display: inline-block;
+      }
+      .code {
+        border: 1px solid #eeeeee;
+        background-color: #dddddd;
+      }
+      body {
+        font-family: sans-serif;
+      }
+    </style>
+    <script type="text/javascript" src="../smoothie.js"></script>
+  </head>
+  <body>
+    <h1>Smoothie Chart Tutorial</h1>
+
+    <p>Smoothie is a simple library for displaying smooth live time lines.</p>
+
+    <h3>1. Include smoothie.js</h3>
+    <p>Copy <a href="../smoothie.js">smoothie.js</a> to your project and include it:</p>
+    <pre class="code">&lt;script type="text/javascript" src="<a href="../smoothie.js">smoothie.js</a>"&gt;&lt;/script&gt;</pre>
+
+    <h3>2. Create a &lt;canvas&gt;</h3>
+    <pre class="code">&lt;canvas id="mycanvas" width="400" height="100"&gt;&lt;/canvas&gt;</pre>
+    <div class="holder"><canvas id="mycanvas2" width="400" height="100"></canvas></div>
+
+    <h3>3. Stream a SmoothieChart to the Canvas</h3>
+    <p>Use the default settings for now. These can be tweaked later.</p>
+    <pre class="code">
+var smoothie = new SmoothieChart();
+smoothie.streamTo(document.getElementById("mycanvas"));</pre>
+
+    <div class="holder"><canvas id="mycanvas3" width="400" height="100"></canvas></div>
+    <script type="text/javascript">
+      (function() {
+        var smoothie = new SmoothieChart();
+        smoothie.streamTo(document.getElementById("mycanvas3"));
+      })();
+    </script>
+
+    <h3>4. Add some data</h3>
+    <p>Each line requires a <code>TimeSeries</code> object.</p>
+    <p>For this example, we'' create 2 TimeSeries objects and append random data to them every second.</p>
+    <pre class="code">
+// Data
+var line1 = new TimeSeries();
+var line2 = new TimeSeries();
+
+// Add a random value to each line every second
+setInterval(function() {
+  line1.append(new Date().getTime(), Math.random());
+  line2.append(new Date().getTime(), Math.random());
+}, 1000);
+
+// Add to SmoothieChart
+smoothie.addTimeSeries(line1);
+smoothie.addTimeSeries(line2);</pre>
+
+    <div class="holder"><canvas id="mycanvas4" width="400" height="100"></canvas></div>
+    <script type="text/javascript">
+      (function() {
+        var line1 = new TimeSeries();
+        var line2 = new TimeSeries();
+        setInterval(function() {
+          line1.append(new Date().getTime(), Math.random());
+          line2.append(new Date().getTime(), Math.random());
+        }, 1000);
+
+        var smoothie = new SmoothieChart();
+        smoothie.addTimeSeries(line1);
+        smoothie.addTimeSeries(line2);
+        smoothie.streamTo(document.getElementById("mycanvas4"));
+      })();
+    </script>
+
+    <p><em>In reality, you'd probably want to get data from a WebSocket, rather than random generator.</em></p>
+
+    <p>Important notes:</p>
+    <ul>
+      <li>TimeSeries.append() takes two parameters: timestamp of the data point, and value of the data point.</li>
+      <li>The value can be any number. Smoothie will automatically scale the chart based on the minimum and maximum values seen across all time series.</li>
+      <li>Smoothie will automatically delete old data from the TimeSeries as it dissappears off the chart.</li>
+    </ul>
+
+
+    <h3>5. Add some delay</h3>
+    <p>The above chart shows an issue... we cannot plot a line until the next data point is known. To get around this,
+    we add a delay to the chart, so upcoming values are known before we need to plot the line.</p>
+    <p>This makes the chart look like a continual stream rather than very jumpy on the right hand side.</p>
+    <p>To add the delay, we modify the <code>SmoothieChart.streamTo()</code> call to include the delay.</p>
+    <pre class="code"> smoothie.streamTo(document.getElementById("mycanvas"), <strong>1000 /*delay*/</strong>); </pre>
+    <div class="holder"><canvas id="mycanvas5" width="400" height="100"></canvas></div>
+    <script type="text/javascript">
+      (function() {
+        var line1 = new TimeSeries();
+        var line2 = new TimeSeries();
+        setInterval(function() {
+          line1.append(new Date().getTime(), Math.random());
+          line2.append(new Date().getTime(), Math.random());
+        }, 1000);
+
+        var smoothie = new SmoothieChart();
+        smoothie.addTimeSeries(line1);
+        smoothie.addTimeSeries(line2);
+        smoothie.streamTo(document.getElementById("mycanvas5"), 1000);
+      })();
+    </script>
+    <p>That's much easier on the eye.</p>
+
+    <h3>6. Splash of color</h3>
+    <p>The API provides a few hooks for tweaking the style of the lines and the grid.</p>
+    <pre class="code">
+var smoothie = new SmoothieChart(<strong>{
+  grid: { strokeStyle:'rgb(125, 0, 0)', fillStyle:'rgb(60, 0, 0)',
+          lineWidth: 1, millisPerLine: 250, verticalSections: 6, },
+  labels: { fillStyle:'rgb(60, 0, 0)' }
+}</strong>);
+smoothie.addTimeSeries(line1,
+  <strong>{ strokeStyle:'rgb(0, 255, 0)', fillStyle:'rgba(0, 255, 0, 0.4)', lineWidth:3 }</strong>);
+smoothie.addTimeSeries(line2,
+  <strong>{ strokeStyle:'rgb(255, 0, 255)', fillStyle:'rgba(255, 0, 255, 0.3)', lineWidth:3 }</strong>);</pre>
+    <div class="holder"><canvas id="mycanvas6" width="400" height="100"></canvas></div>
+    <script type="text/javascript">
+      (function() {
+        var line1 = new TimeSeries();
+        var line2 = new TimeSeries();
+        setInterval(function() {
+          line1.append(new Date().getTime(), Math.random());
+          line2.append(new Date().getTime(), Math.random());
+        }, 1000);
+
+        var smoothie = new SmoothieChart({
+            grid: { strokeStyle: 'rgb(125, 0, 0)', fillStyle: 'rgb(60, 0, 0)', lineWidth: 1, millisPerLine: 250, verticalSections: 6 },
+            labels: { fillStyle:'rgb(255, 255, 0)' }
+        });
+        smoothie.addTimeSeries(line1, { strokeStyle: 'rgb(0, 255, 0)', fillStyle: 'rgba(0, 255, 0, 0.4)', lineWidth: 3 });
+        smoothie.addTimeSeries(line2, { strokeStyle: 'rgb(255, 0, 255)', fillStyle: 'rgba(255, 0, 255, 0.3)', lineWidth: 3 });
+        smoothie.streamTo(document.getElementById("mycanvas6"), 1000);
+      })();
+    </script>
+
+    <h3>That's it.</h3>
+
+    <p>View the <a href="example-final.html">finished example</a>.</p>
+
+    <p>For help, use the <a href="http://groups.google.com/group/smoothie-charts">Smoothie Charts Google Group</a>.</p>
+  </body>
+</html>
