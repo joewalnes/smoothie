@@ -27,7 +27,7 @@ function initHost(hostId) {
   }, 1000);
 
   // Build the timeline
-  var timeline = new SmoothieChart({ millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+  var timeline = new SmoothieChart({ fps: 30, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4}});
   for (var i = 0; i < cpuDataSets.length; i++) {
     timeline.addTimeSeries(cpuDataSets[i], seriesOptions[i]);
   }

@@ -48,6 +48,7 @@ function SmoothieChart(options) {
   options = options || {};
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
+  options.fps = options.fps || 30;
   options.labels = options.labels || { fillStyle:'#ffffff' }
   this.options = options;
   this.seriesSet = [];
@@ -59,9 +60,10 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
-  setInterval(function() {
+  (function render() {
     self.render(canvas, new Date().getTime() - (delay || 0));
-  });
+    setTimeout(render, 1000/self.options.fps);
+  })()
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
