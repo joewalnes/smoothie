@@ -178,7 +178,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
       var value = dataSet[i][1];
       var offset = maxValue - value;
-      var scaledValue = Math.round((offset / valueRange) * dimensions.height);
+      var scaledValue = valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0;
       var y = Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
 
       if (i == 0) {
