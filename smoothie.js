@@ -54,6 +54,8 @@ function SmoothieChart(options) {
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
   options.fps = options.fps || 20;
+  options.maxValueScale = options.maxValueScale || 1;
+  options.minValue = options.minValue;
   options.labels = options.labels || { fillStyle:'#ffffff' }
   this.options = options;
   this.seriesSet = [];
@@ -150,6 +152,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
       return;
   }
 
+  // Scale the maxValue to add padding at the top if required
+  maxValue = maxValue * options.maxValueScale;
+  // Set the minimum if we've specified one
+  if (options.minValue != null)
+    minValue = options.minValue;
   var valueRange = maxValue - minValue;
   
   // For each data set...
