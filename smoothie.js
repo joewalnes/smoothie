@@ -65,6 +65,10 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
 };
 
+SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
+	this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+};
+
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
   (function render() {
