@@ -28,19 +28,34 @@
  * v1.1: Auto scaling of axis, by Neil Dunn
  * v1.2: fps (frames per second) option, by Mathias Petterson
  * v1.3: Fix for divide by zero, by Paul Nikitochkin
+ * v1.4: Set minimum, top-scale padding, remove timeseries, add optional timer to reset bounds, by Kelley Reynolds
  */
 
-function TimeSeries() {
+function TimeSeries(options) {
+  options = options || {};
+  options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
+  options.resetBounds = options.resetBounds || true; // Enable or disable the resetBounds timer
+  this.options = options;
   this.data = [];
-  /**
-   * The maximum value ever seen in this time series.
-   */
-  this.max = Number.NaN;
-  /**
-   * The minimum value ever seen in this time series.
-   */
-  this.min = Number.NaN;
+  
+  this.maxValue = Number.NaN; // The maximum value ever seen in this time series.
+  this.minValue = Number.NaN; // The minimum value ever seen in this time series.
+
+  // Start a resetBounds Interval timer desired
+  if (options.resetBounds) {
+    this.boundsTimer = setInterval(function(thisObj) { thisObj.resetBounds(); }, options.resetBoundsInterval, this);
+  }
 }
+
+// Reset the min and max for this timeseries so the graph rescales itself
+TimeSeries.prototype.resetBounds = function() {
+  this.maxValue = Number.NaN;
+  this.minValue = Number.NaN;
+  for (var i = 0; i < this.data.length; i++) {
+    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
+    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
+  }
+};
 
 TimeSeries.prototype.append = function(timestamp, value) {
   this.data.push([timestamp, value]);
