@@ -88,10 +88,23 @@ SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
-  (function render() {
+  this.render_on_tick = function() {
     self.render(canvas, new Date().getTime() - (delay || 0));
-    setTimeout(render, 1000/self.options.fps);
-  })()
+  };
+
+  this.start();
+};
+
+SmoothieChart.prototype.start = function() {
+  if (!this.timer)
+    this.timer = setInterval(this.render_on_tick, 1000/this.options.fps);
+};
+
+SmoothieChart.prototype.stop = function() {
+  if (this.timer) {
+    clearInterval(this.timer);
+    this.timer = undefined;
+  }
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
