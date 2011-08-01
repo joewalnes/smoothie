@@ -71,7 +71,8 @@ function SmoothieChart(options) {
   options.fps = options.fps || 20;
   options.maxValueScale = options.maxValueScale || 1;
   options.minValue = options.minValue;
-  options.labels = options.labels || { fillStyle:'#ffffff' }
+  options.maxValue = options.maxValue;
+  options.labels = options.labels || { fillStyle:'#ffffff' };
   this.options = options;
   this.seriesSet = [];
 }
@@ -172,12 +173,15 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   // Scale the maxValue to add padding at the top if required
-  maxValue = maxValue * options.maxValueScale;
+  if (options.maxValue != null)
+    maxValue = options.maxValue;
+  else
+    maxValue = maxValue * options.maxValueScale;
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
   var valueRange = maxValue - minValue;
-  
+
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
     canvasContext.save();
