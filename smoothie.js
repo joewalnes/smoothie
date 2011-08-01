@@ -73,6 +73,7 @@ function SmoothieChart(options) {
   options.minValue = options.minValue;
   options.maxValue = options.maxValue;
   options.labels = options.labels || { fillStyle:'#ffffff' };
+  options.interpolation = options.interpolation || "bezier";
   this.options = options;
   this.seriesSet = [];
 }
@@ -231,10 +232,18 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // so adjacent curves appear to flow as one.
       //
       else {
-        canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-          Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-          Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-          x, y); // endPoint (B)
+        switch (options.interpolation) {
+        case "line":
+          canvasContext.lineTo(x,y);
+          break;
+        case "bezier":
+        default:
+          canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+            Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+            Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+            x, y); // endPoint (B)
+          break;
+        }
       }
 
       lastX = x, lastY = y;
