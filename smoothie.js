@@ -71,7 +71,9 @@ function SmoothieChart(options) {
   options.fps = options.fps || 20;
   options.maxValueScale = options.maxValueScale || 1;
   options.minValue = options.minValue;
-  options.labels = options.labels || { fillStyle:'#ffffff' }
+  options.maxValue = options.maxValue;
+  options.labels = options.labels || { fillStyle:'#ffffff' };
+  options.interpolation = options.interpolation || "bezier";
   this.options = options;
   this.seriesSet = [];
 }
@@ -86,10 +88,23 @@ SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
-  (function render() {
+  this.render_on_tick = function() {
     self.render(canvas, new Date().getTime() - (delay || 0));
-    setTimeout(render, 1000/self.options.fps);
-  })()
+  };
+
+  this.start();
+};
+
+SmoothieChart.prototype.start = function() {
+  if (!this.timer)
+    this.timer = setInterval(this.render_on_tick, 1000/this.options.fps);
+};
+
+SmoothieChart.prototype.stop = function() {
+  if (this.timer) {
+    clearInterval(this.timer);
+    this.timer = undefined;
+  }
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
@@ -172,12 +187,15 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   // Scale the maxValue to add padding at the top if required
-  maxValue = maxValue * options.maxValueScale;
+  if (options.maxValue != null)
+    maxValue = options.maxValue;
+  else
+    maxValue = maxValue * options.maxValueScale;
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
   var valueRange = maxValue - minValue;
-  
+
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
     canvasContext.save();
@@ -227,10 +245,18 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // so adjacent curves appear to flow as one.
       //
       else {
-        canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-          Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-          Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-          x, y); // endPoint (B)
+        switch (options.interpolation) {
+        case "line":
+          canvasContext.lineTo(x,y);
+          break;
+        case "bezier":
+        default:
+          canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+            Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+            Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+            x, y); // endPoint (B)
+          break;
+        }
       }
 
       lastX = x, lastY = y;
