@@ -1,6 +1,6 @@
 // MIT License:
 //
-// Copyright (c) 2010, Joe Walnes
+// Copyright (c) 2010-2011, Joe Walnes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,9 @@
  * v1.2: fps (frames per second) option, by Mathias Petterson
  * v1.3: Fix for divide by zero, by Paul Nikitochkin
  * v1.4: Set minimum, top-scale padding, remove timeseries, add optional timer to reset bounds, by Kelley Reynolds
+ * v1.5: .start(), .stop() methods for conserving CPU, by Dmitry Vyal
+ *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
+ *       options.maxValue to fix scale, by Dmitry Vyal
  */
 
 function TimeSeries(options) {
