@@ -1,6 +1,6 @@
 // MIT License:
 //
-// Copyright (c) 2010, Joe Walnes
+// Copyright (c) 2010-2011, Joe Walnes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,47 @@
 /**
  * Smoothie Charts - http://smoothiecharts.org/
  * (c) 2010, Joe Walnes
+ *
+ * v1.0: Main charting library, by Joe Walnes
+ * v1.1: Auto scaling of axis, by Neil Dunn
+ * v1.2: fps (frames per second) option, by Mathias Petterson
+ * v1.3: Fix for divide by zero, by Paul Nikitochkin
+ * v1.4: Set minimum, top-scale padding, remove timeseries, add optional timer to reset bounds, by Kelley Reynolds
+ * v1.5: .start(), .stop() methods for conserving CPU, by Dmitry Vyal
+ *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
+ *       options.maxValue to fix scale, by Dmitry Vyal
  */
 
-function TimeSeries() {
+function TimeSeries(options) {
+  options = options || {};
+  options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
+  options.resetBounds = options.resetBounds || true; // Enable or disable the resetBounds timer
+  this.options = options;
   this.data = [];
-  /**
-   * The maximum value ever seen in this time series.
-   */
-  this.max = undefined;
-  /**
-   * The minimum value ever seen in this time series.
-   */
-  this.min = undefined;
+  
+  this.maxValue = Number.NaN; // The maximum value ever seen in this time series.
+  this.minValue = Number.NaN; // The minimum value ever seen in this time series.
+
+  // Start a resetBounds Interval timer desired
+  if (options.resetBounds) {
+    this.boundsTimer = setInterval(function(thisObj) { thisObj.resetBounds(); }, options.resetBoundsInterval, this);
+  }
 }
+
+// Reset the min and max for this timeseries so the graph rescales itself
+TimeSeries.prototype.resetBounds = function() {
+  this.maxValue = Number.NaN;
+  this.minValue = Number.NaN;
+  for (var i = 0; i < this.data.length; i++) {
+    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
+    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
+  }
+};
 
 TimeSeries.prototype.append = function(timestamp, value) {
   this.data.push([timestamp, value]);
-  this.maxValue = this.maxValue ? Math.max(this.maxValue, value) : value;
-  this.minValue = this.minValue ? Math.min(this.minValue, value) : value;
+  this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
+  this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
 };
 
 function SmoothieChart(options) {
@@ -48,7 +71,12 @@ function SmoothieChart(options) {
   options = options || {};
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
-  options.labels = options.labels || { fillStyle:'#ffffff' }
+  options.fps = options.fps || 20;
+  options.maxValueScale = options.maxValueScale || 1;
+  options.minValue = options.minValue;
+  options.maxValue = options.maxValue;
+  options.labels = options.labels || { fillStyle:'#ffffff' };
+  options.interpolation = options.interpolation || "bezier";
   this.options = options;
   this.seriesSet = [];
 }
@@ -57,11 +85,29 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
 };
 
+SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
+	this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+};
+
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
-  setInterval(function() {
+  this.render_on_tick = function() {
     self.render(canvas, new Date().getTime() - (delay || 0));
-  });
+  };
+
+  this.start();
+};
+
+SmoothieChart.prototype.start = function() {
+  if (!this.timer)
+    this.timer = setInterval(this.render_on_tick, 1000/this.options.fps);
+};
+
+SmoothieChart.prototype.stop = function() {
+  if (this.timer) {
+    clearInterval(this.timer);
+    this.timer = undefined;
+  }
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
@@ -124,27 +170,35 @@ SmoothieChart.prototype.render = function(canvas, time) {
   canvasContext.restore();
 
   // Calculate the current scale of the chart, from all time series.
-  var maxValue = undefined;
-  var minValue = undefined;
+  var maxValue = Number.NaN;
+  var minValue = Number.NaN;
 
   for (var d = 0; d < this.seriesSet.length; d++) {
       // TODO(ndunn): We could calculate / track these values as they stream in.
       var timeSeries = this.seriesSet[d].timeSeries;
-      if (timeSeries.maxValue) {
-          maxValue = maxValue ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
+      if (!isNaN(timeSeries.maxValue)) {
+          maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
       }
 
-      if (timeSeries.minValue) {
-          minValue = minValue ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
+      if (!isNaN(timeSeries.minValue)) {
+          minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
       }
   }
 
-  if (!maxValue && !minValue) {
+  if (isNaN(maxValue) && isNaN(minValue)) {
       return;
   }
 
+  // Scale the maxValue to add padding at the top if required
+  if (options.maxValue != null)
+    maxValue = options.maxValue;
+  else
+    maxValue = maxValue * options.maxValueScale;
+  // Set the minimum if we've specified one
+  if (options.minValue != null)
+    minValue = options.minValue;
   var valueRange = maxValue - minValue;
-  
+
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
     canvasContext.save();
@@ -172,11 +226,12 @@ SmoothieChart.prototype.render = function(canvas, time) {
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
       var value = dataSet[i][1];
       var offset = maxValue - value;
-      var scaledValue = Math.round((offset / valueRange) * dimensions.height);
+      var scaledValue = valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0;
       var y = Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
 
       if (i == 0) {
         firstX = x;
+        canvasContext.moveTo(x, y);
       }
       // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/B�zier_curve#Quadratic_curves
       //
@@ -192,10 +247,20 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // Importantly, A and P are at the same y coordinate, as are B and Q. This is
       // so adjacent curves appear to flow as one.
       //
-      canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-        Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-        Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-        x, y); // endPoint (B)
+      else {
+        switch (options.interpolation) {
+        case "line":
+          canvasContext.lineTo(x,y);
+          break;
+        case "bezier":
+        default:
+          canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+            Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+            Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+            x, y); // endPoint (B)
+          break;
+        }
+      }
 
       lastX = x, lastY = y;
     }
