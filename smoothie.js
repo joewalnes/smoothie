@@ -29,7 +29,8 @@
  * v1.2: fps (frames per second) option, by Mathias Petterson
  * v1.3: Fix for divide by zero, by Paul Nikitochkin
  * v1.4: Set minimum, top-scale padding, remove timeseries, add optional timer to reset bounds, by Kelley Reynolds
- * v1.5: .start(), .stop() methods for conserving CPU, by Dmitry Vyal
+ * v1.5: Set default frames per second to 50... smoother.
+ *       .start(), .stop() methods for conserving CPU, by Dmitry Vyal
  *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
  *       options.maxValue to fix scale, by Dmitry Vyal
  */
@@ -71,7 +72,7 @@ function SmoothieChart(options) {
   options = options || {};
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
-  options.fps = options.fps || 20;
+  options.fps = options.fps || 50;
   options.maxValueScale = options.maxValueScale || 1;
   options.minValue = options.minValue;
   options.maxValue = options.maxValue;
