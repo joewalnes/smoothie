@@ -33,6 +33,7 @@
  *       .start(), .stop() methods for conserving CPU, by Dmitry Vyal
  *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
  *       options.maxValue to fix scale, by Dmitry Vyal
+ * v1.6: minValue/maxValue will always get converted to floats, by Przemek Matylla
  */
 
 function TimeSeries(options) {
