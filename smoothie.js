@@ -140,6 +140,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Clear the working area.
   canvasContext.save();
   canvasContext.fillStyle = options.grid.fillStyle;
+  canvasContext.clearRect(0, 0, dimensions.width, dimensions.height);
   canvasContext.fillRect(0, 0, dimensions.width, dimensions.height);
   canvasContext.restore();
 
