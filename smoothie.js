@@ -22,7 +22,7 @@
 
 /**
  * Smoothie Charts - http://smoothiecharts.org/
- * (c) 2010, Joe Walnes
+ * (c) 2010-2012, Joe Walnes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
@@ -34,6 +34,8 @@
  *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
  *       options.maxValue to fix scale, by Dmitry Vyal
  * v1.6: minValue/maxValue will always get converted to floats, by Przemek Matylla
+ * v1.7: options.grid.fillStyle may be a transparent color, by Dmitry A. Shashkin
+ *       Smooth rescaling, by Kostas Michalopoulos
  */
 
 function TimeSeries(options) {
