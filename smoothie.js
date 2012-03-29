@@ -62,7 +62,7 @@ TimeSeries.prototype.resetBounds = function() {
   }
 };
 
-TimeSeries.prototype.append = function(timestamp, value) {
+TimeSeries.prototype.append = function(timestamp, value, replace) {
   var i = this.data.length-1;
   //rewind until it hits a timestamp older than this
   while (i > 0 && this.data[i][0] > timestamp) {
@@ -70,7 +70,11 @@ TimeSeries.prototype.append = function(timestamp, value) {
   }
   if (this.data.length > 0 && this.data[i][0] == timestamp) {
     //update existing values in the array
-    this.data[i][1] += value;
+    if (replace) {
+        this.data[i][1] = value;
+    } else {
+        this.data[i][1] += value;
+    }
     this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
     this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
   } else if (i < this.data.length-1) {
