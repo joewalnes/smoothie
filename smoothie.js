@@ -22,7 +22,7 @@
 
 /**
  * Smoothie Charts - http://smoothiecharts.org/
- * (c) 2010, Joe Walnes
+ * (c) 2010-2012, Joe Walnes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
@@ -34,6 +34,8 @@
  *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
  *       options.maxValue to fix scale, by Dmitry Vyal
  * v1.6: minValue/maxValue will always get converted to floats, by Przemek Matylla
+ * v1.7: options.grid.fillStyle may be a transparent color, by Dmitry A. Shashkin
+ *       Smooth rescaling, by Kostas Michalopoulos
  */
 
 function TimeSeries(options) {
@@ -101,8 +103,11 @@ function SmoothieChart(options) {
   options.maxValue = options.maxValue;
   options.labels = options.labels || { fillStyle:'#ffffff' };
   options.interpolation = options.interpolation || "bezier";
+  options.scaleSmoothing = options.scaleSmoothing || 0.125;
   this.options = options;
   this.seriesSet = [];
+  this.currentValueRange = 1;
+  this.currentVisMinValue = 0;
 }
 
 SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
@@ -159,6 +164,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Clear the working area.
   canvasContext.save();
   canvasContext.fillStyle = options.grid.fillStyle;
+  canvasContext.clearRect(0, 0, dimensions.width, dimensions.height);
   canvasContext.fillRect(0, 0, dimensions.width, dimensions.height);
   canvasContext.restore();
 
@@ -221,7 +227,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
-  var valueRange = maxValue - minValue;
+  var targetValueRange = maxValue - minValue;
+  this.currentValueRange += options.scaleSmoothing*(targetValueRange - this.currentValueRange);
+  this.currentVisMinValue += options.scaleSmoothing*(minValue - this.currentVisMinValue);
+  var valueRange = this.currentValueRange;
+  var visMinValue = this.currentVisMinValue;
 
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
@@ -249,8 +259,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // TODO: Deal with dataSet.length < 2.
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
       var value = dataSet[i][1];
-      var offset = maxValue - value;
-      var scaledValue = valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0;
+      var offset = value - visMinValue;
+      var scaledValue = dimensions.height - (valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0);
       var y = Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
 
       if (i == 0) {
