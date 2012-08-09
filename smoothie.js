@@ -82,6 +82,10 @@ function SmoothieChart(options) {
   options.labels = options.labels || { fillStyle:'#ffffff' };
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
+  //Option to set dataset length to use customized number of data points on the chart
+  options.datasetLength = options.datasetLength || 2; 
+  //added by nick to display timestamps along the bottom (https://groups.google.com/forum/?fromgroups#!topic/smoothie-charts/-Ywse8FCpKI%5B1-25%5D)
+  options.timeStamps = options.timeStamps || false;	
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -116,6 +120,7 @@ SmoothieChart.prototype.stop = function() {
     this.timer = undefined;
   }
 };
+function pad2(number){return (number < 10 ? '0' : '') + number}
 
 SmoothieChart.prototype.render = function(canvas, time) {
   var canvasContext = canvas.getContext("2d");
@@ -158,6 +163,21 @@ SmoothieChart.prototype.render = function(canvas, time) {
       canvasContext.moveTo(gx, 0);
       canvasContext.lineTo(gx, dimensions.height);
       canvasContext.stroke();
+      if (options.timeStamps==true){
+	      /********************************/
+	      /*	added by nick so we can	see	*/
+	      /*	some time scale							*/
+        /* https://groups.google.com/forum/?fromgroups#!topic/smoothie-charts/-Ywse8FCpKI%5B1-25%5D */
+	      /********************************/
+        var tx=new Date(t);	//create a new date object
+	      var ts=pad2(tx.getHours())+':'+pad2(tx.getMinutes())+':'+pad2(tx.getSeconds());	//create a time string
+	      var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;	//get the width of the time string
+	      if (gx<dimensions.width - txtwidth){
+          canvasContext.fillStyle = options.labels.fillStyle;
+	 				canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);	//insert the time string so it doesn't overlap on the minimum value
+	 			}
+ 			}
+      /***********************************/     
       canvasContext.closePath();
     }
   }
@@ -221,7 +241,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     // Delete old data that's moved off the left of the chart.
     // We must always keep the last expired data point as we need this to draw the
     // line that comes into the chart, but any points prior to that can be removed.
-    while (dataSet.length >= 2 && dataSet[1][0] < time - (dimensions.width * options.millisPerPixel)) {
+    while (dataSet.length >= options.datasetLength && dataSet[1][0] < time - (dimensions.width * options.millisPerPixel)) {
       dataSet.splice(0, 1);
     }
 
