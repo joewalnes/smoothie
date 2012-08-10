@@ -36,6 +36,10 @@
  * v1.6: minValue/maxValue will always get converted to floats, by Przemek Matylla
  * v1.7: options.grid.fillStyle may be a transparent color, by Dmitry A. Shashkin
  *       Smooth rescaling, by Kostas Michalopoulos
+ * v1.8: Set max length to customize number of live points in the dataset with options.maxDataSetLength, by Krishna Narni
+ * v1.9: Display timestamps along the bottom, by Nick and Stev-io
+ *       (https://groups.google.com/forum/?fromgroups#!topic/smoothie-charts/-Ywse8FCpKI%5B1-25%5D)
+ *       Refactored by Krishna Narni, to support timestamp formatting function
  */
 
 function TimeSeries(options) {
@@ -82,6 +86,8 @@ function SmoothieChart(options) {
   options.labels = options.labels || { fillStyle:'#ffffff' };
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
+  options.maxDataSetLength = options.maxDataSetLength || 2; 
+  options.timestampFormatter = options.timestampFormatter || null;	
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -117,11 +123,17 @@ SmoothieChart.prototype.stop = function() {
   }
 };
 
+// Sample timestamp formatting function 
+SmoothieChart.timeFormatter = function(dateObject) {
+  function pad2(number){return (number < 10 ? '0' : '') + number};
+  return pad2(dateObject.getHours())+':'+pad2(dateObject.getMinutes())+':'+pad2(dateObject.getSeconds());
+};
+
 SmoothieChart.prototype.render = function(canvas, time) {
   var canvasContext = canvas.getContext("2d");
   var options = this.options;
   var dimensions = {top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight};
-
+  
   // Save the state of the canvas context, any transformations applied in this method
   // will get removed from the stack at the end of this method when .restore() is called.
   canvasContext.save();
@@ -158,6 +170,20 @@ SmoothieChart.prototype.render = function(canvas, time) {
       canvasContext.moveTo(gx, 0);
       canvasContext.lineTo(gx, dimensions.height);
       canvasContext.stroke();
+      // To display timestamps along the bottom
+      // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
+      if (options.timestampFormatter){
+        var tx=new Date(t);	
+        // Formats the timestamp based on user specified formatting function
+        // SmoothieChart.timeFormatter function above is one such formatting option
+        var ts = options.timestampFormatter(tx);
+        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;	
+        if (gx<dimensions.width - txtwidth){
+          canvasContext.fillStyle = options.labels.fillStyle;
+          // Insert the time string so it doesn't overlap on the minimum value
+          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);	
+        }
+      }    
       canvasContext.closePath();
     }
   }
@@ -221,7 +247,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     // Delete old data that's moved off the left of the chart.
     // We must always keep the last expired data point as we need this to draw the
     // line that comes into the chart, but any points prior to that can be removed.
-    while (dataSet.length >= 2 && dataSet[1][0] < time - (dimensions.width * options.millisPerPixel)) {
+    while (dataSet.length >= options.maxDataSetLength && dataSet[1][0] < time - (dimensions.width * options.millisPerPixel)) {
       dataSet.splice(0, 1);
     }
 
