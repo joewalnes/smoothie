@@ -42,6 +42,12 @@
  *       Refactored by Krishna Narni, to support timestamp formatting function
  */
 
+;(function (exports) {
+
+
+exports.TimeSeries = TimeSeries
+exports.SmoothieChart = SmoothieChart
+
 function TimeSeries(options) {
   options = options || {};
   options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
@@ -325,3 +331,5 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   canvasContext.restore(); // See .save() above.
 }
+
+})(typeof exports === 'undefined' ?  this : exports)
