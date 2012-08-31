@@ -14,9 +14,7 @@
     "type": "git",
     "url": "git://github.com/dominictarr/smoothie.git"
   },
-  "main": {
-    "./smoothie.js"
-  },
+  "main": "./smoothie.js",
   "keywords": [
     "charts",
     "realtime",
