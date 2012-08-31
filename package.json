@@ -1,0 +1,28 @@
+{
+  "name": "smoothie",
+  "version": "0.0.0",
+  "description": "Smoothie Charts: smooooooth JavaScript charts for realtime streaming data",
+  "main": "smoothie.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dominictarr/smoothie.git"
+  },
+  "main": "./smoothie.js",
+  "keywords": [
+    "charts",
+    "realtime",
+    "stock-ticker",
+    "time",
+    "series",
+    "time-series"
+  ],
+  "author": "Joe Walnes",
+  "license": "MIT"
+}

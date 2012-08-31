@@ -50,6 +50,8 @@
  *        Fixed diagonal line on chart at start/end of data stream, by @drewnoakes
  */
 
+;(function (exports) {
+
 function TimeSeries(options) {
   options = options || {};
   options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
@@ -416,3 +418,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   canvasContext.restore(); // See .save() above.
 };
+
+exports.TimeSeries = TimeSeries;
+exports.SmoothieChart = SmoothieChart;
+
+})(typeof exports === 'undefined' ?  this : exports);
+
