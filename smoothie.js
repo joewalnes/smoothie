@@ -42,6 +42,12 @@
  *       Refactored by Krishna Narni, to support timestamp formatting function
  */
 
+;(function (exports) {
+
+
+exports.TimeSeries = TimeSeries
+exports.SmoothieChart = SmoothieChart
+
 function TimeSeries(options) {
   options = options || {};
   options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
@@ -207,27 +213,36 @@ SmoothieChart.prototype.render = function(canvas, time) {
   var maxValue = Number.NaN;
   var minValue = Number.NaN;
 
-  for (var d = 0; d < this.seriesSet.length; d++) {
-      // TODO(ndunn): We could calculate / track these values as they stream in.
-      var timeSeries = this.seriesSet[d].timeSeries;
-      if (!isNaN(timeSeries.maxValue)) {
-          maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
-      }
 
-      if (!isNaN(timeSeries.minValue)) {
-          minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
-      }
+  //pull in only check min & max if we havn't supplied any options
+  if(isNaN(options.maxValue) || isNaN(options.minValue)) {
+  
+  //this isn't good to check EVERY frame.
+  //I'm seing this slow down a lot when there are lots of timeseries.
+
+    for (var d = 0; d < this.seriesSet.length; d++) {
+        // TODO(ndunn): We could calculate / track these values as they stream in.
+        var timeSeries = this.seriesSet[d].timeSeries;
+        if (!isNaN(timeSeries.maxValue)) {
+            maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
+        }
+
+        if (!isNaN(timeSeries.minValue)) {
+            minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
+        }
+    }
+
+    if (isNaN(maxValue) && isNaN(minValue)) {
+        return;
+    }
+
   }
-
-  if (isNaN(maxValue) && isNaN(minValue)) {
-      return;
-  }
-
   // Scale the maxValue to add padding at the top if required
   if (options.maxValue != null)
     maxValue = options.maxValue;
   else
     maxValue = maxValue * options.maxValueScale;
+
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
@@ -325,3 +340,5 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   canvasContext.restore(); // See .save() above.
 }
+
+})(typeof exports === 'undefined' ?  this : exports)
