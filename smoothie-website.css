@@ -1,0 +1,83 @@
+body {
+  background-color: #dddddd;
+  color: #555;
+}
+.container {
+  background-color: #eeeeee;
+}
+h1, h2, h3, h4 {
+  font-family: 'Open Sans', verdana, helvetica, arial, sans-serif;
+  font-weight: bold;
+  color: #333;
+}
+h2 {
+  margin-top: 20px;
+}
+footer {
+  padding: 20px 0 !important;
+}
+.post-button-note, .post-button-note a {
+  font-size: 11px;
+  color: #999;
+}
+.button.wide {
+  width: 214px;
+}
+.no-underline {
+  text-decoration: none;
+}
+.pull-right {
+  text-align: right;
+}
+.smoothie-header-bar {
+  margin-top: 8px;
+  background-color: #333;
+  background: #333 -moz-linear-gradient(top, rgba(0,0,0,.1) 0%, rgba(255,255,255,.1) 100%); /* FF3.6+ */
+  background: #333 -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,.1)), color-stop(100%,rgba(255,255,255,.1))); /* Chrome,Safari4+ */
+  background: #333 -webkit-linear-gradient(top, rgba(0,0,0,.1) 0%,rgba(255,255,255,.1) 100%); /* Chrome10+,Safari5.1+ */
+  background: #333 -o-linear-gradient(top, rgba(0,0,0,.1) 0%,rgba(255,255,255,.1) 100%); /* Opera11.10+ */
+  background: #333 -ms-linear-gradient(top, rgba(0,0,0,.1) 0%,rgba(255,255,255,.1) 100%); /* IE10+ */
+  background: #333 linear-gradient(top, rgba(0,0,0,.1) 0%,rgba(255,255,255,.1) 100%); /* W3C */
+  text-align: center;
+  border-radius: 4px;
+}
+.smoothie-header-bar .logo {
+  width: 486px;
+  height: 124px;
+}
+.smoothie-header-bar h2 {
+  color: #ff9;
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  line-height: 24px;
+}
+@media only screen and (max-width: 767px) {
+  .smoothie-header-bar {
+    border-radius: 0;
+  }
+  .smoothie-header-bar .logo {
+    width: 243px;
+    height: 63px;
+  }
+  .smoothie-header-bar h2 {
+    font-size: 14px;
+    line-height: 18px;
+  }
+}
+
+.holder {
+  border: 1px solid black;
+  display: inline-block;
+  padding: 0;
+  line-height: 0;
+  margin: 10px 0 10px 0;
+}
+.code {
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  border-radius: 2px;
+  padding: 5px 5px 0 5px;
+  margin: 10px 0 10px 0;
+  font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+

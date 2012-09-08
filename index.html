@@ -1,73 +1,91 @@
 <!DOCTYPE html>
-<html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
   <head>
-    <title>Smoothie Charts</title>
+    <meta charset="utf-8">
+    <title>Smoothie Charts: A JavaScript Charting Library for Streaming Data</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="skeleton/base.css">
+    <link rel="stylesheet" href="skeleton/skeleton.css">
+    <link rel="stylesheet" href="skeleton/layout.css">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="smoothie-website.css">
+	  <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]--> 
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet">
     <script type="text/javascript" src="smoothie.js"></script>
-    <style type="text/css">
-      body { font-family: sans-serif; }
-    </style>
   </head>
   <body>
-    <a href="http://github.com/joewalnes/smoothie"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
-    <h1>Smoothie Charts</h1>
+    <div class="container">
 
-    <canvas id="chart" width="500" height="100"></canvas>
+      <div class="sixteen columns smoothie-header-bar">
+        <img class="logo" src="smoothie-logo.png" alt="Smoothie Charts">
+        <h2>A JavaScript Charting Library for Streaming Data</h2>
+      </div>
 
-    <p><b>Smoothie Charts</b> is a really small charting library designed for <i>live streaming data</i>. I built it to reduce
-    the headaches I was getting from watching charts jerkily updating every second. What you're looking at now is pretty much all
-    it does. If you like that, then read on.</p>
+      <div class="one-third column">
+        <h2>See It</h2>
+        <canvas id="chart" width="236" height="60" style="border-radius: 3px"></canvas><br><br>
+        <a class="button wide" href="examples/example1.html">Hello world example</a><br>
+        <a class="button wide" href="examples/server-load.html">Server CPU usage example</a>
+      </div>
 
-    <h2>Getting started</h2>
-    <ul>
-      <li><a href="examples/example1.html">Hello world example</a></li>
-      <li><a href="examples/server-load.html">Another example (server CPU usage)</a></li>
-      <li><a href="tutorial.html"><b>Tutorial</b></a></li>
-      <li>Just the JavaScript: <a href="http://github.com/joewalnes/smoothie/raw/master/smoothie.js"><code>smoothie.js</code></a></li>
-      <li>Full distribution (docs and examples): <a href="http://github.com/joewalnes/smoothie/zipball/master">zip</a> or <a href="http://github.com/joewalnes/smoothie/tarball/master">tgz</a></li>
-      <li>Repository: <code>git clone git@github.com:joewalnes/smoothie.git</code></li>
-      <li><a href="http://joewalnes.com/2010/08/10/introducing-smoothie-charts/">Introducing Smoothie Charts</a> (blog entry)
-    </ul>
+      <div class="one-third column">
+        <h2>Get It</h2>
+        <a class="button wide remove-bottom" href="http://github.com/joewalnes/smoothie/raw/master/smoothie.js">Download smoothie.js</a>
+        <div class="post-button-note">
+          or <a href="https://github.com/joewalnes/smoothie/">Clone repository on GitHub</a> <i class="icon-github"></i><br/>
+          (<a href="LICENSE.txt">View MIT License</a>)
+        </div>
+      </div>
 
-    <p>For help, use the <a href="http://groups.google.com/group/smoothie-charts">Smoothie Charts Google Group</a>.</p>
+      <div class="one-third column">
+        <h2>Use It</h2>
+        <div><a class="button wide" href="tutorial.html"><strong>Read the Ten Minute Tutorial</strong></a></div>
 
-    <p><a href="LICENSE.txt">License</a> (MIT)</p>
+        <a class="button wide remove-bottom" href="http://groups.google.com/group/smoothie-charts">Discussion and Support</a>
+        <div class="post-button-note">(Google Groups)</div>
+      </div>
 
-    <p><em>-<a href="http://joewalnes.com/">Joe Walnes</a></em></p>
+    </div>
 
     <script type="text/javascript">
-      var dataSet1 = new TimeSeries(), dataSet2 = new TimeSeries(), dataSet3 = new TimeSeries();
+      var dataSet1 = new TimeSeries(),
+          dataSet2 = new TimeSeries(),
+          dataSet3 = new TimeSeries(),
+          dataSet4 = new TimeSeries();
 
       setInterval(function() {
         var now = new Date().getTime();
         dataSet1.append(now, Math.random());
         dataSet2.append(now, Math.random());
         dataSet3.append(now, Math.random());
+        dataSet4.append(now, Math.random());
       }, 1000);
 
       // Build the timeline
-      var smoothie = new SmoothieChart({ minValue: 0.0, maxValue: 1.0, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
-      smoothie.addTimeSeries(dataSet1, { strokeStyle: 'rgba(255, 0, 0, 1)', fillStyle: 'rgba(255, 0, 0, 0.2)', lineWidth: 3 });
-      smoothie.addTimeSeries(dataSet2, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 3 });
-      smoothie.addTimeSeries(dataSet3, { strokeStyle: 'rgba(0, 0, 255, 1)', fillStyle: 'rgba(0, 0, 255, 0.2)', lineWidth: 3 });
+      var smoothie = new SmoothieChart({ minValue: 0.0, maxValue: 1.0, millisPerPixel: 20, grid: { fillStyle: '#333', strokeStyle: '#555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+      smoothie.addTimeSeries(dataSet1, { strokeStyle: 'rgba(255, 0, 0, 1)',   fillStyle: 'rgba(255, 0, 0, 0.2)',   lineWidth: 2 });
+      smoothie.addTimeSeries(dataSet2, { strokeStyle: 'rgba(0, 255, 0, 1)',   fillStyle: 'rgba(0, 255, 0, 0.2)',   lineWidth: 2 });
+      smoothie.addTimeSeries(dataSet3, { strokeStyle: 'rgba(0, 0, 255, 1)',   fillStyle: 'rgba(0, 0, 255, 0.2)',   lineWidth: 2 });
+      smoothie.addTimeSeries(dataSet4, { strokeStyle: 'rgba(255, 255, 0, 1)', fillStyle: 'rgba(255, 255, 0, 0.2)', lineWidth: 2 });
       smoothie.streamTo(document.getElementById('chart'), 1000);
 
     </script>
 
-<!-- Google Analytics -->
-<script type="text/javascript">
+    <footer class="container">
+      <div class="sixteen columns pull-right">
+        by <span title="Email me: firstname at lastname dot com">Joe Walnes</span>
+        <a class="no-underline" href="http://joewalnes.com" onclick="window.location.href='http://waln.es/blog'; return false"><i class="icon-home icon-large" title="Blog"></i></a>
+        <a class="no-underline" href="https://github.com/joewalnes" onclick="window.location.href='http://waln.es/git'; return false"><i class="icon-github icon-large" title="GitHub"></i></a>
+        <a class="no-underline" href="http://twitter.com/joewalnes" onclick="window.location.href='http://waln.es/twitter'; return false"><i class="icon-twitter icon-large" title="Twitter"></i></a>
+        <a class="no-underline" href="https://plus.google.com/110364367003361616663" onclick="window.location.href='http://waln.es/plus'; return false"><i class="icon-google-plus icon-large" title="Google+"></i></a>
+        <a class="no-underline" href="http://todayimade.co/joe-walnes" onclick="window.location.href='http://waln.es/todayimade'; return false"><i class="icon-wrench icon-large" title="Today I Made"></i></a>
+      </div>
+    </footer>
 
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-17907646-1']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-
-</script>
-
+    <script src="smoothie-website.js"></script>
   </body>
 </html>

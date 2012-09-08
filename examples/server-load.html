@@ -3,15 +3,21 @@
   <head>
     <style type="text/css">
       body {
-        background-color: #000000;
+        background-color: #111111;
         color: #eeeeee;
         font-family: tahoma, arial, sans-serif;
+        padding-left: 100px;
+      }
+      h4 {
+        margin-bottom: 1px;
       }
     </style>
     <script type="text/javascript" src="../smoothie.js"></script>
     <script type="text/javascript" src="server-load.js"></script>
   </head>
   <body onload="init()">
+
+    <h1>CPU Load</h1>
 
     <h4>host1.example.com</h4>
     <canvas id="host1Cpu" width="500" height="100"></canvas>
@@ -25,6 +31,6 @@
     <h4>host4.example.com</h4>
     <canvas id="host4Cpu" width="500" height="100"></canvas>
 
-    <em>This is fake data.</em>
+    <p><em>This is fake data.</em></p>
   </body>
 </html>
