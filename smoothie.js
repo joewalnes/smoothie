@@ -220,6 +220,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   if (isNaN(maxValue) && isNaN(minValue)) {
+      canvasContext.restore(); // without this there is crash in Android browser
       return;
   }
 
