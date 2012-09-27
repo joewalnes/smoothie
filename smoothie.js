@@ -45,7 +45,7 @@
 function TimeSeries(options) {
   options = options || {};
   options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
-  options.resetBounds = options.resetBounds || true; // Enable or disable the resetBounds timer
+  options.resetBounds = options.resetBounds === undefined ? true : options.resetBounds; // Enable or disable the resetBounds timer
   this.options = options;
   this.data = [];
   
