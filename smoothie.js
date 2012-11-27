@@ -74,12 +74,48 @@ TimeSeries.prototype.append = function(timestamp, value) {
   this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
 };
 
+var AnimateCompatibility = (function() {
+        var lastTime = 0,
+
+        requestAnimationFrame = function(callback, element) {
+            var requestAnimationFrame =
+                window.requestAnimationFrame        ||
+                window.webkitRequestAnimationFrame  ||
+                window.mozRequestAnimationFrame     ||
+                window.oRequestAnimationFrame       ||
+                window.msRequestAnimationFrame      ||
+                function(callback, element) {
+                    var currTime = new Date().getTime();
+                    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+                    var id = window.setTimeout(function() {
+                        callback(currTime + timeToCall);
+                    }, timeToCall);
+                    lastTime = currTime + timeToCall;
+                    return id;
+                };
+
+            return requestAnimationFrame.call(window, callback, element);
+        },
+
+        cancelAnimationFrame = function(id) {
+            var cancelAnimationFrame = window.cancelAnimationFrame ||
+                                        function(id) {
+                                            clearTimeout(id);
+                                        };
+            return cancelAnimationFrame.call(window, id);
+        };
+
+    return {
+        requestAnimationFrame: requestAnimationFrame,
+        cancelAnimationFrame: cancelAnimationFrame
+    };
+})();
+
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
-  options.fps = options.fps || 50;
   options.maxValueScale = options.maxValueScale || 1;
   options.minValue = options.minValue;
   options.maxValue = options.maxValue;
@@ -104,22 +140,26 @@ SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
   var self = this;
-  this.render_on_tick = function() {
-    self.render(canvas, new Date().getTime() - (delay || 0));
-  };
-
-  this.start();
+  self.canvas = canvas;
+  self.delay = delay;
+  self.start();
 };
 
 SmoothieChart.prototype.start = function() {
-  if (!this.timer)
-    this.timer = setInterval(this.render_on_tick, 1000/this.options.fps);
+  if (!this.frame) {
+     this.animate();
+  }
 };
 
+SmoothieChart.prototype.animate = function() {
+    this.frame = AnimateCompatibility.requestAnimationFrame( this.animate.bind(this) );
+    this.render(this.canvas, new Date().getTime() - (this.delay || 0));
+}
+
 SmoothieChart.prototype.stop = function() {
-  if (this.timer) {
-    clearInterval(this.timer);
-    this.timer = undefined;
+  if (this.frame) {
+      AnimateCompatibility.cancelAnimationFrame( this.frame );
+      delete this.frame;
   }
 };
 
