@@ -40,6 +40,7 @@
  * v1.9: Display timestamps along the bottom, by Nick and Stev-io
  *       (https://groups.google.com/forum/?fromgroups#!topic/smoothie-charts/-Ywse8FCpKI%5B1-25%5D)
  *       Refactored by Krishna Narni, to support timestamp formatting function
+ * v1.10: Switch to requestAnimationFrame, removed the now obsoleted options.fps, by Gergely Imreh
  */
 
 function TimeSeries(options) {
@@ -79,7 +80,6 @@ function SmoothieChart(options) {
   options = options || {};
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
-  options.fps = options.fps || 50;
   options.maxValueScale = options.maxValueScale || 1;
   options.minValue = options.minValue;
   options.maxValue = options.maxValue;
@@ -94,6 +94,44 @@ function SmoothieChart(options) {
   this.currentVisMinValue = 0;
 }
 
+// Based on http://inspirit.github.com/jsfeat/js/compatibility.js
+SmoothieChart.AnimateCompatibility = (function() {
+  var lastTime = 0,
+
+  requestAnimationFrame = function(callback, element) {
+    var requestAnimationFrame =
+      window.requestAnimationFrame        ||
+      window.webkitRequestAnimationFrame  ||
+      window.mozRequestAnimationFrame     ||
+      window.oRequestAnimationFrame       ||
+      window.msRequestAnimationFrame      ||
+      function(callback, element) {
+        var currTime = new Date().getTime();
+        var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+        var id = window.setTimeout(function() {
+          callback(currTime + timeToCall);
+        }, timeToCall);
+        lastTime = currTime + timeToCall;
+        return id;
+      };
+    return requestAnimationFrame.call(window, callback, element);
+  },
+
+  cancelAnimationFrame = function(id) {
+    var cancelAnimationFrame =
+      window.cancelAnimationFrame ||
+      function(id) {
+        clearTimeout(id);
+      };
+    return cancelAnimationFrame.call(window, id);
+  };
+
+  return {
+    requestAnimationFrame: requestAnimationFrame,
+    cancelAnimationFrame: cancelAnimationFrame
+  };
+})();
+
 SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
 };
@@ -103,23 +141,26 @@ SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
 };
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
-  var self = this;
-  this.render_on_tick = function() {
-    self.render(canvas, new Date().getTime() - (delay || 0));
-  };
-
+  this.canvas = canvas;
+  this.delay = delay;
   this.start();
 };
 
 SmoothieChart.prototype.start = function() {
-  if (!this.timer)
-    this.timer = setInterval(this.render_on_tick, 1000/this.options.fps);
+  if (!this.frame) {
+    this.animate();
+  }
 };
 
+SmoothieChart.prototype.animate = function() {
+  this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(this.animate.bind(this));
+  this.render(this.canvas, new Date().getTime() - (this.delay || 0));
+}
+
 SmoothieChart.prototype.stop = function() {
-  if (this.timer) {
-    clearInterval(this.timer);
-    this.timer = undefined;
+  if (this.frame) {
+    SmootheiChart.AnimateCompatibility.cancelAnimationFrame( this.frame );
+    delete this.frame;
   }
 };
 
