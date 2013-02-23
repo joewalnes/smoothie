@@ -78,7 +78,7 @@ TimeSeries.prototype.append = function(timestamp, value) {
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
-  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
+  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, sharpLines: false, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
   // NOTE there are no default values for 'minValue' and 'maxValue'
@@ -207,6 +207,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var t = time - (time % options.grid.millisPerLine); t >= time - (dimensions.width * options.millisPerPixel); t -= options.grid.millisPerLine) {
       canvasContext.beginPath();
       var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
+      if (options.grid.sharpLines)
+        gx -= 0.5;
       canvasContext.moveTo(gx, 0);
       canvasContext.lineTo(gx, dimensions.height);
       canvasContext.stroke();
@@ -231,6 +233,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Horizontal (value) dividers.
   for (var v = 1; v < options.grid.verticalSections; v++) {
     var gy = Math.round(v * dimensions.height / options.grid.verticalSections);
+    if (options.grid.sharpLines)
+      gy -= 0.5;
     canvasContext.beginPath();
     canvasContext.moveTo(0, gy);
     canvasContext.lineTo(dimensions.width, gy);
