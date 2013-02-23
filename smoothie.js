@@ -154,7 +154,7 @@ SmoothieChart.prototype.start = function() {
 SmoothieChart.prototype.animate = function() {
   this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(this.animate.bind(this));
   this.render(this.canvas, new Date().getTime() - (this.delay || 0));
-}
+};
 
 SmoothieChart.prototype.stop = function() {
   if (this.frame) {
@@ -341,7 +341,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
         }
       }
 
-      lastX = x, lastY = y;
+      lastX = x; lastY = y;
     }
     if (dataSet.length > 0 && seriesOptions.fillStyle) {
       // Close up the fill region.
@@ -365,4 +365,4 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   canvasContext.restore(); // See .save() above.
-}
+};
