@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <script type="text/javascript" src="../smoothie.js"></script>
+    <script type="text/javascript">
+
+      var maxYValue = 10000;
+
+      // Add random data points at irregular intervals
+      var random = new TimeSeries();
+      var addValueLoop = function() {
+        setTimeout(function() {
+          random.append(new Date().getTime(), Math.random() * maxYValue);
+          addValueLoop();
+        }, Math.random() * 2000);
+      };
+      addValueLoop();
+
+      function createTimeline() {
+        var chart = new SmoothieChart();
+        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        chart.streamTo(document.getElementById('chart'), 500);
+
+        var sharpGridLineCheckbox = document.getElementById('sharp-grid-lines');
+        sharpGridLineCheckbox.onclick = function() {
+          chart.options.grid.sharpLines = sharpGridLineCheckbox.checked;
+        };
+
+        var fixMinimumCheckbox = document.getElementById('fix-minimum');
+        fixMinimumCheckbox.onclick = function() {
+          chart.options.minValue = fixMinimumCheckbox.checked ? 0 : undefined;
+        };
+
+        var fixMaximumCheckbox = document.getElementById('fix-maximum');
+        fixMaximumCheckbox.onclick = function() {
+          chart.options.maxValue = fixMaximumCheckbox.checked ? maxYValue : undefined;
+        };
+      }
+
+    </script>
+  </head>
+  <body onload="createTimeline()" style="background-color:#333; color: #fff;">
+
+    <canvas id="chart" width="500" height="100"></canvas>
+
+    <div>
+        <input type="checkbox" id="sharp-grid-lines" /> <label for="sharp-grid-lines">Sharp grid lines</label>
+    </div>
+    <div>
+        <input type="checkbox" id="fix-minimum" /> <label for="fix-minimum">Fix minimum y-value</label>
+    </div>
+    <div>
+        <input type="checkbox" id="fix-maximum" /> <label for="fix-maximum">Fix maximum y-value</label>
+    </div>
+
+  </body>
+</html>
