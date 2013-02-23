@@ -81,8 +81,7 @@ function SmoothieChart(options) {
   options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
-  options.minValue = options.minValue;
-  options.maxValue = options.maxValue;
+  // NOTE there are no default values for 'minValue' and 'maxValue'
   options.labels = options.labels || { fillStyle:'#ffffff' };
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
