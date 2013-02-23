@@ -31,7 +31,7 @@
  * v1.4: Set minimum, top-scale padding, remove timeseries, add optional timer to reset bounds, by Kelley Reynolds
  * v1.5: Set default frames per second to 50... smoother.
  *       .start(), .stop() methods for conserving CPU, by Dmitry Vyal
- *       options.iterpolation = 'bezier' or 'line', by Dmitry Vyal
+ *       options.interpolation = 'bezier' or 'line', by Dmitry Vyal
  *       options.maxValue to fix scale, by Dmitry Vyal
  * v1.6: minValue/maxValue will always get converted to floats, by Przemek Matylla
  * v1.7: options.grid.fillStyle may be a transparent color, by Dmitry A. Shashkin
@@ -78,11 +78,10 @@ TimeSeries.prototype.append = function(timestamp, value) {
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
-  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, millisPerLine: 1000, verticalSections: 2 };
+  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, sharpLines: false, millisPerLine: 1000, verticalSections: 2 };
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
-  options.minValue = options.minValue;
-  options.maxValue = options.maxValue;
+  // NOTE there are no default values for 'minValue' and 'maxValue'
   options.labels = options.labels || { fillStyle:'#ffffff' };
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
@@ -155,7 +154,7 @@ SmoothieChart.prototype.start = function() {
 SmoothieChart.prototype.animate = function() {
   this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(this.animate.bind(this));
   this.render(this.canvas, new Date().getTime() - (this.delay || 0));
-}
+};
 
 SmoothieChart.prototype.stop = function() {
   if (this.frame) {
@@ -187,7 +186,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   
   // Create a clipped rectangle - anything we draw will be constrained to this rectangle.
   // This prevents the occasional pixels from curves near the edges overrunning and creating
-  // screen cheese (that phrase should neeed no explanation).
+  // screen cheese (that phrase should need no explanation).
   canvasContext.beginPath();
   canvasContext.rect(0, 0, dimensions.width, dimensions.height);
   canvasContext.clip();
@@ -208,6 +207,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var t = time - (time % options.grid.millisPerLine); t >= time - (dimensions.width * options.millisPerPixel); t -= options.grid.millisPerLine) {
       canvasContext.beginPath();
       var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
+      if (options.grid.sharpLines)
+        gx -= 0.5;
       canvasContext.moveTo(gx, 0);
       canvasContext.lineTo(gx, dimensions.height);
       canvasContext.stroke();
@@ -232,6 +233,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Horizontal (value) dividers.
   for (var v = 1; v < options.grid.verticalSections; v++) {
     var gy = Math.round(v * dimensions.height / options.grid.verticalSections);
+    if (options.grid.sharpLines)
+      gy -= 0.5;
     canvasContext.beginPath();
     canvasContext.moveTo(0, gy);
     canvasContext.lineTo(dimensions.width, gy);
@@ -295,7 +298,6 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
     // Set style for this dataSet.
     canvasContext.lineWidth = seriesOptions.lineWidth || 1;
-    canvasContext.fillStyle = seriesOptions.fillStyle;
     canvasContext.strokeStyle = seriesOptions.strokeStyle || '#ffffff';
     // Draw the line...
     canvasContext.beginPath();
@@ -342,13 +344,14 @@ SmoothieChart.prototype.render = function(canvas, time) {
         }
       }
 
-      lastX = x, lastY = y;
+      lastX = x; lastY = y;
     }
     if (dataSet.length > 0 && seriesOptions.fillStyle) {
       // Close up the fill region.
       canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
       canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
       canvasContext.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+      canvasContext.fillStyle = seriesOptions.fillStyle;
       canvasContext.fill();
     }
     canvasContext.stroke();
@@ -366,4 +369,4 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   canvasContext.restore(); // See .save() above.
-}
+};
