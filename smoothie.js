@@ -41,6 +41,8 @@
  *       (https://groups.google.com/forum/?fromgroups#!topic/smoothie-charts/-Ywse8FCpKI%5B1-25%5D)
  *       Refactored by Krishna Narni, to support timestamp formatting function
  * v1.10: Switch to requestAnimationFrame, removed the now obsoleted options.fps, by Gergely Imreh
+ * v1.11: options.grid.sharpLines option added, by @drewnoakes
+ *        Addressed warning seen in Firefox when seriesOption.fillStyle undefined, by @drewnoakes
  */
 
 function TimeSeries(options) {
