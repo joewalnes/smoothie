@@ -335,8 +335,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     canvasContext.beginPath();
     // Retain lastX, lastY for calculating the control points of bezier curves.
     var firstX = 0, lastX = 0, lastY = 0;
-    for (var i = 0; i < dataSet.length; i++) {
-      // TODO: Deal with dataSet.length < 2.
+    for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
       var y = Math.max(Math.min(yValueToPixel(dataSet[i][1]), dimensions.height - 1), 1); // Ensure line is always on chart.
 
