@@ -9,7 +9,7 @@
       var random = new TimeSeries();
       var addValueLoop = function() {
         setTimeout(function() {
-          random.append(new Date().getTime(), Math.random() * maxYValue);
+          random.append(new Date().getTime(), Math.random() * maxYValue - (maxYValue/2));
           addValueLoop();
         }, Math.random() * 2000);
       };
@@ -27,12 +27,23 @@
 
         var fixMinimumCheckbox = document.getElementById('fix-minimum');
         fixMinimumCheckbox.onclick = function() {
-          chart.options.minValue = fixMinimumCheckbox.checked ? 0 : undefined;
+          chart.options.minValue = fixMinimumCheckbox.checked ? -maxYValue : undefined;
         };
 
         var fixMaximumCheckbox = document.getElementById('fix-maximum');
         fixMaximumCheckbox.onclick = function() {
           chart.options.maxValue = fixMaximumCheckbox.checked ? maxYValue : undefined;
+        };
+
+        var showLinesCheckbox = document.getElementById('show-lines');
+        showLinesCheckbox.onclick = function() {
+          if (showLinesCheckbox.checked) {
+            chart.options.horizontalLines.push({color:'#ffffff', lineWidth: 1, value: 0});
+            chart.options.horizontalLines.push({color:'#880000', lineWidth: 2, value: maxYValue/3});
+            chart.options.horizontalLines.push({color:'#880000', lineWidth: 2, value: -maxYValue/3});
+          } else {
+            chart.options.horizontalLines = [];
+          }
         };
       }
 
@@ -50,6 +61,9 @@
     </div>
     <div>
         <input type="checkbox" id="fix-maximum" /> <label for="fix-maximum">Fix maximum y-value</label>
+    </div>
+    <div>
+        <input type="checkbox" id="show-lines" /> <label for="show-lines">Show y-value lines</label>
     </div>
 
   </body>

@@ -89,6 +89,7 @@ function SmoothieChart(options) {
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
   options.maxDataSetLength = options.maxDataSetLength || 2; 
   options.timestampFormatter = options.timestampFormatter || null;
+  options.horizontalLines = options.horizontalLines || [];
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -284,6 +285,28 @@ SmoothieChart.prototype.render = function(canvas, time) {
   var valueRange = this.currentValueRange;
   var visMinValue = this.currentVisMinValue;
 
+  var yValueToPixel = function(value)
+  {
+    var offset = value - visMinValue;
+    var scaledValue = dimensions.height - (valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0);
+    return Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
+  };
+
+  // Draw any horizontal lines
+  if (options.horizontalLines && options.horizontalLines.length) {
+    for (var hl = 0; hl < options.horizontalLines.length; hl++) {
+      var line = options.horizontalLines[hl];
+      var hly = Math.round(yValueToPixel(line.value)) - 0.5;
+      canvasContext.strokeStyle = line.color || '#ffffff';
+      canvasContext.lineWidth = line.lineWidth || 1;
+      canvasContext.beginPath();
+      canvasContext.moveTo(0, hly);
+      canvasContext.lineTo(dimensions.width, hly);
+      canvasContext.stroke();
+      canvasContext.closePath();
+    }
+  }
+
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
     canvasContext.save();
@@ -308,10 +331,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var i = 0; i < dataSet.length; i++) {
       // TODO: Deal with dataSet.length < 2.
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
-      var value = dataSet[i][1];
-      var offset = value - visMinValue;
-      var scaledValue = dimensions.height - (valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0);
-      var y = Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
+      var y = yValueToPixel(dataSet[i][1]);
 
       if (i == 0) {
         firstX = x;
