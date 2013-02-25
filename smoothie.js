@@ -80,7 +80,13 @@ TimeSeries.prototype.append = function(timestamp, value) {
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
-  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, sharpLines: false, millisPerLine: 1000, verticalSections: 2 };
+  options.grid = options.grid || {};
+  options.grid.fillStyle = options.grid.fillStyle || '#000000';
+  options.grid.strokeStyle = options.grid.strokeStyle || '#777777';
+  options.grid.lineWidth = typeof(options.grid.lineWidth) === 'undefined' ? 1 : options.grid.lineWidth;
+  options.grid.sharpLines = !!options.grid.sharpLines;
+  options.grid.millisPerLine = options.grid.millisPerLine || 1000;
+  options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
   // NOTE there are no default values for 'minValue' and 'maxValue'
@@ -203,8 +209,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   // Grid lines....
   canvasContext.save();
-  canvasContext.lineWidth = options.grid.lineWidth || 1;
-  canvasContext.strokeStyle = options.grid.strokeStyle || '#ffffff';
+  canvasContext.lineWidth = options.grid.lineWidth;
+  canvasContext.strokeStyle = options.grid.strokeStyle;
   // Vertical (time) dividers.
   if (options.grid.millisPerLine > 0) {
     for (var t = time - (time % options.grid.millisPerLine); t >= time - (dimensions.width * options.millisPerPixel); t -= options.grid.millisPerLine) {
