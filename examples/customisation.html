@@ -9,15 +9,43 @@
       var random = new TimeSeries();
       var addValueLoop = function() {
         setTimeout(function() {
-          random.append(new Date().getTime(), Math.random() * maxYValue);
+          // Generate a random value, centered around zero, raised to the power of 5
+          // so that larger values occur less frequently
+          var value = Math.pow(Math.random() * 2 - 1, 5) * maxYValue;
+          random.append(new Date().getTime(), value);
           addValueLoop();
-        }, Math.random() * 2000);
+        }, Math.random() * 1500);
       };
       addValueLoop();
 
-      function createTimeline() {
-        var chart = new SmoothieChart();
-        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+      // A function for nicely rounding numbers up for human beings.
+      // Eg: 180.2 -> 200
+      //       3.5 -> 5
+      //       8.9 -> 10
+      var ln10 = Math.log(10);
+      var roundUpHumane = function(value)
+      {
+        // calculate the magnitude of the value
+        var mag = Math.floor(Math.log(value) / ln10);
+        var magPow = Math.pow(10, mag);
+
+        // calculate the most significant digit of the value
+        var magMsd = Math.ceil(value / magPow);
+
+        // promote the MSD to either 1, 2, or 5
+        if (magMsd > 5.0)
+          magMsd = 10.0;
+        else if (magMsd > 2.0)
+          magMsd = 5.0;
+        else if (magMsd > 1.0)
+          magMsd = 2.0;
+
+        return magMsd * magPow;
+      };
+
+      function onLoad() {
+        var chart = new SmoothieChart({grid: { verticalSections: 4 }});
+        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', lineWidth: 2 });
         chart.streamTo(document.getElementById('chart'), 500);
 
         var sharpGridLineCheckbox = document.getElementById('sharp-grid-lines');
@@ -27,18 +55,46 @@
 
         var fixMinimumCheckbox = document.getElementById('fix-minimum');
         fixMinimumCheckbox.onclick = function() {
-          chart.options.minValue = fixMinimumCheckbox.checked ? 0 : undefined;
+          chart.options.minValue = fixMinimumCheckbox.checked ? -maxYValue : undefined;
         };
 
         var fixMaximumCheckbox = document.getElementById('fix-maximum');
         fixMaximumCheckbox.onclick = function() {
           chart.options.maxValue = fixMaximumCheckbox.checked ? maxYValue : undefined;
         };
+
+        var useCustomRangeFunction = document.getElementById('custom-range-function');
+        useCustomRangeFunction.onclick = function() {
+          chart.yRangeFunction = useCustomRangeFunction.checked
+              ? function(range)
+                {
+                  // Find the greatest absolute value
+                  var max = Math.max(Math.abs(range.min), Math.abs(range.max));
+                  // Ensure we're viewing at least a quarter of the range, so that
+                  // very small values don't appear exaggeratedly large
+                  max = Math.max(max, 200);
+                  // Round the limit up to a more pleasant number
+                  max = roundUpHumane(max);
+                  return {min:-max, max:max};
+                }
+              : undefined;
+        };
+
+        var showLinesCheckbox = document.getElementById('show-lines');
+        showLinesCheckbox.onclick = function() {
+          if (showLinesCheckbox.checked) {
+            chart.options.horizontalLines.push({color:'#ffffff', lineWidth: 1, value: 0});
+            chart.options.horizontalLines.push({color:'#880000', lineWidth: 2, value: maxYValue/3});
+            chart.options.horizontalLines.push({color:'#880000', lineWidth: 2, value: -maxYValue/3});
+          } else {
+            chart.options.horizontalLines = [];
+          }
+        };
       }
 
     </script>
   </head>
-  <body onload="createTimeline()" style="background-color:#333; color: #fff;">
+  <body onload="onLoad()" style="background-color:#333; color: #fff;">
 
     <canvas id="chart" width="500" height="100"></canvas>
 
@@ -50,6 +106,12 @@
     </div>
     <div>
         <input type="checkbox" id="fix-maximum" /> <label for="fix-maximum">Fix maximum y-value</label>
+    </div>
+    <div>
+        <input type="checkbox" id="show-lines" /> <label for="show-lines">Show y-value lines</label>
+    </div>
+    <div>
+        <input type="checkbox" id="custom-range-function" /> <label for="custom-range-function">Custom y-value range function</label>
     </div>
 
   </body>
