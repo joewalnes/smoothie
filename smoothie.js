@@ -43,6 +43,8 @@
  * v1.10: Switch to requestAnimationFrame, removed the now obsoleted options.fps, by Gergely Imreh
  * v1.11: options.grid.sharpLines option added, by @drewnoakes
  *        Addressed warning seen in Firefox when seriesOption.fillStyle undefined, by @drewnoakes
+ * v1.12: Support for horizontalLines added, by @drewnoakes
+ *        Support for yRangeFunction callback added, by @drewnoakes
  */
 
 function TimeSeries(options) {
