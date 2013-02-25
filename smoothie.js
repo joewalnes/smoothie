@@ -279,6 +279,14 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
+
+  // If a custom range function is set, call it
+  if (this.yRangeFunction) {
+    var range = this.yRangeFunction({min: minValue, max: maxValue});
+    minValue = range.min;
+    maxValue = range.max;
+  }
+
   var targetValueRange = maxValue - minValue;
   this.currentValueRange += options.scaleSmoothing*(targetValueRange - this.currentValueRange);
   this.currentVisMinValue += options.scaleSmoothing*(minValue - this.currentVisMinValue);
@@ -288,8 +296,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   var yValueToPixel = function(value)
   {
     var offset = value - visMinValue;
-    var scaledValue = dimensions.height - (valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0);
-    return Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
+    return dimensions.height - (valueRange !== 0 ? Math.round((offset / valueRange) * dimensions.height) : 0);
   };
 
   // Draw any horizontal lines
@@ -331,7 +338,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var i = 0; i < dataSet.length; i++) {
       // TODO: Deal with dataSet.length < 2.
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
-      var y = yValueToPixel(dataSet[i][1]);
+      var y = Math.max(Math.min(yValueToPixel(dataSet[i][1]), dimensions.height - 1), 1); // Ensure line is always on chart.
 
       if (i == 0) {
         firstX = x;

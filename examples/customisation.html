@@ -9,15 +9,18 @@
       var random = new TimeSeries();
       var addValueLoop = function() {
         setTimeout(function() {
-          random.append(new Date().getTime(), Math.random() * maxYValue - (maxYValue/2));
+          // Generate a random value, centered around zero, raised to the power of 5
+          // so that larger values occur less frequently
+          var value = Math.pow(Math.random() * 2 - 1, 5) * maxYValue;
+          random.append(new Date().getTime(), value);
           addValueLoop();
-        }, Math.random() * 2000);
+        }, Math.random() * 1500);
       };
       addValueLoop();
 
       function createTimeline() {
         var chart = new SmoothieChart();
-        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', lineWidth: 2 });
         chart.streamTo(document.getElementById('chart'), 500);
 
         var sharpGridLineCheckbox = document.getElementById('sharp-grid-lines');
@@ -33,6 +36,22 @@
         var fixMaximumCheckbox = document.getElementById('fix-maximum');
         fixMaximumCheckbox.onclick = function() {
           chart.options.maxValue = fixMaximumCheckbox.checked ? maxYValue : undefined;
+        };
+
+        var useCustomRangeFunction = document.getElementById('custom-range-function');
+        useCustomRangeFunction.onclick = function() {
+          chart.yRangeFunction = useCustomRangeFunction.checked
+              ? function(range)
+                {
+                  // Find the greatest absolute value
+                  var max = Math.max(Math.abs(range.min), Math.abs(range.max));
+                  // Ensure we're viewing at least a quarter of the range, so that
+                  // very small values don't appear exaggeratedly large
+                  if (max < maxYValue / 4)
+                    max = maxYValue / 4;
+                  return {min:-max, max:max};
+                }
+              : undefined;
         };
 
         var showLinesCheckbox = document.getElementById('show-lines');
@@ -64,6 +83,9 @@
     </div>
     <div>
         <input type="checkbox" id="show-lines" /> <label for="show-lines">Show y-value lines</label>
+    </div>
+    <div>
+        <input type="checkbox" id="custom-range-function" /> <label for="custom-range-function">Custom y-value range function</label>
     </div>
 
   </body>
