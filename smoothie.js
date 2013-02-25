@@ -88,7 +88,7 @@ function SmoothieChart(options) {
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
   options.maxDataSetLength = options.maxDataSetLength || 2; 
-  options.timestampFormatter = options.timestampFormatter || null;	
+  options.timestampFormatter = options.timestampFormatter || null;
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -138,7 +138,7 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
 };
 
 SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
-	this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+  this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
 };
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
@@ -217,15 +217,15 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
       if (options.timestampFormatter){
-        var tx=new Date(t);	
+        var tx=new Date(t);
         // Formats the timestamp based on user specified formatting function
         // SmoothieChart.timeFormatter function above is one such formatting option
         var ts = options.timestampFormatter(tx);
-        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;	
+        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;
         if (gx<dimensions.width - txtwidth){
           canvasContext.fillStyle = options.labels.fillStyle;
           // Insert the time string so it doesn't overlap on the minimum value
-          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);	
+          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);
         }
       }    
       canvasContext.closePath();
