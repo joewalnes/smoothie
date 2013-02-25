@@ -18,8 +18,33 @@
       };
       addValueLoop();
 
-      function createTimeline() {
-        var chart = new SmoothieChart();
+      // A function for nicely rounding numbers up for human beings.
+      // Eg: 180.2 -> 200
+      //       3.5 -> 5
+      //       8.9 -> 10
+      var ln10 = Math.log(10);
+      var roundUpHumane = function(value)
+      {
+        // calculate the magnitude of the value
+        var mag = Math.floor(Math.log(value) / ln10);
+        var magPow = Math.pow(10, mag);
+
+        // calculate the most significant digit of the value
+        var magMsd = Math.ceil(value / magPow);
+
+        // promote the MSD to either 1, 2, or 5
+        if (magMsd > 5.0)
+          magMsd = 10.0;
+        else if (magMsd > 2.0)
+          magMsd = 5.0;
+        else if (magMsd > 1.0)
+          magMsd = 2.0;
+
+        return magMsd * magPow;
+      };
+
+      function onLoad() {
+        var chart = new SmoothieChart({grid: { verticalSections: 4 }});
         chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', lineWidth: 2 });
         chart.streamTo(document.getElementById('chart'), 500);
 
@@ -47,8 +72,9 @@
                   var max = Math.max(Math.abs(range.min), Math.abs(range.max));
                   // Ensure we're viewing at least a quarter of the range, so that
                   // very small values don't appear exaggeratedly large
-                  if (max < maxYValue / 4)
-                    max = maxYValue / 4;
+                  max = Math.max(max, 200);
+                  // Round the limit up to a more pleasant number
+                  max = roundUpHumane(max);
                   return {min:-max, max:max};
                 }
               : undefined;
@@ -68,7 +94,7 @@
 
     </script>
   </head>
-  <body onload="createTimeline()" style="background-color:#333; color: #fff;">
+  <body onload="onLoad()" style="background-color:#333; color: #fff;">
 
     <canvas id="chart" width="500" height="100"></canvas>
 
