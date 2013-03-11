@@ -43,6 +43,8 @@
  * v1.10: Switch to requestAnimationFrame, removed the now obsoleted options.fps, by Gergely Imreh
  * v1.11: options.grid.sharpLines option added, by @drewnoakes
  *        Addressed warning seen in Firefox when seriesOption.fillStyle undefined, by @drewnoakes
+ * v1.12: Support for horizontalLines added, by @drewnoakes
+ *        Support for yRangeFunction callback added, by @drewnoakes
  */
 
 function TimeSeries(options) {
@@ -80,7 +82,13 @@ TimeSeries.prototype.append = function(timestamp, value) {
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
-  options.grid = options.grid || { fillStyle:'#000000', strokeStyle: '#777777', lineWidth: 1, sharpLines: false, millisPerLine: 1000, verticalSections: 2 };
+  options.grid = options.grid || {};
+  options.grid.fillStyle = options.grid.fillStyle || '#000000';
+  options.grid.strokeStyle = options.grid.strokeStyle || '#777777';
+  options.grid.lineWidth = typeof(options.grid.lineWidth) === 'undefined' ? 1 : options.grid.lineWidth;
+  options.grid.sharpLines = !!options.grid.sharpLines;
+  options.grid.millisPerLine = options.grid.millisPerLine || 1000;
+  options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
   // NOTE there are no default values for 'minValue' and 'maxValue'
@@ -88,7 +96,8 @@ function SmoothieChart(options) {
   options.interpolation = options.interpolation || "bezier";
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
   options.maxDataSetLength = options.maxDataSetLength || 2; 
-  options.timestampFormatter = options.timestampFormatter || null;	
+  options.timestampFormatter = options.timestampFormatter || null;
+  options.horizontalLines = options.horizontalLines || [];
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -138,7 +147,7 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
 };
 
 SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
-	this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+  this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
 };
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
@@ -202,8 +211,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   // Grid lines....
   canvasContext.save();
-  canvasContext.lineWidth = options.grid.lineWidth || 1;
-  canvasContext.strokeStyle = options.grid.strokeStyle || '#ffffff';
+  canvasContext.lineWidth = options.grid.lineWidth;
+  canvasContext.strokeStyle = options.grid.strokeStyle;
   // Vertical (time) dividers.
   if (options.grid.millisPerLine > 0) {
     for (var t = time - (time % options.grid.millisPerLine); t >= time - (dimensions.width * options.millisPerPixel); t -= options.grid.millisPerLine) {
@@ -217,15 +226,15 @@ SmoothieChart.prototype.render = function(canvas, time) {
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
       if (options.timestampFormatter){
-        var tx=new Date(t);	
+        var tx=new Date(t);
         // Formats the timestamp based on user specified formatting function
         // SmoothieChart.timeFormatter function above is one such formatting option
         var ts = options.timestampFormatter(tx);
-        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;	
+        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;
         if (gx<dimensions.width - txtwidth){
           canvasContext.fillStyle = options.labels.fillStyle;
           // Insert the time string so it doesn't overlap on the minimum value
-          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);	
+          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);
         }
       }    
       canvasContext.closePath();
@@ -278,11 +287,40 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Set the minimum if we've specified one
   if (options.minValue != null)
     minValue = options.minValue;
+
+  // If a custom range function is set, call it
+  if (this.yRangeFunction) {
+    var range = this.yRangeFunction({min: minValue, max: maxValue});
+    minValue = range.min;
+    maxValue = range.max;
+  }
+
   var targetValueRange = maxValue - minValue;
   this.currentValueRange += options.scaleSmoothing*(targetValueRange - this.currentValueRange);
   this.currentVisMinValue += options.scaleSmoothing*(minValue - this.currentVisMinValue);
   var valueRange = this.currentValueRange;
   var visMinValue = this.currentVisMinValue;
+
+  var yValueToPixel = function(value)
+  {
+    var offset = value - visMinValue;
+    return dimensions.height - (valueRange !== 0 ? Math.round((offset / valueRange) * dimensions.height) : 0);
+  };
+
+  // Draw any horizontal lines
+  if (options.horizontalLines && options.horizontalLines.length) {
+    for (var hl = 0; hl < options.horizontalLines.length; hl++) {
+      var line = options.horizontalLines[hl];
+      var hly = Math.round(yValueToPixel(line.value)) - 0.5;
+      canvasContext.strokeStyle = line.color || '#ffffff';
+      canvasContext.lineWidth = line.lineWidth || 1;
+      canvasContext.beginPath();
+      canvasContext.moveTo(0, hly);
+      canvasContext.lineTo(dimensions.width, hly);
+      canvasContext.stroke();
+      canvasContext.closePath();
+    }
+  }
 
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
@@ -305,13 +343,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
     canvasContext.beginPath();
     // Retain lastX, lastY for calculating the control points of bezier curves.
     var firstX = 0, lastX = 0, lastY = 0;
-    for (var i = 0; i < dataSet.length; i++) {
-      // TODO: Deal with dataSet.length < 2.
+    for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
       var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
-      var value = dataSet[i][1];
-      var offset = value - visMinValue;
-      var scaledValue = dimensions.height - (valueRange ? Math.round((offset / valueRange) * dimensions.height) : 0);
-      var y = Math.max(Math.min(scaledValue, dimensions.height - 1), 1); // Ensure line is always on chart.
+      var y = yValueToPixel(dataSet[i][1]);
 
       if (i == 0) {
         firstX = x;
