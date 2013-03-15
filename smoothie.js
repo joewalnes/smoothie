@@ -367,6 +367,10 @@ SmoothieChart.prototype.render = function(canvas, time) {
       //
       else {
         switch (options.interpolation) {
+        case "step":
+          canvasContext.lineTo(x, lastY);
+          canvasContext.lineTo(x, y);
+          break;
         case "line":
           canvasContext.lineTo(x,y);
           break;
