@@ -47,6 +47,7 @@
  *        Support for yRangeFunction callback added, by @drewnoakes
  * v1.13: Fixed typo, reported by @alnikitich in issue #32
  * v1.14: Timer cleared when last TimeSeries removed, reported by @davidgaleano in issue #23
+ *        Fixed diagonal line on chart at start/end of data stream, by @drewnoakes
  */
 
 function TimeSeries(options) {
@@ -388,16 +389,19 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
       lastX = x; lastY = y;
     }
-    if (dataSet.length > 0 && seriesOptions.fillStyle) {
-      // Close up the fill region.
-      canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-      canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-      canvasContext.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
-      canvasContext.fillStyle = seriesOptions.fillStyle;
-      canvasContext.fill();
+    if (dataSet.length > 1) {
+      if (seriesOptions.fillStyle) {
+        // Close up the fill region.
+        canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
+        canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
+        canvasContext.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+        canvasContext.fillStyle = seriesOptions.fillStyle;
+        canvasContext.fill();
+      }
+
+      canvasContext.stroke();
+      canvasContext.closePath();
     }
-    canvasContext.stroke();
-    canvasContext.closePath();
     canvasContext.restore();
   }
 
