@@ -49,7 +49,7 @@ smoothie.streamTo(document.getElementById("mycanvas"));</pre>
 
         <h2>4. Add some data</h2>
         <p>Each line requires a <code>TimeSeries</code> object.</p>
-        <p>For this example, we'' create 2 TimeSeries objects and append random data to them every second.</p>
+        <p>For this example, we'll create two <code>TimeSeries</code> objects and append random data to them every second.</p>
         <pre class="code">
 // Data
 var line1 = new TimeSeries();
@@ -86,9 +86,9 @@ smoothie.addTimeSeries(line2);</pre>
 
         <p>Important notes:</p>
         <ul>
-          <li>TimeSeries.append() takes two parameters: timestamp of the data point, and value of the data point.</li>
+          <li><code>TimeSeries.append()</code> takes two parameters: timestamp of the data point, and value of the data point.</li>
           <li>The value can be any number. Smoothie will automatically scale the chart based on the minimum and maximum values seen across all time series.</li>
-          <li>Smoothie will automatically delete old data from the TimeSeries as it dissappears off the chart.</li>
+          <li>Smoothie will automatically delete old data from the TimeSeries as it disappears off the chart.</li>
         </ul>
 
 
