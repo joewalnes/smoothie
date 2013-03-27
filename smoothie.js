@@ -183,25 +183,82 @@ SmoothieChart.prototype.stop = function() {
 };
 
 // Sample timestamp formatting function 
-SmoothieChart.timeFormatter = function(dateObject) {
+SmoothieChart.timeFormatter = function(date) {
   function pad2(number) { return (number < 10 ? '0' : '') + number }
-  return pad2(dateObject.getHours()) + ':' + pad2(dateObject.getMinutes()) + ':' + pad2(dateObject.getSeconds());
+  return pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
+};
+
+SmoothieChart.prototype.updateValueRange = function() {
+  // Calculate the current scale of the chart, from all time series.
+  var options = this.options,
+      maxValue = Number.NaN,
+      minValue = Number.NaN;
+
+  for (var d = 0; d < this.seriesSet.length; d++) {
+    // TODO(ndunn): We could calculate / track these values as they stream in.
+    var timeSeries = this.seriesSet[d].timeSeries;
+    if (!isNaN(timeSeries.maxValue)) {
+      maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
+    }
+
+    if (!isNaN(timeSeries.minValue)) {
+      minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
+    }
+  }
+
+  // Scale the maxValue to add padding at the top if required
+  if (options.maxValue != null) {
+    maxValue = options.maxValue;
+  } else {
+    maxValue *= options.maxValueScale;
+  }
+
+  // Set the minimum if we've specified one
+  if (options.minValue != null) {
+    minValue = options.minValue;
+  }
+
+  // If a custom range function is set, call it
+  if (this.yRangeFunction) {
+    var range = this.yRangeFunction({min: minValue, max: maxValue});
+    minValue = range.min;
+    maxValue = range.max;
+  }
+
+  if (!isNaN(maxValue) && !isNaN(minValue)) {
+    var targetValueRange = maxValue - minValue;
+    this.currentValueRange += options.scaleSmoothing * (targetValueRange - this.currentValueRange);
+    this.currentVisMinValue += options.scaleSmoothing * (minValue - this.currentVisMinValue);
+  }
+
+  this.valueRange = { min: minValue, max: maxValue };
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
-  var context = canvas.getContext("2d"),
+  // Round time down to pixel granularity, so motion appears smoother.
+  time -= time % this.options.millisPerPixel;
+
+  var self = this,
+      context = canvas.getContext("2d"),
       options = this.options,
-      dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight };
-  
+      dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
+      // Calculate the threshold time for the oldest data points.
+      oldestValidTime = time - (dimensions.width * options.millisPerPixel),
+      valueToYPixel = function(value) {
+        var offset = value - self.currentVisMinValue;
+        return self.currentValueRange === 0
+          ? dimensions.height
+          : dimensions.height - (Math.round((offset / self.currentValueRange) * dimensions.height));
+      },
+      timeToXPixel = function(t) {
+        return Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
+      };
+
+  this.updateValueRange();
+
   // Save the state of the canvas context, any transformations applied in this method
   // will get removed from the stack at the end of this method when .restore() is called.
   context.save();
-
-  // Round time down to pixel granularity, so motion appears smoother.
-  time -= time % options.millisPerPixel;
-
-  // Calculate the threshold time for the oldest data points.
-  var oldestValidTime = time - (dimensions.width * options.millisPerPixel);
 
   // Move the origin.
   context.translate(dimensions.left, dimensions.top);
@@ -229,14 +286,15 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var t = time - (time % options.grid.millisPerLine);
          t >= oldestValidTime;
          t -= options.grid.millisPerLine) {
-      context.beginPath();
-      var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
+      var gx = timeToXPixel(t);
       if (options.grid.sharpLines) {
         gx -= 0.5;
       }
+      context.beginPath();
       context.moveTo(gx, 0);
       context.lineTo(gx, dimensions.height);
       context.stroke();
+      context.closePath();
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
       if (options.timestampFormatter) {
@@ -250,8 +308,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
           // Insert the time string so it doesn't overlap on the minimum value
           context.fillText(ts, gx - (context.measureText(ts).width / 2), dimensions.height - 2);
         }
-      }    
-      context.closePath();
+      }
     }
   }
 
@@ -273,62 +330,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
   context.closePath();
   context.restore();
 
-  // Calculate the current scale of the chart, from all time series.
-  var maxValue = Number.NaN,
-      minValue = Number.NaN;
-
-  for (var d = 0; d < this.seriesSet.length; d++) {
-    // TODO(ndunn): We could calculate / track these values as they stream in.
-    var timeSeries = this.seriesSet[d].timeSeries;
-    if (!isNaN(timeSeries.maxValue)) {
-      maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
-    }
-
-    if (!isNaN(timeSeries.minValue)) {
-      minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
-    }
-  }
-
-  if (isNaN(maxValue) && isNaN(minValue)) {
-    context.restore(); // without this there is crash in Android browser
-    return;
-  }
-
-  // Scale the maxValue to add padding at the top if required
-  if (options.maxValue != null) {
-    maxValue = options.maxValue;
-  } else {
-    maxValue *= options.maxValueScale;
-  }
-
-  // Set the minimum if we've specified one
-  if (options.minValue != null) {
-    minValue = options.minValue;
-  }
-
-  // If a custom range function is set, call it
-  if (this.yRangeFunction) {
-    var range = this.yRangeFunction({min: minValue, max: maxValue});
-    minValue = range.min;
-    maxValue = range.max;
-  }
-
-  var targetValueRange = maxValue - minValue;
-  this.currentValueRange += options.scaleSmoothing*(targetValueRange - this.currentValueRange);
-  this.currentVisMinValue += options.scaleSmoothing*(minValue - this.currentVisMinValue);
-  var valueRange = this.currentValueRange,
-      visMinValue = this.currentVisMinValue;
-
-  var yValueToPixel = function(value) {
-    var offset = value - visMinValue;
-    return dimensions.height - (valueRange !== 0 ? Math.round((offset / valueRange) * dimensions.height) : 0);
-  };
-
   // Draw any horizontal lines...
   if (options.horizontalLines && options.horizontalLines.length) {
     for (var hl = 0; hl < options.horizontalLines.length; hl++) {
       var line = options.horizontalLines[hl],
-          hly = Math.round(yValueToPixel(line.value)) - 0.5;
+          hly = Math.round(valueToYPixel(line.value)) - 0.5;
       context.strokeStyle = line.color || '#ffffff';
       context.lineWidth = line.lineWidth || 1;
       context.beginPath();
@@ -361,8 +367,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
     // Retain lastX, lastY for calculating the control points of bezier curves.
     var firstX = 0, lastX = 0, lastY = 0;
     for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
-      var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel)),
-          y = yValueToPixel(dataSet[i][1]);
+      var x = timeToXPixel(dataSet[i][0]),
+          y = valueToYPixel(dataSet[i][1]);
 
       if (i == 0) {
         firstX = x;
@@ -417,10 +423,10 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   // Draw the axis values on the chart.
-  if (!options.labels.disabled) {
+  if (!options.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
     context.fillStyle = options.labels.fillStyle;
-    var maxValueString = parseFloat(maxValue).toFixed(2),
-        minValueString = parseFloat(minValue).toFixed(2);
+    var maxValueString = parseFloat(this.valueRange.max).toFixed(2),
+        minValueString = parseFloat(this.valueRange.min).toFixed(2);
     context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, 10);
     context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
   }
