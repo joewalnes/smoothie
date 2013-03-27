@@ -49,6 +49,7 @@
  * v1.14: Timer cleared when last TimeSeries removed, reported by @davidgaleano in issue #23
  *        Fixed diagonal line on chart at start/end of data stream, by @drewnoakes
  * v1.15: Support for npm package, by @dominictarr
+ *        Minor performance and tidying, by @drewnoakes
  */
 
 ;(function (exports) {
