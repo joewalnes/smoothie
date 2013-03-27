@@ -54,6 +54,7 @@ function TimeSeries(options) {
   options.resetBounds = options.resetBounds === undefined ? true : options.resetBounds; // Enable or disable the resetBounds timer
   this.options = options;
   this.data = [];
+  this.referenceSeries = options.referenceSeries || this; 
   
   this.maxValue = Number.NaN; // The maximum value ever seen in this time series.
   this.minValue = Number.NaN; // The minimum value ever seen in this time series.
@@ -66,6 +67,11 @@ function TimeSeries(options) {
 
 // Reset the min and max for this timeseries so the graph rescales itself
 TimeSeries.prototype.resetBounds = function() {
+  if (this.referenceSeries !== this)  {
+     this.maxValue = this.referenceSeries.maxValue;
+     this.minValue = this.referenceSeries.minValue;
+     return
+  }
   this.maxValue = Number.NaN;
   this.minValue = Number.NaN;
   for (var i = 0; i < this.data.length; i++) {
