@@ -80,6 +80,18 @@ TimeSeries.prototype.append = function(timestamp, value) {
   this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
 };
 
+TimeSeries.prototype.dropOldData = function(oldestValidTime, maxDataSetLength) {
+  // We must always keep one expired data point as we need this to draw the
+  // line that comes into the chart from the left, but any points prior to that can be removed.
+  var removeCount = 0;
+  while (this.data.length - removeCount >= maxDataSetLength && this.data[removeCount + 1][0] < oldestValidTime) {
+    removeCount++;
+  }
+  if (removeCount !== 0) {
+    this.data.splice(0, removeCount);
+  }
+};
+
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
@@ -353,11 +365,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
         seriesOptions = this.seriesSet[d].options;
 
     // Delete old data that's moved off the left of the chart.
-    // We must always keep the last expired data point as we need this to draw the
-    // line that comes into the chart, but any points prior to that can be removed.
-    while (dataSet.length >= options.maxDataSetLength && dataSet[1][0] < oldestValidTime) {
-      dataSet.splice(0, 1);
-    }
+    timeSeries.dropOldData(oldestValidTime, options.maxDataSetLength);
 
     // Set style for this dataSet.
     context.lineWidth = seriesOptions.lineWidth || 1;
