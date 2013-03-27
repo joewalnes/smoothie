@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="skeleton/layout.css">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.css">
     <link rel="stylesheet" href="smoothie-website.css">
-	  <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]--> 
+    <!--[if lt IE 9]><script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet">
     <script type="text/javascript" src="smoothie.js"></script>
   </head>
@@ -36,8 +36,8 @@
         <h2>Get It</h2>
         <a class="button wide remove-bottom" href="http://github.com/joewalnes/smoothie/raw/master/smoothie.js">Download smoothie.js</a>
         <div class="post-button-note">
-          or <a href="https://github.com/joewalnes/smoothie/">Clone repository on GitHub</a> <i class="icon-github"></i><br/>
-          (<a href="LICENSE.txt">View MIT License</a>)
+          or <code>npm install smoothie</code><br/>
+          or <a href="https://github.com/joewalnes/smoothie/">clone repository on GitHub</a> <i class="icon-github"></i>
         </div>
       </div>
 
@@ -46,7 +46,10 @@
         <div><a class="button wide" href="tutorial.html"><strong>Read the Ten Minute Tutorial</strong></a></div>
 
         <a class="button wide remove-bottom" href="http://groups.google.com/group/smoothie-charts">Discussion and Support</a>
-        <div class="post-button-note">(Google Groups)</div>
+        <div class="post-button-note">
+          (Google Groups)<br/>
+          <a href="LICENSE.txt">View MIT License</a>
+        </div>
       </div>
 
     </div>
@@ -55,15 +58,18 @@
       var dataSet1 = new TimeSeries(),
           dataSet2 = new TimeSeries(),
           dataSet3 = new TimeSeries(),
-          dataSet4 = new TimeSeries();
+          dataSet4 = new TimeSeries(),
+          delayMillis = 1000;
 
-      setInterval(function() {
+      var addDataItems = function () {
         var now = new Date().getTime();
         dataSet1.append(now, Math.random());
         dataSet2.append(now, Math.random());
         dataSet3.append(now, Math.random());
         dataSet4.append(now, Math.random());
-      }, 1000);
+      };
+      addDataItems();
+      setInterval(addDataItems, delayMillis);
 
       // Build the timeline
       var smoothie = new SmoothieChart({ minValue: 0.0, maxValue: 1.0, millisPerPixel: 20, grid: { fillStyle: '#333', strokeStyle: '#555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
@@ -71,7 +77,7 @@
       smoothie.addTimeSeries(dataSet2, { strokeStyle: 'rgba(0, 255, 0, 1)',   fillStyle: 'rgba(0, 255, 0, 0.2)',   lineWidth: 2 });
       smoothie.addTimeSeries(dataSet3, { strokeStyle: 'rgba(0, 0, 255, 1)',   fillStyle: 'rgba(0, 0, 255, 0.2)',   lineWidth: 2 });
       smoothie.addTimeSeries(dataSet4, { strokeStyle: 'rgba(255, 255, 0, 1)', fillStyle: 'rgba(255, 255, 0, 0.2)', lineWidth: 2 });
-      smoothie.streamTo(document.getElementById('chart'), 1000);
+      smoothie.streamTo(document.getElementById('chart'), delayMillis);
 
     </script>
 

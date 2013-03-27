@@ -16,6 +16,10 @@ h2 {
 footer {
   padding: 20px 0 !important;
 }
+code {
+  font-family: monospace;
+  font-weight: bold;
+}
 .post-button-note, .post-button-note a {
   font-size: 11px;
   color: #999;
