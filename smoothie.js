@@ -45,6 +45,7 @@
  *        Addressed warning seen in Firefox when seriesOption.fillStyle undefined, by @drewnoakes
  * v1.12: Support for horizontalLines added, by @drewnoakes
  *        Support for yRangeFunction callback added, by @drewnoakes
+ * v1.13: Fixed typo, reported by @alnikitich in issue #32
  */
 
 function TimeSeries(options) {
@@ -169,7 +170,7 @@ SmoothieChart.prototype.animate = function() {
 
 SmoothieChart.prototype.stop = function() {
   if (this.frame) {
-    SmootheiChart.AnimateCompatibility.cancelAnimationFrame( this.frame );
+    SmoothieChart.AnimateCompatibility.cancelAnimationFrame( this.frame );
     delete this.frame;
   }
 };
