@@ -45,10 +45,11 @@
  *        Addressed warning seen in Firefox when seriesOption.fillStyle undefined, by @drewnoakes
  * v1.12: Support for horizontalLines added, by @drewnoakes
  *        Support for yRangeFunction callback added, by @drewnoakes
- * v1.13: Fixed typo, reported by @alnikitich in issue #32
- * v1.14: Timer cleared when last TimeSeries removed, reported by @davidgaleano in issue #23
+ * v1.13: Fixed typo (#32), by @alnikitich
+ * v1.14: Timer cleared when last TimeSeries removed (#23), by @davidgaleano
  *        Fixed diagonal line on chart at start/end of data stream, by @drewnoakes
- * v1.15: Support for npm package, by @dominictarr
+ * v1.15: Support for npm package (#18), by @dominictarr
+ *        Fixed broken removeTimeSeries function (#24) by @davidgaleano
  *        Minor performance and tidying, by @drewnoakes
  */
 
@@ -164,7 +165,13 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
 };
 
 SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
-  this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+  var numSeries = this.seriesSet.length;
+  for (var i = 0; i < numSeries; i++) {
+    if (this.seriesSet[i].timeSeries === timeSeries) {
+      this.seriesSet.splice(i, 1);
+      break;
+    }
+  }
   if (this.options.resetBounds && this.seriesSet.length === 0) {
     // Stop resetting the bounds, if we were, as no more series exist
     clearInterval(this.boundsTimerId);
