@@ -189,13 +189,13 @@ SmoothieChart.timeFormatter = function(dateObject) {
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
-  var canvasContext = canvas.getContext("2d"),
+  var context = canvas.getContext("2d"),
       options = this.options,
       dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight };
   
   // Save the state of the canvas context, any transformations applied in this method
   // will get removed from the stack at the end of this method when .restore() is called.
-  canvasContext.save();
+  context.save();
 
   // Round time down to pixel granularity, so motion appears smoother.
   time -= time % options.millisPerPixel;
@@ -204,39 +204,39 @@ SmoothieChart.prototype.render = function(canvas, time) {
   var oldestValidTime = time - (dimensions.width * options.millisPerPixel);
 
   // Move the origin.
-  canvasContext.translate(dimensions.left, dimensions.top);
+  context.translate(dimensions.left, dimensions.top);
   
   // Create a clipped rectangle - anything we draw will be constrained to this rectangle.
   // This prevents the occasional pixels from curves near the edges overrunning and creating
   // screen cheese (that phrase should need no explanation).
-  canvasContext.beginPath();
-  canvasContext.rect(0, 0, dimensions.width, dimensions.height);
-  canvasContext.clip();
+  context.beginPath();
+  context.rect(0, 0, dimensions.width, dimensions.height);
+  context.clip();
 
   // Clear the working area.
-  canvasContext.save();
-  canvasContext.fillStyle = options.grid.fillStyle;
-  canvasContext.clearRect(0, 0, dimensions.width, dimensions.height);
-  canvasContext.fillRect(0, 0, dimensions.width, dimensions.height);
-  canvasContext.restore();
+  context.save();
+  context.fillStyle = options.grid.fillStyle;
+  context.clearRect(0, 0, dimensions.width, dimensions.height);
+  context.fillRect(0, 0, dimensions.width, dimensions.height);
+  context.restore();
 
   // Grid lines....
-  canvasContext.save();
-  canvasContext.lineWidth = options.grid.lineWidth;
-  canvasContext.strokeStyle = options.grid.strokeStyle;
+  context.save();
+  context.lineWidth = options.grid.lineWidth;
+  context.strokeStyle = options.grid.strokeStyle;
   // Vertical (time) dividers.
   if (options.grid.millisPerLine > 0) {
     for (var t = time - (time % options.grid.millisPerLine);
          t >= oldestValidTime;
          t -= options.grid.millisPerLine) {
-      canvasContext.beginPath();
+      context.beginPath();
       var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
       if (options.grid.sharpLines) {
         gx -= 0.5;
       }
-      canvasContext.moveTo(gx, 0);
-      canvasContext.lineTo(gx, dimensions.height);
-      canvasContext.stroke();
+      context.moveTo(gx, 0);
+      context.lineTo(gx, dimensions.height);
+      context.stroke();
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
       if (options.timestampFormatter) {
@@ -244,14 +244,14 @@ SmoothieChart.prototype.render = function(canvas, time) {
         // SmoothieChart.timeFormatter function above is one such formatting option
         var tx = new Date(t),
             ts = options.timestampFormatter(tx),
-            textWidth = (canvasContext.measureText(ts).width / 2) + canvasContext.measureText(minValueString).width + 4;
+            textWidth = (context.measureText(ts).width / 2) + context.measureText(minValueString).width + 4;
         if (gx < dimensions.width - textWidth) {
-          canvasContext.fillStyle = options.labels.fillStyle;
+          context.fillStyle = options.labels.fillStyle;
           // Insert the time string so it doesn't overlap on the minimum value
-          canvasContext.fillText(ts, gx - (canvasContext.measureText(ts).width / 2), dimensions.height - 2);
+          context.fillText(ts, gx - (context.measureText(ts).width / 2), dimensions.height - 2);
         }
       }    
-      canvasContext.closePath();
+      context.closePath();
     }
   }
 
@@ -261,17 +261,17 @@ SmoothieChart.prototype.render = function(canvas, time) {
     if (options.grid.sharpLines) {
       gy -= 0.5;
     }
-    canvasContext.beginPath();
-    canvasContext.moveTo(0, gy);
-    canvasContext.lineTo(dimensions.width, gy);
-    canvasContext.stroke();
-    canvasContext.closePath();
+    context.beginPath();
+    context.moveTo(0, gy);
+    context.lineTo(dimensions.width, gy);
+    context.stroke();
+    context.closePath();
   }
   // Bounding rectangle.
-  canvasContext.beginPath();
-  canvasContext.strokeRect(0, 0, dimensions.width, dimensions.height);
-  canvasContext.closePath();
-  canvasContext.restore();
+  context.beginPath();
+  context.strokeRect(0, 0, dimensions.width, dimensions.height);
+  context.closePath();
+  context.restore();
 
   // Calculate the current scale of the chart, from all time series.
   var maxValue = Number.NaN,
@@ -290,7 +290,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   if (isNaN(maxValue) && isNaN(minValue)) {
-    canvasContext.restore(); // without this there is crash in Android browser
+    context.restore(); // without this there is crash in Android browser
     return;
   }
 
@@ -329,19 +329,19 @@ SmoothieChart.prototype.render = function(canvas, time) {
     for (var hl = 0; hl < options.horizontalLines.length; hl++) {
       var line = options.horizontalLines[hl],
           hly = Math.round(yValueToPixel(line.value)) - 0.5;
-      canvasContext.strokeStyle = line.color || '#ffffff';
-      canvasContext.lineWidth = line.lineWidth || 1;
-      canvasContext.beginPath();
-      canvasContext.moveTo(0, hly);
-      canvasContext.lineTo(dimensions.width, hly);
-      canvasContext.stroke();
-      canvasContext.closePath();
+      context.strokeStyle = line.color || '#ffffff';
+      context.lineWidth = line.lineWidth || 1;
+      context.beginPath();
+      context.moveTo(0, hly);
+      context.lineTo(dimensions.width, hly);
+      context.stroke();
+      context.closePath();
     }
   }
 
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
-    canvasContext.save();
+    context.save();
     var timeSeries = this.seriesSet[d].timeSeries,
         dataSet = timeSeries.data,
         seriesOptions = this.seriesSet[d].options;
@@ -354,10 +354,10 @@ SmoothieChart.prototype.render = function(canvas, time) {
     }
 
     // Set style for this dataSet.
-    canvasContext.lineWidth = seriesOptions.lineWidth || 1;
-    canvasContext.strokeStyle = seriesOptions.strokeStyle || '#ffffff';
+    context.lineWidth = seriesOptions.lineWidth || 1;
+    context.strokeStyle = seriesOptions.strokeStyle || '#ffffff';
     // Draw the line...
-    canvasContext.beginPath();
+    context.beginPath();
     // Retain lastX, lastY for calculating the control points of bezier curves.
     var firstX = 0, lastX = 0, lastY = 0;
     for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
@@ -366,7 +366,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
       if (i == 0) {
         firstX = x;
-        canvasContext.moveTo(x, y);
+        context.moveTo(x, y);
       }
       // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
       //
@@ -385,11 +385,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
       else {
         switch (options.interpolation) {
         case "line":
-          canvasContext.lineTo(x,y);
+          context.lineTo(x,y);
           break;
         case "bezier":
         default:
-          canvasContext.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+          context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
             Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
             Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
             x, y); // endPoint (B)
@@ -403,29 +403,29 @@ SmoothieChart.prototype.render = function(canvas, time) {
     if (dataSet.length > 1) {
       if (seriesOptions.fillStyle) {
         // Close up the fill region.
-        canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-        canvasContext.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-        canvasContext.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
-        canvasContext.fillStyle = seriesOptions.fillStyle;
-        canvasContext.fill();
+        context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
+        context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
+        context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+        context.fillStyle = seriesOptions.fillStyle;
+        context.fill();
       }
 
-      canvasContext.stroke();
-      canvasContext.closePath();
+      context.stroke();
+      context.closePath();
     }
-    canvasContext.restore();
+    context.restore();
   }
 
   // Draw the axis values on the chart.
   if (!options.labels.disabled) {
-    canvasContext.fillStyle = options.labels.fillStyle;
+    context.fillStyle = options.labels.fillStyle;
     var maxValueString = parseFloat(maxValue).toFixed(2),
         minValueString = parseFloat(minValue).toFixed(2);
-    canvasContext.fillText(maxValueString, dimensions.width - canvasContext.measureText(maxValueString).width - 2, 10);
-    canvasContext.fillText(minValueString, dimensions.width - canvasContext.measureText(minValueString).width - 2, dimensions.height - 2);
+    context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, 10);
+    context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
   }
 
-  canvasContext.restore(); // See .save() above.
+  context.restore(); // See .save() above.
 };
 
 exports.TimeSeries = TimeSeries;
