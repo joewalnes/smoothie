@@ -46,6 +46,7 @@
  * v1.12: Support for horizontalLines added, by @drewnoakes
  *        Support for yRangeFunction callback added, by @drewnoakes
  * v1.13: Fixed typo, reported by @alnikitich in issue #32
+ * v1.14: Timer cleared when last TimeSeries removed, reported by @davidgaleano in issue #23
  */
 
 function TimeSeries(options) {
@@ -57,11 +58,6 @@ function TimeSeries(options) {
   
   this.maxValue = Number.NaN; // The maximum value ever seen in this time series.
   this.minValue = Number.NaN; // The minimum value ever seen in this time series.
-
-  // Start a resetBounds Interval timer desired
-  if (options.resetBounds) {
-    this.boundsTimer = setInterval((function(thisObj) { return function() { thisObj.resetBounds(); } })(this), options.resetBoundsInterval);
-  }
 }
 
 // Reset the min and max for this timeseries so the graph rescales itself
@@ -145,10 +141,19 @@ SmoothieChart.AnimateCompatibility = (function() {
 
 SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
+  if (this.options.resetBounds && this.seriesSet.length === 1) {
+    // Periodically reset the bounds, as requested
+    var self = this;
+    this.boundsTimerId = setInterval(function() { self.resetBounds(); }, options.resetBoundsInterval);
+  }
 };
 
 SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
   this.seriesSet.splice(this.seriesSet.indexOf(timeSeries), 1);
+  if (this.options.resetBounds && this.seriesSet.length === 0) {
+    // Stop resetting the bounds, if we were, as no more series exist
+    clearInterval(this.boundsTimerId);
+  }
 };
 
 SmoothieChart.prototype.streamTo = function(canvas, delay) {
