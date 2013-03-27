@@ -198,7 +198,10 @@ SmoothieChart.prototype.render = function(canvas, time) {
   canvasContext.save();
 
   // Round time down to pixel granularity, so motion appears smoother.
-  time = time - time % options.millisPerPixel;
+  time -= time % options.millisPerPixel;
+
+  // Calculate the threshold time for the oldest data points.
+  var oldestValidTime = time - (dimensions.width * options.millisPerPixel);
 
   // Move the origin.
   canvasContext.translate(dimensions.left, dimensions.top);
@@ -224,7 +227,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Vertical (time) dividers.
   if (options.grid.millisPerLine > 0) {
     for (var t = time - (time % options.grid.millisPerLine);
-         t >= time - (dimensions.width * options.millisPerPixel);
+         t >= oldestValidTime;
          t -= options.grid.millisPerLine) {
       canvasContext.beginPath();
       var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
@@ -346,7 +349,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
     // Delete old data that's moved off the left of the chart.
     // We must always keep the last expired data point as we need this to draw the
     // line that comes into the chart, but any points prior to that can be removed.
-    while (dataSet.length >= options.maxDataSetLength && dataSet[1][0] < time - (dimensions.width * options.millisPerPixel)) {
+    while (dataSet.length >= options.maxDataSetLength && dataSet[1][0] < oldestValidTime) {
       dataSet.splice(0, 1);
     }
 
