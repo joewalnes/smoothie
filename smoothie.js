@@ -108,34 +108,32 @@ function SmoothieChart(options) {
 // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
 SmoothieChart.AnimateCompatibility = (function() {
   var lastTime = 0,
-
-  requestAnimationFrame = function(callback, element) {
-    var requestAnimationFrame =
-      window.requestAnimationFrame        ||
-      window.webkitRequestAnimationFrame  ||
-      window.mozRequestAnimationFrame     ||
-      window.oRequestAnimationFrame       ||
-      window.msRequestAnimationFrame      ||
-      function(callback, element) {
-        var currTime = new Date().getTime();
-        var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-        var id = window.setTimeout(function() {
-          callback(currTime + timeToCall);
-        }, timeToCall);
-        lastTime = currTime + timeToCall;
-        return id;
+      requestAnimationFrame = function(callback, element) {
+        var requestAnimationFrame =
+          window.requestAnimationFrame        ||
+          window.webkitRequestAnimationFrame  ||
+          window.mozRequestAnimationFrame     ||
+          window.oRequestAnimationFrame       ||
+          window.msRequestAnimationFrame      ||
+          function(callback) {
+            var currTime = new Date().getTime(),
+                timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+                id = window.setTimeout(function() {
+                  callback(currTime + timeToCall);
+                }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+          };
+        return requestAnimationFrame.call(window, callback, element);
+      },
+      cancelAnimationFrame = function(id) {
+        var cancelAnimationFrame =
+          window.cancelAnimationFrame ||
+          function(id) {
+            clearTimeout(id);
+          };
+        return cancelAnimationFrame.call(window, id);
       };
-    return requestAnimationFrame.call(window, callback, element);
-  },
-
-  cancelAnimationFrame = function(id) {
-    var cancelAnimationFrame =
-      window.cancelAnimationFrame ||
-      function(id) {
-        clearTimeout(id);
-      };
-    return cancelAnimationFrame.call(window, id);
-  };
 
   return {
     requestAnimationFrame: requestAnimationFrame,
@@ -186,14 +184,14 @@ SmoothieChart.prototype.stop = function() {
 
 // Sample timestamp formatting function 
 SmoothieChart.timeFormatter = function(dateObject) {
-  function pad2(number){return (number < 10 ? '0' : '') + number};
-  return pad2(dateObject.getHours())+':'+pad2(dateObject.getMinutes())+':'+pad2(dateObject.getSeconds());
+  function pad2(number) { return (number < 10 ? '0' : '') + number }
+  return pad2(dateObject.getHours()) + ':' + pad2(dateObject.getMinutes()) + ':' + pad2(dateObject.getSeconds());
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
-  var canvasContext = canvas.getContext("2d");
-  var options = this.options;
-  var dimensions = {top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight};
+  var canvasContext = canvas.getContext("2d"),
+      options = this.options,
+      dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight };
   
   // Save the state of the canvas context, any transformations applied in this method
   // will get removed from the stack at the end of this method when .restore() is called.
@@ -225,26 +223,29 @@ SmoothieChart.prototype.render = function(canvas, time) {
   canvasContext.strokeStyle = options.grid.strokeStyle;
   // Vertical (time) dividers.
   if (options.grid.millisPerLine > 0) {
-    for (var t = time - (time % options.grid.millisPerLine); t >= time - (dimensions.width * options.millisPerPixel); t -= options.grid.millisPerLine) {
+    for (var t = time - (time % options.grid.millisPerLine);
+         t >= time - (dimensions.width * options.millisPerPixel);
+         t -= options.grid.millisPerLine) {
       canvasContext.beginPath();
       var gx = Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
-      if (options.grid.sharpLines)
+      if (options.grid.sharpLines) {
         gx -= 0.5;
+      }
       canvasContext.moveTo(gx, 0);
       canvasContext.lineTo(gx, dimensions.height);
       canvasContext.stroke();
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
-      if (options.timestampFormatter){
-        var tx=new Date(t);
+      if (options.timestampFormatter) {
         // Formats the timestamp based on user specified formatting function
         // SmoothieChart.timeFormatter function above is one such formatting option
-        var ts = options.timestampFormatter(tx);
-        var txtwidth=(canvasContext.measureText(ts).width/2)+canvasContext.measureText(minValueString).width + 4;
-        if (gx<dimensions.width - txtwidth){
+        var tx = new Date(t),
+            ts = options.timestampFormatter(tx),
+            textWidth = (canvasContext.measureText(ts).width / 2) + canvasContext.measureText(minValueString).width + 4;
+        if (gx < dimensions.width - textWidth) {
           canvasContext.fillStyle = options.labels.fillStyle;
           // Insert the time string so it doesn't overlap on the minimum value
-          canvasContext.fillText(ts, gx-(canvasContext.measureText(ts).width / 2), dimensions.height-2);
+          canvasContext.fillText(ts, gx - (canvasContext.measureText(ts).width / 2), dimensions.height - 2);
         }
       }    
       canvasContext.closePath();
@@ -254,8 +255,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Horizontal (value) dividers.
   for (var v = 1; v < options.grid.verticalSections; v++) {
     var gy = Math.round(v * dimensions.height / options.grid.verticalSections);
-    if (options.grid.sharpLines)
+    if (options.grid.sharpLines) {
       gy -= 0.5;
+    }
     canvasContext.beginPath();
     canvasContext.moveTo(0, gy);
     canvasContext.lineTo(dimensions.width, gy);
@@ -269,34 +271,37 @@ SmoothieChart.prototype.render = function(canvas, time) {
   canvasContext.restore();
 
   // Calculate the current scale of the chart, from all time series.
-  var maxValue = Number.NaN;
-  var minValue = Number.NaN;
+  var maxValue = Number.NaN,
+      minValue = Number.NaN;
 
   for (var d = 0; d < this.seriesSet.length; d++) {
-      // TODO(ndunn): We could calculate / track these values as they stream in.
-      var timeSeries = this.seriesSet[d].timeSeries;
-      if (!isNaN(timeSeries.maxValue)) {
-          maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
-      }
+    // TODO(ndunn): We could calculate / track these values as they stream in.
+    var timeSeries = this.seriesSet[d].timeSeries;
+    if (!isNaN(timeSeries.maxValue)) {
+      maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
+    }
 
-      if (!isNaN(timeSeries.minValue)) {
-          minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
-      }
+    if (!isNaN(timeSeries.minValue)) {
+      minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
+    }
   }
 
   if (isNaN(maxValue) && isNaN(minValue)) {
-      canvasContext.restore(); // without this there is crash in Android browser
-      return;
+    canvasContext.restore(); // without this there is crash in Android browser
+    return;
   }
 
   // Scale the maxValue to add padding at the top if required
-  if (options.maxValue != null)
+  if (options.maxValue != null) {
     maxValue = options.maxValue;
-  else
-    maxValue = maxValue * options.maxValueScale;
+  } else {
+    maxValue *= options.maxValueScale;
+  }
+
   // Set the minimum if we've specified one
-  if (options.minValue != null)
+  if (options.minValue != null) {
     minValue = options.minValue;
+  }
 
   // If a custom range function is set, call it
   if (this.yRangeFunction) {
@@ -308,20 +313,19 @@ SmoothieChart.prototype.render = function(canvas, time) {
   var targetValueRange = maxValue - minValue;
   this.currentValueRange += options.scaleSmoothing*(targetValueRange - this.currentValueRange);
   this.currentVisMinValue += options.scaleSmoothing*(minValue - this.currentVisMinValue);
-  var valueRange = this.currentValueRange;
-  var visMinValue = this.currentVisMinValue;
+  var valueRange = this.currentValueRange,
+      visMinValue = this.currentVisMinValue;
 
-  var yValueToPixel = function(value)
-  {
+  var yValueToPixel = function(value) {
     var offset = value - visMinValue;
     return dimensions.height - (valueRange !== 0 ? Math.round((offset / valueRange) * dimensions.height) : 0);
   };
 
-  // Draw any horizontal lines
+  // Draw any horizontal lines...
   if (options.horizontalLines && options.horizontalLines.length) {
     for (var hl = 0; hl < options.horizontalLines.length; hl++) {
-      var line = options.horizontalLines[hl];
-      var hly = Math.round(yValueToPixel(line.value)) - 0.5;
+      var line = options.horizontalLines[hl],
+          hly = Math.round(yValueToPixel(line.value)) - 0.5;
       canvasContext.strokeStyle = line.color || '#ffffff';
       canvasContext.lineWidth = line.lineWidth || 1;
       canvasContext.beginPath();
@@ -335,9 +339,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // For each data set...
   for (var d = 0; d < this.seriesSet.length; d++) {
     canvasContext.save();
-    var timeSeries = this.seriesSet[d].timeSeries;
-    var dataSet = timeSeries.data;
-    var seriesOptions = this.seriesSet[d].options;
+    var timeSeries = this.seriesSet[d].timeSeries,
+        dataSet = timeSeries.data,
+        seriesOptions = this.seriesSet[d].options;
 
     // Delete old data that's moved off the left of the chart.
     // We must always keep the last expired data point as we need this to draw the
@@ -354,8 +358,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
     // Retain lastX, lastY for calculating the control points of bezier curves.
     var firstX = 0, lastX = 0, lastY = 0;
     for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
-      var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel));
-      var y = yValueToPixel(dataSet[i][1]);
+      var x = Math.round(dimensions.width - ((time - dataSet[i][0]) / options.millisPerPixel)),
+          y = yValueToPixel(dataSet[i][1]);
 
       if (i == 0) {
         firstX = x;
@@ -392,6 +396,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
       lastX = x; lastY = y;
     }
+
     if (dataSet.length > 1) {
       if (seriesOptions.fillStyle) {
         // Close up the fill region.
@@ -410,11 +415,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   // Draw the axis values on the chart.
   if (!options.labels.disabled) {
-      canvasContext.fillStyle = options.labels.fillStyle;
-      var maxValueString = parseFloat(maxValue).toFixed(2);
-      var minValueString = parseFloat(minValue).toFixed(2);
-      canvasContext.fillText(maxValueString, dimensions.width - canvasContext.measureText(maxValueString).width - 2, 10);
-      canvasContext.fillText(minValueString, dimensions.width - canvasContext.measureText(minValueString).width - 2, dimensions.height - 2);
+    canvasContext.fillStyle = options.labels.fillStyle;
+    var maxValueString = parseFloat(maxValue).toFixed(2),
+        minValueString = parseFloat(minValue).toFixed(2);
+    canvasContext.fillText(maxValueString, dimensions.width - canvasContext.measureText(maxValueString).width - 2, 10);
+    canvasContext.fillText(minValueString, dimensions.width - canvasContext.measureText(minValueString).width - 2, dimensions.height - 2);
   }
 
   canvasContext.restore(); // See .save() above.
