@@ -76,10 +76,32 @@ TimeSeries.prototype.resetBounds = function() {
   }
 };
 
-TimeSeries.prototype.append = function(timestamp, value) {
-  this.data.push([timestamp, value]);
-  this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
-  this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
+TimeSeries.prototype.append = function(timestamp, value, increment) {
+  var i = this.data.length-1;
+  //rewind until it hits a timestamp older than this
+  while (i > 0 && this.data[i][0] > timestamp) {
+    i--;
+  }
+  if (this.data.length > 0 && this.data[i][0] == timestamp) {
+    //update existing values in the array
+    if (increment) {
+        this.data[i][1] += value;
+    } else {
+        this.data[i][1] = value;
+    }
+    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
+    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
+  } else if (i < this.data.length-1) {
+    //splice into position i+1 so timestamps are kept in order
+    this.data.splice(i+1, 0, [timestamp, value]);
+    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
+    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
+  } else {
+    //add to the end of the array
+    this.data.push([timestamp, value]);
+    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
+    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
+  }
 };
 
 TimeSeries.prototype.dropOldData = function(oldestValidTime, maxDataSetLength) {
