@@ -65,7 +65,7 @@
 
         var useCustomRangeFunction = document.getElementById('custom-range-function');
         useCustomRangeFunction.onclick = function() {
-          chart.yRangeFunction = useCustomRangeFunction.checked
+          chart.options.yRangeFunction = useCustomRangeFunction.checked
               ? function(range)
                 {
                   // Find the greatest absolute value

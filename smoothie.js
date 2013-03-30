@@ -243,8 +243,8 @@ SmoothieChart.prototype.updateValueRange = function() {
   }
 
   // If a custom range function is set, call it
-  if (this.yRangeFunction) {
-    var range = this.yRangeFunction({min: minValue, max: maxValue});
+  if (this.options.yRangeFunction) {
+    var range = this.options.yRangeFunction({min: minValue, max: maxValue});
     minValue = range.min;
     maxValue = range.max;
   }
