@@ -108,32 +108,41 @@ TimeSeries.prototype.resetBounds = function() {
   }
 };
 
-TimeSeries.prototype.append = function(timestamp, value, increment) {
-  var i = this.data.length-1;
-  //rewind until it hits a timestamp older than this
+/**
+ * Adds a new data point to the <code>TimeSeries</code>, preserving chronological order.
+ *
+ * @param timestamp the position, in time, of this data point
+ * @param value the value of this data point
+ * @param sumRepeatedTimeStampValues if <code>timestamp</code> has an exact match in the series, this flag controls
+ *                                   whether it is replaced, or the values summed (defaults to false.)
+ */
+TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
+  // Rewind until we hit an older timestamp
+  var i = this.data.length - 1;
   while (i > 0 && this.data[i][0] > timestamp) {
     i--;
   }
-  if (this.data.length > 0 && this.data[i][0] == timestamp) {
-    //update existing values in the array
-    if (increment) {
-        this.data[i][1] += value;
+
+  if (this.data.length > 0 && this.data[i][0] === timestamp) {
+    // Update existing values in the array
+    if (sumRepeatedTimeStampValues) {
+      // Sum this value into the existing 'bucket'
+      this.data[i][1] += value;
+      value = this.data[i][1];
     } else {
-        this.data[i][1] = value;
+      // Replace the previous value
+      this.data[i][1] = value;
     }
-    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
-    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
-  } else if (i < this.data.length-1) {
-    //splice into position i+1 so timestamps are kept in order
-    this.data.splice(i+1, 0, [timestamp, value]);
-    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
-    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
+  } else if (i < this.data.length - 1) {
+    // Splice into the correct position to keep timestamps in order
+    this.data.splice(i + 1, 0, [timestamp, value]);
   } else {
-    //add to the end of the array
+    // Add to the end of the array
     this.data.push([timestamp, value]);
-    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, value) : value;
-    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, value) : value;
   }
+
+  this.maxValue = isNaN(this.maxValue) ? value : Math.max(this.maxValue, value);
+  this.minValue = isNaN(this.minValue) ? value : Math.min(this.minValue, value);
 };
 
 TimeSeries.prototype.dropOldData = function(oldestValidTime, maxDataSetLength) {
