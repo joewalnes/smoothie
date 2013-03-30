@@ -272,7 +272,7 @@ SmoothieChart.prototype.animate = function() {
 
 SmoothieChart.prototype.stop = function() {
   if (this.frame) {
-    SmoothieChart.AnimateCompatibility.cancelAnimationFrame( this.frame );
+    SmoothieChart.AnimateCompatibility.cancelAnimationFrame(this.frame);
     delete this.frame;
   }
 };
@@ -285,7 +285,7 @@ SmoothieChart.timeFormatter = function(date) {
 
 SmoothieChart.prototype.updateValueRange = function() {
   // Calculate the current scale of the chart, from all time series.
-  var options = this.options,
+  var chartOptions = this.options,
       maxValue = Number.NaN,
       minValue = Number.NaN;
 
@@ -302,15 +302,15 @@ SmoothieChart.prototype.updateValueRange = function() {
   }
 
   // Scale the maxValue to add padding at the top if required
-  if (options.maxValue != null) {
-    maxValue = options.maxValue;
+  if (chartOptions.maxValue != null) {
+    maxValue = chartOptions.maxValue;
   } else {
-    maxValue *= options.maxValueScale;
+    maxValue *= chartOptions.maxValueScale;
   }
 
   // Set the minimum if we've specified one
-  if (options.minValue != null) {
-    minValue = options.minValue;
+  if (chartOptions.minValue != null) {
+    minValue = chartOptions.minValue;
   }
 
   // If a custom range function is set, call it
@@ -322,8 +322,8 @@ SmoothieChart.prototype.updateValueRange = function() {
 
   if (!isNaN(maxValue) && !isNaN(minValue)) {
     var targetValueRange = maxValue - minValue;
-    this.currentValueRange += options.scaleSmoothing * (targetValueRange - this.currentValueRange);
-    this.currentVisMinValue += options.scaleSmoothing * (minValue - this.currentVisMinValue);
+    this.currentValueRange += chartOptions.scaleSmoothing * (targetValueRange - this.currentValueRange);
+    this.currentVisMinValue += chartOptions.scaleSmoothing * (minValue - this.currentVisMinValue);
   }
 
   this.valueRange = { min: minValue, max: maxValue };
@@ -334,11 +334,11 @@ SmoothieChart.prototype.render = function(canvas, time) {
   time -= time % this.options.millisPerPixel;
 
   var self = this,
-      context = canvas.getContext("2d"),
-      options = this.options,
+      context = canvas.getContext('2d'),
+      chartOptions = this.options,
       dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
       // Calculate the threshold time for the oldest data points.
-      oldestValidTime = time - (dimensions.width * options.millisPerPixel),
+      oldestValidTime = time - (dimensions.width * chartOptions.millisPerPixel),
       valueToYPixel = function(value) {
         var offset = value - self.currentVisMinValue;
         return self.currentValueRange === 0
@@ -346,7 +346,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
           : dimensions.height - (Math.round((offset / self.currentValueRange) * dimensions.height));
       },
       timeToXPixel = function(t) {
-        return Math.round(dimensions.width - ((time - t) / options.millisPerPixel));
+        return Math.round(dimensions.width - ((time - t) / chartOptions.millisPerPixel));
       };
 
   this.updateValueRange();
@@ -367,22 +367,22 @@ SmoothieChart.prototype.render = function(canvas, time) {
 
   // Clear the working area.
   context.save();
-  context.fillStyle = options.grid.fillStyle;
+  context.fillStyle = chartOptions.grid.fillStyle;
   context.clearRect(0, 0, dimensions.width, dimensions.height);
   context.fillRect(0, 0, dimensions.width, dimensions.height);
   context.restore();
 
-  // Grid lines....
+  // Grid lines...
   context.save();
-  context.lineWidth = options.grid.lineWidth;
-  context.strokeStyle = options.grid.strokeStyle;
+  context.lineWidth = chartOptions.grid.lineWidth;
+  context.strokeStyle = chartOptions.grid.strokeStyle;
   // Vertical (time) dividers.
-  if (options.grid.millisPerLine > 0) {
-    for (var t = time - (time % options.grid.millisPerLine);
+  if (chartOptions.grid.millisPerLine > 0) {
+    for (var t = time - (time % chartOptions.grid.millisPerLine);
          t >= oldestValidTime;
-         t -= options.grid.millisPerLine) {
+         t -= chartOptions.grid.millisPerLine) {
       var gx = timeToXPixel(t);
-      if (options.grid.sharpLines) {
+      if (chartOptions.grid.sharpLines) {
         gx -= 0.5;
       }
       context.beginPath();
@@ -392,14 +392,14 @@ SmoothieChart.prototype.render = function(canvas, time) {
       context.closePath();
       // To display timestamps along the bottom
       // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
-      if (options.timestampFormatter) {
+      if (chartOptions.timestampFormatter) {
         // Formats the timestamp based on user specified formatting function
         // SmoothieChart.timeFormatter function above is one such formatting option
         var tx = new Date(t),
-            ts = options.timestampFormatter(tx),
+            ts = chartOptions.timestampFormatter(tx),
             textWidth = (context.measureText(ts).width / 2) + context.measureText(minValueString).width + 4;
         if (gx < dimensions.width - textWidth) {
-          context.fillStyle = options.labels.fillStyle;
+          context.fillStyle = chartOptions.labels.fillStyle;
           // Insert the time string so it doesn't overlap on the minimum value
           context.fillText(ts, gx - (context.measureText(ts).width / 2), dimensions.height - 2);
         }
@@ -408,9 +408,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   // Horizontal (value) dividers.
-  for (var v = 1; v < options.grid.verticalSections; v++) {
-    var gy = Math.round(v * dimensions.height / options.grid.verticalSections);
-    if (options.grid.sharpLines) {
+  for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
+    var gy = Math.round(v * dimensions.height / chartOptions.grid.verticalSections);
+    if (chartOptions.grid.sharpLines) {
       gy -= 0.5;
     }
     context.beginPath();
@@ -426,9 +426,9 @@ SmoothieChart.prototype.render = function(canvas, time) {
   context.restore();
 
   // Draw any horizontal lines...
-  if (options.horizontalLines && options.horizontalLines.length) {
-    for (var hl = 0; hl < options.horizontalLines.length; hl++) {
-      var line = options.horizontalLines[hl],
+  if (chartOptions.horizontalLines && chartOptions.horizontalLines.length) {
+    for (var hl = 0; hl < chartOptions.horizontalLines.length; hl++) {
+      var line = chartOptions.horizontalLines[hl],
           hly = Math.round(valueToYPixel(line.value)) - 0.5;
       context.strokeStyle = line.color || '#ffffff';
       context.lineWidth = line.lineWidth || 1;
@@ -448,7 +448,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
         seriesOptions = this.seriesSet[d].options;
 
     // Delete old data that's moved off the left of the chart.
-    timeSeries.dropOldData(oldestValidTime, options.maxDataSetLength);
+    timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
 
     // Set style for this dataSet.
     context.lineWidth = seriesOptions.lineWidth || 1;
@@ -465,7 +465,7 @@ SmoothieChart.prototype.render = function(canvas, time) {
         firstX = x;
         context.moveTo(x, y);
       } else {
-        switch (options.interpolation) {
+        switch (chartOptions.interpolation) {
           case "line": {
             context.lineTo(x,y);
             break;
@@ -515,8 +515,8 @@ SmoothieChart.prototype.render = function(canvas, time) {
   }
 
   // Draw the axis values on the chart.
-  if (!options.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-    context.fillStyle = options.labels.fillStyle;
+  if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
+    context.fillStyle = chartOptions.labels.fillStyle;
     var maxValueString = parseFloat(this.valueRange.max).toFixed(2),
         minValueString = parseFloat(this.valueRange.min).toFixed(2);
     context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, 10);
