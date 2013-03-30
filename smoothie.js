@@ -329,47 +329,47 @@ SmoothieChart.timeFormatter = function(date) {
 SmoothieChart.prototype.updateValueRange = function() {
   // Calculate the current scale of the chart, from all time series.
   var chartOptions = this.options,
-      maxValue = Number.NaN,
-      minValue = Number.NaN;
+      chartMaxValue = Number.NaN,
+      chartMinValue = Number.NaN;
 
   for (var d = 0; d < this.seriesSet.length; d++) {
     // TODO(ndunn): We could calculate / track these values as they stream in.
     var timeSeries = this.seriesSet[d].timeSeries;
     if (!isNaN(timeSeries.maxValue)) {
-      maxValue = !isNaN(maxValue) ? Math.max(maxValue, timeSeries.maxValue) : timeSeries.maxValue;
+      chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
     }
 
     if (!isNaN(timeSeries.minValue)) {
-      minValue = !isNaN(minValue) ? Math.min(minValue, timeSeries.minValue) : timeSeries.minValue;
+      chartMinValue = !isNaN(chartMinValue) ? Math.min(chartMinValue, timeSeries.minValue) : timeSeries.minValue;
     }
   }
 
-  // Scale the maxValue to add padding at the top if required
+  // Scale the chartMaxValue to add padding at the top if required
   if (chartOptions.maxValue != null) {
-    maxValue = chartOptions.maxValue;
+    chartMaxValue = chartOptions.maxValue;
   } else {
-    maxValue *= chartOptions.maxValueScale;
+    chartMaxValue *= chartOptions.maxValueScale;
   }
 
   // Set the minimum if we've specified one
   if (chartOptions.minValue != null) {
-    minValue = chartOptions.minValue;
+    chartMinValue = chartOptions.minValue;
   }
 
   // If a custom range function is set, call it
   if (this.options.yRangeFunction) {
-    var range = this.options.yRangeFunction({min: minValue, max: maxValue});
-    minValue = range.min;
-    maxValue = range.max;
+    var range = this.options.yRangeFunction({min: chartMinValue, max: chartMaxValue});
+    chartMinValue = range.min;
+    chartMaxValue = range.max;
   }
 
-  if (!isNaN(maxValue) && !isNaN(minValue)) {
-    var targetValueRange = maxValue - minValue;
+  if (!isNaN(chartMaxValue) && !isNaN(chartMinValue)) {
+    var targetValueRange = chartMaxValue - chartMinValue;
     this.currentValueRange += chartOptions.scaleSmoothing * (targetValueRange - this.currentValueRange);
-    this.currentVisMinValue += chartOptions.scaleSmoothing * (minValue - this.currentVisMinValue);
+    this.currentVisMinValue += chartOptions.scaleSmoothing * (chartMinValue - this.currentVisMinValue);
   }
 
-  this.valueRange = { min: minValue, max: maxValue };
+  this.valueRange = { min: chartMinValue, max: chartMaxValue };
 };
 
 SmoothieChart.prototype.render = function(canvas, time) {
