@@ -345,18 +345,17 @@ SmoothieChart.prototype.render = function(canvas, time) {
   // Round time down to pixel granularity, so motion appears smoother.
   time -= time % this.options.millisPerPixel;
 
-  var self = this,
-      context = canvas.getContext('2d'),
+  var context = canvas.getContext('2d'),
       chartOptions = this.options,
       dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
       // Calculate the threshold time for the oldest data points.
       oldestValidTime = time - (dimensions.width * chartOptions.millisPerPixel),
       valueToYPixel = function(value) {
-        var offset = value - self.currentVisMinValue;
-        return self.currentValueRange === 0
+        var offset = value - this.currentVisMinValue;
+        return this.currentValueRange === 0
           ? dimensions.height
-          : dimensions.height - (Math.round((offset / self.currentValueRange) * dimensions.height));
-      },
+          : dimensions.height - (Math.round((offset / this.currentValueRange) * dimensions.height));
+      }.bind(this),
       timeToXPixel = function(t) {
         return Math.round(dimensions.width - ((time - t) / chartOptions.millisPerPixel));
       };
