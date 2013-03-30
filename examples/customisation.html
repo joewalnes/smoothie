@@ -90,6 +90,20 @@
             chart.options.horizontalLines = [];
           }
         };
+
+        var isRunning = true;
+        document.onkeydown = function(evt) {
+          evt = evt || window.event;
+          // Check for ESC (key 27)
+          if (evt.keyCode == 27) {
+            if (isRunning) {
+              chart.stop();
+            } else {
+              chart.start();
+            }
+            isRunning = !isRunning;
+          }
+        };
       }
 
     </script>
