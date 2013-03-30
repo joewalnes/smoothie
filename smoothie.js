@@ -51,6 +51,9 @@
  * v1.15: Support for npm package (#18), by @dominictarr
  *        Fixed broken removeTimeSeries function (#24) by @davidgaleano
  *        Minor performance and tidying, by @drewnoakes
+ * v1.16: Bug fix introduced in v1.14 relating to timer creation/clearance (#23), by @drewnoakes
+ *        TimeSeries.append now deals with out-of-order timestamps, and can merge duplicates, by @zacwitte (#12)
+ *        Documentation and some local variable renaming for clarity, by @drewnoakes
  */
 
 ;(function(exports) {
