@@ -88,11 +88,23 @@ function TimeSeries(options) {
  * This causes the graph to scale itself in the y-axis.
  */
 TimeSeries.prototype.resetBounds = function() {
-  this.maxValue = Number.NaN;
-  this.minValue = Number.NaN;
-  for (var i = 0; i < this.data.length; i++) {
-    this.maxValue = !isNaN(this.maxValue) ? Math.max(this.maxValue, this.data[i][1]) : this.data[i][1];
-    this.minValue = !isNaN(this.minValue) ? Math.min(this.minValue, this.data[i][1]) : this.data[i][1];
+  if (this.data.length) {
+    // Walk through all data points, finding the min/max value
+    this.maxValue = this.data[0][1];
+    this.minValue = this.data[0][1];
+    for (var i = 1; i < this.data.length; i++) {
+      var value = this.data[i][1];
+      if (value > this.maxValue) {
+        this.maxValue = value;
+      }
+      if (value < this.minValue) {
+        this.minValue = value;
+      }
+    }
+  } else {
+    // No data exists, so set min/max to NaN
+    this.maxValue = Number.NaN;
+    this.minValue = Number.NaN;
   }
 };
 
