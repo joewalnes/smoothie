@@ -55,6 +55,22 @@
 
 ;(function (exports) {
 
+/**
+ * Initialises a new <code>TimeSeries</code> with optional data options.
+ *
+ * Options are of the form (defaults shown):
+ *
+ * <pre>
+ * {
+ *   resetBounds: true,        // enables/disables automatic scaling of the y-axis
+ *   resetBoundsInterval: 3000 // the period between scaling calculations, in millis
+ * }
+ * </pre>
+ *
+ * Presentation options for TimeSeries are specified as an argument to <code>SmoothieChart.addTimeSeries</code>.
+ *
+ * @constructor
+ */
 function TimeSeries(options) {
   options = options || {};
   options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
@@ -62,11 +78,15 @@ function TimeSeries(options) {
   this.options = options;
   this.data = [];
   
-  this.maxValue = Number.NaN; // The maximum value ever seen in this time series.
-  this.minValue = Number.NaN; // The minimum value ever seen in this time series.
+  this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
+  this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
 }
 
-// Reset the min and max for this timeseries so the graph rescales itself
+/**
+ * Recalculate the min/max values for this <code>TimeSeries</code> object.
+ *
+ * This causes the graph to scale itself in the y-axis.
+ */
 TimeSeries.prototype.resetBounds = function() {
   this.maxValue = Number.NaN;
   this.minValue = Number.NaN;
@@ -94,6 +114,43 @@ TimeSeries.prototype.dropOldData = function(oldestValidTime, maxDataSetLength) {
   }
 };
 
+/**
+ * Initialises a new <code>SmoothieChart</code>.
+ *
+ * Options are optional, and should be of the form below. Just specify the values you
+ * need and the rest will be given sensible defaults as shown:
+ *
+ * <pre>
+ * {
+ *   minValue: undefined,        // specify to clamp the lower y-axis to a given value
+ *   maxValue: undefined,        // specify to clamp the upper y-axis to a given value
+ *   maxValueScale: 1,           // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
+ *   yRangeFunction: null,       // function({min: , max: }) { return {min: , max: }; }
+ *   scaleSmoothing: 0.125,      // controls the rate at which y-value zoom animation occurs
+ *   millisPerPixel: 20,         // sets the speed at which the chart pans by
+ *   maxDataSetLength: 2,
+ *   interpolation: 'bezier'     // or 'linear'
+ *   grid:
+ *   {
+ *     fillStyle: '#000000',     // the background colour of the chart
+ *     lineWidth: 1,             // the pixel width of grid lines
+ *     strokeStyle: '#777777',   // colour of grid lines
+ *     millisPerLine: 1000,      // distance between vertical grid lines
+ *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
+ *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
+ *     timestampFormatter: null, // function(date) { return ''; },
+ *     horizontalLines: [],      // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
+ *     labels
+ *     {
+ *       disabled: false,        // enables/disables labels showing the min/max values
+ *       fillStyle: '#ffffff',   // colour for text of labels
+ *     },
+ *   }
+ * }
+ * </pre>
+ *
+ * @constructor
+ */
 function SmoothieChart(options) {
   // Defaults
   options = options || {};
@@ -106,13 +163,13 @@ function SmoothieChart(options) {
   options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
   options.millisPerPixel = options.millisPerPixel || 20;
   options.maxValueScale = options.maxValueScale || 1;
-  // NOTE there are no default values for 'minValue' and 'maxValue'
-  options.labels = options.labels || { fillStyle:'#ffffff' };
-  options.interpolation = options.interpolation || "bezier";
+  options.labels = options.labels || { fillStyle:'#ffffff', disabled: false };
+  options.interpolation = options.interpolation || 'bezier';
   options.scaleSmoothing = options.scaleSmoothing || 0.125;
-  options.maxDataSetLength = options.maxDataSetLength || 2; 
+  options.maxDataSetLength = options.maxDataSetLength || 2;
   options.timestampFormatter = options.timestampFormatter || null;
   options.horizontalLines = options.horizontalLines || [];
+  // NOTE there are no default values for: minValue, maxValue, yRangeFunction
   this.options = options;
   this.seriesSet = [];
   this.currentValueRange = 1;
@@ -155,6 +212,19 @@ SmoothieChart.AnimateCompatibility = (function() {
   };
 })();
 
+/**
+ * Adds a <code>TimeSeries</code> to this chart, with optional presentation options.
+ *
+ * Presentation options should be of the form (defaults shown):
+ *
+ * <pre>
+ * {
+ *   lineWidth: 1,
+ *   strokeStyle: '#ffffff',
+ *   fillStyle: undefined
+ * }
+ * </pre>
+ */
 SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
   if (timeSeries.options.resetBounds && timeSeries.options.resetBoundsInterval > 0) {
@@ -168,6 +238,7 @@ SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
 };
 
 SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
+  // Find the correct timeseries to remove, and remove it
   var numSeries = this.seriesSet.length;
   for (var i = 0; i < numSeries; i++) {
     if (this.seriesSet[i].timeSeries === timeSeries) {
