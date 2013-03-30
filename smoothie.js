@@ -157,10 +157,13 @@ SmoothieChart.AnimateCompatibility = (function() {
 
 SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
   this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
-  if (this.options.resetBounds && this.seriesSet.length === 1) {
-    // Periodically reset the bounds, as requested
-    var self = this;
-    this.boundsTimerId = setInterval(function() { self.resetBounds(); }, options.resetBoundsInterval);
+  if (timeSeries.options.resetBounds && timeSeries.options.resetBoundsInterval > 0) {
+    timeSeries.resetBoundsTimerId = setInterval(
+      function() {
+        timeSeries.resetBounds();
+      },
+      timeSeries.options.resetBoundsInterval
+    );
   }
 };
 
@@ -172,9 +175,10 @@ SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
       break;
     }
   }
-  if (this.options.resetBounds && this.seriesSet.length === 0) {
-    // Stop resetting the bounds, if we were, as no more series exist
-    clearInterval(this.boundsTimerId);
+  // If a timer was operating for that timeseries, remove it
+  if (timeSeries.resetBoundsTimerId) {
+    // Stop resetting the bounds, if we were
+    clearInterval(timeSeries.resetBoundsTimerId);
   }
 };
 
