@@ -423,6 +423,7 @@
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
     if (chartOptions.grid.millisPerLine > 0) {
+      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
@@ -435,19 +436,17 @@
         context.lineTo(gx, dimensions.height);
         context.stroke();
         context.closePath();
-        // To display timestamps along the bottom
-        // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
-        if (chartOptions.timestampFormatter) {
+
+        // Display timestamp at bottom of this line if requested, and it won't overlap
+        if (chartOptions.timestampFormatter && gx < textUntilX) {
           // Formats the timestamp based on user specified formatting function
           // SmoothieChart.timeFormatter function above is one such formatting option
           var tx = new Date(t),
-              ts = chartOptions.timestampFormatter(tx),
-              textWidth = (context.measureText(ts).width / 2) + context.measureText(minValueString).width + 4;
-          if (gx < dimensions.width - textWidth) {
-            context.fillStyle = chartOptions.labels.fillStyle;
-            // Insert the time string so it doesn't overlap on the minimum value
-            context.fillText(ts, gx - (context.measureText(ts).width / 2), dimensions.height - 2);
-          }
+            ts = chartOptions.timestampFormatter(tx),
+            tsWidth = context.measureText(ts).width;
+          textUntilX = gx - tsWidth - 2;
+          context.fillStyle = chartOptions.labels.fillStyle;
+          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
         }
       }
     }
