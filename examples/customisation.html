@@ -44,9 +44,11 @@
       };
 
       function onLoad() {
-        var chart = new SmoothieChart({grid: { verticalSections: 4 }});
+        var chart = new SmoothieChart({grid: { verticalSections: 4 }}),
+            canvas = document.getElementById('chart');
+
         chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', lineWidth: 2 });
-        chart.streamTo(document.getElementById('chart'), 500);
+        chart.streamTo(canvas, 500);
 
         var sharpGridLineCheckbox = document.getElementById('sharp-grid-lines');
         sharpGridLineCheckbox.onclick = function() {
@@ -62,6 +64,52 @@
         fixMaximumCheckbox.onclick = function() {
           chart.options.maxValue = fixMaximumCheckbox.checked ? maxYValue : undefined;
         };
+
+        var showTimeStampsCheckbox = document.getElementById('show-timestamps');
+        showTimeStampsCheckbox.onclick = function() {
+          chart.options.timestampFormatter = showTimeStampsCheckbox.checked ? SmoothieChart.timeFormatter : undefined;
+        };
+
+        var showMaxMinValues = document.getElementById('show-max-min-values');
+        showMaxMinValues.onclick = function() {
+          chart.options.labels.disabled = !showMaxMinValues.checked;
+        };
+
+        var speedInput = document.getElementById('speed');
+        speedInput.onchange = function() {
+          chart.options.millisPerPixel = parseInt(speedInput.value);
+        };
+        speedInput.value = chart.options.millisPerPixel;
+
+        var fontSizeInput = document.getElementById('font-size');
+        fontSizeInput.onchange = function() {
+          chart.options.labels.fontSize = parseInt(fontSizeInput.value);
+        };
+        fontSizeInput.value = chart.options.labels.fontSize;
+
+        var chartHeightInput = document.getElementById('chart-height');
+        chartHeightInput.onchange = function() {
+          canvas.height = parseInt(chartHeightInput.value);
+        };
+        chartHeightInput.value = canvas.height;
+
+        var chartWidthInput = document.getElementById('chart-width');
+        chartWidthInput.onchange = function() {
+          canvas.width = parseInt(chartWidthInput.value);
+        };
+        chartWidthInput.value = canvas.width;
+
+        var verticalSectionsInput = document.getElementById('vertical-sections');
+        verticalSectionsInput.onchange = function() {
+          chart.options.grid.verticalSections = parseInt(verticalSectionsInput.value);
+        };
+        verticalSectionsInput.value = chart.options.grid.verticalSections;
+
+        var millisPerLineInput = document.getElementById('seconds-per-line');
+        millisPerLineInput.onchange = function() {
+          chart.options.grid.millisPerLine = parseInt(millisPerLineInput.value) * 1000;
+        };
+        millisPerLineInput.value = Math.round(chart.options.grid.millisPerLine / 1000);
 
         var useCustomRangeFunction = document.getElementById('custom-range-function');
         useCustomRangeFunction.onclick = function() {
@@ -126,6 +174,30 @@
     </div>
     <div>
         <input type="checkbox" id="custom-range-function" /> <label for="custom-range-function">Custom y-value range function</label>
+    </div>
+    <div>
+        <input type="checkbox" id="show-max-min-values" checked /> <label for="show-max-min-values">Show max/min labels</label>
+    </div>
+    <div>
+        <input type="checkbox" id="show-timestamps" /> <label for="show-timestamps">Show timestamps</label>
+    </div>
+    <div>
+        <input type="range" id="speed" value="20" min="1" max="100" /> <label for="speed">Speed</label>
+    </div>
+    <div>
+        <input type="range" id="font-size" value="10" min="1" max="20" /> <label for="font-size">Font size</label>
+    </div>
+    <div>
+        <input type="range" id="chart-height" value="100" min="20" max="400" /> <label for="chart-height">Chart height</label>
+    </div>
+    <div>
+        <input type="range" id="chart-width" value="500" min="20" max="1000" /> <label for="chart-width">Chart width</label>
+    </div>
+    <div>
+        <input type="range" id="vertical-sections" value="4" min="0" max="10" /> <label for="vertical-sections">Vertical sections</label>
+    </div>
+    <div>
+        <input type="range" id="seconds-per-line" value="2" min="1" max="10" /> <label for="seconds-per-line">Time line spacing</label>
     </div>
 
   </body>
