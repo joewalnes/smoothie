@@ -60,6 +60,31 @@
 
 ;(function(exports) {
 
+  var Util = {
+    extend: function() {
+      arguments[0] = arguments[0] || {};
+      for (var i = 1; i < arguments.length; i++)
+      {
+        for (var key in arguments[i])
+        {
+          if (arguments[i].hasOwnProperty(key))
+          {
+            if (typeof(arguments[i][key]) === 'object') {
+              if (arguments[i][key] instanceof Array) {
+                arguments[0][key] = arguments[i][key];
+              } else {
+                arguments[0][key] = Util.extend(arguments[0][key], arguments[i][key]);
+              }
+            } else {
+              arguments[0][key] = arguments[i][key];
+            }
+          }
+        }
+      }
+      return arguments[0];
+    }
+  };
+
   /**
    * Initialises a new <code>TimeSeries</code> with optional data options.
    *
@@ -77,15 +102,16 @@
    * @constructor
    */
   function TimeSeries(options) {
-    options = options || {};
-    options.resetBoundsInterval = options.resetBoundsInterval || 3000; // Reset the max/min bounds after this many milliseconds
-    options.resetBounds = options.resetBounds === undefined ? true : options.resetBounds; // Enable or disable the resetBounds timer
-    this.options = options;
+    this.options = Util.extend({}, TimeSeries.defaultOptions, options);
     this.data = [];
-
     this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
     this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
   }
+
+  TimeSeries.defaultOptions = {
+    resetBoundsInterval: 3000,
+    resetBounds: true
+  };
 
   /**
    * Recalculate the min/max values for this <code>TimeSeries</code> object.
@@ -202,33 +228,34 @@
    * @constructor
    */
   function SmoothieChart(options) {
-    // Defaults
-    options = options || {};
-    // NOTE there are no default values for: minValue, maxValue, yRangeFunction, timestampFormatter
-    options.millisPerPixel = options.millisPerPixel || 20;
-    options.maxValueScale = options.maxValueScale || 1;
-    options.interpolation = options.interpolation || 'bezier';
-    options.scaleSmoothing = options.scaleSmoothing || 0.125;
-    options.maxDataSetLength = options.maxDataSetLength || 2;
-    options.grid = options.grid || {};
-    options.grid.fillStyle = options.grid.fillStyle || '#000000';
-    options.grid.strokeStyle = options.grid.strokeStyle || '#777777';
-    options.grid.lineWidth = typeof(options.grid.lineWidth) === 'undefined' ? 1 : options.grid.lineWidth;
-    options.grid.sharpLines = !!options.grid.sharpLines;
-    options.grid.millisPerLine = options.grid.millisPerLine || 1000;
-    options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
-    options.labels = options.labels || {};
-    options.labels.fillStyle = options.labels.fillStyle || '#ffffff';
-    options.labels.disabled = options.labels.disabled || false;
-    options.labels.fontSize = options.labels.fontSize || 10;
-    options.labels.fontFamily = options.labels.fontFamily || 'monospace';
-    options.horizontalLines = options.horizontalLines || [];
-
-    this.options = options;
+    this.options = Util.extend({}, SmoothieChart.defaultChartOptions, options);
     this.seriesSet = [];
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
   }
+
+  SmoothieChart.defaultChartOptions = {
+    millisPerPixel: 20,
+    maxValueScale: 1,
+    interpolation: 'bezier',
+    scaleSmoothing: 0.125,
+    maxDataSetLength: 2,
+    grid: {
+      fillStyle: '#000000',
+      strokeStyle: '#777777',
+      lineWidth: 1,
+      sharpLines: false,
+      millisPerLine: 1000,
+      verticalSections: 2
+    },
+    labels: {
+      fillStyle: '#ffffff',
+      disabled: false,
+      fontSize: 10,
+      fontFamily: 'monospace'
+    },
+    horizontalLines: []
+  };
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
   SmoothieChart.AnimateCompatibility = (function() {
