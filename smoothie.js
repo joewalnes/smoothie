@@ -119,7 +119,7 @@
    * @param timestamp the position, in time, of this data point
    * @param value the value of this data point
    * @param sumRepeatedTimeStampValues if <code>timestamp</code> has an exact match in the series, this flag controls
-   *                                   whether it is replaced, or the values summed (defaults to false.)
+   * whether it is replaced, or the values summed (defaults to false.)
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
     // Rewind until we hit an older timestamp
@@ -292,6 +292,9 @@
     }
   };
 
+  /**
+   * Removes the specified <code>TimeSeries</code> from the chart.
+   */
   SmoothieChart.prototype.removeTimeSeries = function(timeSeries) {
     // Find the correct timeseries to remove, and remove it
     var numSeries = this.seriesSet.length;
@@ -308,35 +311,47 @@
     }
   };
 
-  SmoothieChart.prototype.streamTo = function(canvas, delay) {
+  /**
+   * Instructs the <code>SmoothieChart</code> to start rendering to the provided canvas, with specified delay.
+   *
+   * @param canvas the target canvas element
+   * @param delayMillis an amount of time to wait before a data point is shown. This can prevent the end of the series
+   * from appearing on screen, with new values flashing into view, at the expense of some latency.
+   */
+  SmoothieChart.prototype.streamTo = function(canvas, delayMillis) {
     this.canvas = canvas;
-    this.delay = delay;
+    this.delay = delayMillis;
     this.start();
   };
 
+  /**
+   * Starts the animation of this chart.
+   */
   SmoothieChart.prototype.start = function() {
-    if (!this.frame) {
-      this.animate();
+    if (this.frame) {
+      // We're already running, so just return
+      return;
     }
+
+    // Renders a frame, and queues the next frame for later rendering
+    var animate = function() {
+      this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
+        this.render();
+        animate();
+      }.bind(this));
+    }.bind(this);
+
+    animate();
   };
 
-  SmoothieChart.prototype.animate = function() {
-    this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(this.animate.bind(this));
-    // TODO only render if the chart has moved at least 1px since the last rendered frame
-    this.render(this.canvas, new Date().getTime() - (this.delay || 0));
-  };
-
+  /**
+   * Stops the animation of this chart.
+   */
   SmoothieChart.prototype.stop = function() {
     if (this.frame) {
       SmoothieChart.AnimateCompatibility.cancelAnimationFrame(this.frame);
       delete this.frame;
     }
-  };
-
-  // Sample timestamp formatting function
-  SmoothieChart.timeFormatter = function(date) {
-    function pad2(number) { return (number < 10 ? '0' : '') + number }
-    return pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
   };
 
   SmoothieChart.prototype.updateValueRange = function() {
@@ -386,6 +401,11 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
+    canvas = canvas || this.canvas;
+    time = time || new Date().getTime() - (this.delay || 0);
+
+    // TODO only render if the chart has moved at least 1px since the last rendered frame
+
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
 
@@ -580,6 +600,12 @@
     }
 
     context.restore(); // See .save() above.
+  };
+
+  // Sample timestamp formatting function
+  SmoothieChart.timeFormatter = function(date) {
+    function pad2(number) { return (number < 10 ? '0' : '') + number }
+    return pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
   };
 
   exports.TimeSeries = TimeSeries;
