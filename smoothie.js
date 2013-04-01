@@ -321,6 +321,7 @@
 
   SmoothieChart.prototype.animate = function() {
     this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(this.animate.bind(this));
+    // TODO only render if the chart has moved at least 1px since the last rendered frame
     this.render(this.canvas, new Date().getTime() - (this.delay || 0));
   };
 
