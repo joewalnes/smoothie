@@ -173,11 +173,13 @@
    *   minValue: undefined,        // specify to clamp the lower y-axis to a given value
    *   maxValue: undefined,        // specify to clamp the upper y-axis to a given value
    *   maxValueScale: 1,           // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
-   *   yRangeFunction: null,       // function({min: , max: }) { return {min: , max: }; }
+   *   yRangeFunction: undefined,  // function({min: , max: }) { return {min: , max: }; }
    *   scaleSmoothing: 0.125,      // controls the rate at which y-value zoom animation occurs
    *   millisPerPixel: 20,         // sets the speed at which the chart pans by
    *   maxDataSetLength: 2,
    *   interpolation: 'bezier'     // or 'linear'
+   *   timestampFormatter: null,   // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
+   *   horizontalLines: [],        // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
    *   grid:
    *   {
    *     fillStyle: '#000000',     // the background colour of the chart
@@ -186,16 +188,14 @@
    *     millisPerLine: 1000,      // distance between vertical grid lines
    *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
-   *     timestampFormatter: null, // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
-   *     horizontalLines: [],      // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
-   *     labels
-   *     {
-   *       disabled: false,        // enables/disables labels showing the min/max values
-   *       fillStyle: '#ffffff',   // colour for text of labels,
-   *       fontSize: 15,
-   *       fontFamily: 'sans-serif'
-   *     },
-   *   }
+   *   },
+   *   labels
+   *   {
+   *     disabled: false,          // enables/disables labels showing the min/max values
+   *     fillStyle: '#ffffff',     // colour for text of labels,
+   *     fontSize: 15,
+   *     fontFamily: 'sans-serif'
+   *   },
    * }
    * </pre>
    *
@@ -204,6 +204,12 @@
   function SmoothieChart(options) {
     // Defaults
     options = options || {};
+    // NOTE there are no default values for: minValue, maxValue, yRangeFunction, timestampFormatter
+    options.millisPerPixel = options.millisPerPixel || 20;
+    options.maxValueScale = options.maxValueScale || 1;
+    options.interpolation = options.interpolation || 'bezier';
+    options.scaleSmoothing = options.scaleSmoothing || 0.125;
+    options.maxDataSetLength = options.maxDataSetLength || 2;
     options.grid = options.grid || {};
     options.grid.fillStyle = options.grid.fillStyle || '#000000';
     options.grid.strokeStyle = options.grid.strokeStyle || '#777777';
@@ -211,19 +217,13 @@
     options.grid.sharpLines = !!options.grid.sharpLines;
     options.grid.millisPerLine = options.grid.millisPerLine || 1000;
     options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
-    options.millisPerPixel = options.millisPerPixel || 20;
-    options.maxValueScale = options.maxValueScale || 1;
     options.labels = options.labels || {};
     options.labels.fillStyle = options.labels.fillStyle || '#ffffff';
     options.labels.disabled = options.labels.disabled || false;
     options.labels.fontSize = options.labels.fontSize || 10;
     options.labels.fontFamily = options.labels.fontFamily || 'monospace';
-    options.interpolation = options.interpolation || 'bezier';
-    options.scaleSmoothing = options.scaleSmoothing || 0.125;
-    options.maxDataSetLength = options.maxDataSetLength || 2;
-    options.timestampFormatter = options.timestampFormatter || null;
     options.horizontalLines = options.horizontalLines || [];
-    // NOTE there are no default values for: minValue, maxValue, yRangeFunction
+
     this.options = options;
     this.seriesSet = [];
     this.currentValueRange = 1;
