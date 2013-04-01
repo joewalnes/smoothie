@@ -184,12 +184,14 @@
    *     millisPerLine: 1000,      // distance between vertical grid lines
    *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
-   *     timestampFormatter: null, // function(date) { return ''; },
+   *     timestampFormatter: null, // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
    *     horizontalLines: [],      // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
    *     labels
    *     {
    *       disabled: false,        // enables/disables labels showing the min/max values
-   *       fillStyle: '#ffffff',   // colour for text of labels
+   *       fillStyle: '#ffffff',   // colour for text of labels,
+   *       fontSize: 15,
+   *       fontFamily: 'sans-serif'
    *     },
    *   }
    * }
@@ -212,6 +214,8 @@
     options.labels = options.labels || {};
     options.labels.fillStyle = options.labels.fillStyle || '#ffffff';
     options.labels.disabled = options.labels.disabled || false;
+    options.labels.fontSize = options.labels.fontSize || 10;
+    options.labels.fontFamily = options.labels.fontFamily || 'monospace';
     options.interpolation = options.interpolation || 'bezier';
     options.scaleSmoothing = options.scaleSmoothing || 0.125;
     options.maxDataSetLength = options.maxDataSetLength || 2;
@@ -398,6 +402,8 @@
 
     this.updateValueRange();
 
+    context.font = chartOptions.labels.fontSize + 'px ' + chartOptions.labels.fontFamily;
+
     // Save the state of the canvas context, any transformations applied in this method
     // will get removed from the stack at the end of this method when .restore() is called.
     context.save();
@@ -562,10 +568,10 @@
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      context.fillStyle = chartOptions.labels.fillStyle;
       var maxValueString = parseFloat(this.valueRange.max).toFixed(2),
           minValueString = parseFloat(this.valueRange.min).toFixed(2);
-      context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, 10);
+      context.fillStyle = chartOptions.labels.fillStyle;
+      context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, chartOptions.labels.fontSize);
       context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
     }
 
