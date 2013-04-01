@@ -209,7 +209,9 @@
     options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
     options.millisPerPixel = options.millisPerPixel || 20;
     options.maxValueScale = options.maxValueScale || 1;
-    options.labels = options.labels || { fillStyle:'#ffffff', disabled: false };
+    options.labels = options.labels || {};
+    options.labels.fillStyle = options.labels.fillStyle || '#ffffff';
+    options.labels.disabled = options.labels.disabled || false;
     options.interpolation = options.interpolation || 'bezier';
     options.scaleSmoothing = options.scaleSmoothing || 0.125;
     options.maxDataSetLength = options.maxDataSetLength || 2;
