@@ -220,7 +220,8 @@
    *     disabled: false,          // enables/disables labels showing the min/max values
    *     fillStyle: '#ffffff',     // colour for text of labels,
    *     fontSize: 15,
-   *     fontFamily: 'sans-serif'
+   *     fontFamily: 'sans-serif',
+   *     precision: 2
    *   },
    * }
    * </pre>
@@ -252,7 +253,8 @@
       fillStyle: '#ffffff',
       disabled: false,
       fontSize: 10,
-      fontFamily: 'monospace'
+      fontFamily: 'monospace',
+      precision: 2
     },
     horizontalLines: []
   };
@@ -619,8 +621,8 @@
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      var maxValueString = parseFloat(this.valueRange.max).toFixed(2),
-          minValueString = parseFloat(this.valueRange.min).toFixed(2);
+      var maxValueString = parseFloat(this.valueRange.max).toFixed(chartOptions.labels.precision),
+          minValueString = parseFloat(this.valueRange.min).toFixed(chartOptions.labels.precision);
       context.fillStyle = chartOptions.labels.fillStyle;
       context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, chartOptions.labels.fontSize);
       context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
