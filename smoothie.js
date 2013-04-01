@@ -54,6 +54,8 @@
  * v1.16: Bug fix introduced in v1.14 relating to timer creation/clearance (#23), by @drewnoakes
  *        TimeSeries.append now deals with out-of-order timestamps, and can merge duplicates, by @zacwitte (#12)
  *        Documentation and some local variable renaming for clarity, by @drewnoakes
+ * v1.17: Allow control over font size (#10), by @drewnoakes
+ *        Timestamp text won't overlap, by @drewnoakes
  */
 
 ;(function(exports) {
