@@ -232,6 +232,7 @@
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
   SmoothieChart.AnimateCompatibility = (function() {
+    // TODO this global variable will cause bugs if more than one chart is used and the browser does not support *requestAnimationFrame natively
     var lastTime = 0,
         requestAnimationFrame = function(callback, element) {
           var requestAnimationFrame =
