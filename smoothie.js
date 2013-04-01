@@ -54,6 +54,8 @@
  * v1.16: Bug fix introduced in v1.14 relating to timer creation/clearance (#23), by @drewnoakes
  *        TimeSeries.append now deals with out-of-order timestamps, and can merge duplicates, by @zacwitte (#12)
  *        Documentation and some local variable renaming for clarity, by @drewnoakes
+ * v1.17: Allow control over font size (#10), by @drewnoakes
+ *        Timestamp text won't overlap, by @drewnoakes
  */
 
 ;(function(exports) {
@@ -184,12 +186,14 @@
    *     millisPerLine: 1000,      // distance between vertical grid lines
    *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
-   *     timestampFormatter: null, // function(date) { return ''; },
+   *     timestampFormatter: null, // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
    *     horizontalLines: [],      // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
    *     labels
    *     {
    *       disabled: false,        // enables/disables labels showing the min/max values
-   *       fillStyle: '#ffffff',   // colour for text of labels
+   *       fillStyle: '#ffffff',   // colour for text of labels,
+   *       fontSize: 15,
+   *       fontFamily: 'sans-serif'
    *     },
    *   }
    * }
@@ -209,7 +213,11 @@
     options.grid.verticalSections = typeof(options.grid.verticalSections) === 'undefined' ? 2 : options.grid.verticalSections;
     options.millisPerPixel = options.millisPerPixel || 20;
     options.maxValueScale = options.maxValueScale || 1;
-    options.labels = options.labels || { fillStyle:'#ffffff', disabled: false };
+    options.labels = options.labels || {};
+    options.labels.fillStyle = options.labels.fillStyle || '#ffffff';
+    options.labels.disabled = options.labels.disabled || false;
+    options.labels.fontSize = options.labels.fontSize || 10;
+    options.labels.fontFamily = options.labels.fontFamily || 'monospace';
     options.interpolation = options.interpolation || 'bezier';
     options.scaleSmoothing = options.scaleSmoothing || 0.125;
     options.maxDataSetLength = options.maxDataSetLength || 2;
@@ -396,6 +404,8 @@
 
     this.updateValueRange();
 
+    context.font = chartOptions.labels.fontSize + 'px ' + chartOptions.labels.fontFamily;
+
     // Save the state of the canvas context, any transformations applied in this method
     // will get removed from the stack at the end of this method when .restore() is called.
     context.save();
@@ -423,6 +433,7 @@
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
     if (chartOptions.grid.millisPerLine > 0) {
+      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
@@ -435,19 +446,17 @@
         context.lineTo(gx, dimensions.height);
         context.stroke();
         context.closePath();
-        // To display timestamps along the bottom
-        // May have to adjust millisPerLine to display non-overlapping timestamps, depending on the canvas size
-        if (chartOptions.timestampFormatter) {
+
+        // Display timestamp at bottom of this line if requested, and it won't overlap
+        if (chartOptions.timestampFormatter && gx < textUntilX) {
           // Formats the timestamp based on user specified formatting function
           // SmoothieChart.timeFormatter function above is one such formatting option
           var tx = new Date(t),
-              ts = chartOptions.timestampFormatter(tx),
-              textWidth = (context.measureText(ts).width / 2) + context.measureText(minValueString).width + 4;
-          if (gx < dimensions.width - textWidth) {
-            context.fillStyle = chartOptions.labels.fillStyle;
-            // Insert the time string so it doesn't overlap on the minimum value
-            context.fillText(ts, gx - (context.measureText(ts).width / 2), dimensions.height - 2);
-          }
+            ts = chartOptions.timestampFormatter(tx),
+            tsWidth = context.measureText(ts).width;
+          textUntilX = gx - tsWidth - 2;
+          context.fillStyle = chartOptions.labels.fillStyle;
+          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
         }
       }
     }
@@ -561,10 +570,10 @@
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      context.fillStyle = chartOptions.labels.fillStyle;
       var maxValueString = parseFloat(this.valueRange.max).toFixed(2),
           minValueString = parseFloat(this.valueRange.min).toFixed(2);
-      context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, 10);
+      context.fillStyle = chartOptions.labels.fillStyle;
+      context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, chartOptions.labels.fontSize);
       context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
     }
 
