@@ -298,6 +298,11 @@
     };
   })();
 
+  SmoothieChart.defaultSeriesPresentationOptions = {
+    lineWidth: 1,
+    strokeStyle: '#ffffff'
+  };
+
   /**
    * Adds a <code>TimeSeries</code> to this chart, with optional presentation options.
    *
@@ -312,7 +317,7 @@
    * </pre>
    */
   SmoothieChart.prototype.addTimeSeries = function(timeSeries, options) {
-    this.seriesSet.push({timeSeries: timeSeries, options: options || {}});
+    this.seriesSet.push({timeSeries: timeSeries, options: Util.extend({}, SmoothieChart.defaultSeriesPresentationOptions, options)});
     if (timeSeries.options.resetBounds && timeSeries.options.resetBoundsInterval > 0) {
       timeSeries.resetBoundsTimerId = setInterval(
         function() {
@@ -560,8 +565,8 @@
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
 
       // Set style for this dataSet.
-      context.lineWidth = seriesOptions.lineWidth || 1;
-      context.strokeStyle = seriesOptions.strokeStyle || '#ffffff';
+      context.lineWidth = seriesOptions.lineWidth;
+      context.strokeStyle = seriesOptions.strokeStyle;
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
