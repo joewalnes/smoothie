@@ -580,6 +580,7 @@
           context.moveTo(x, y);
         } else {
           switch (chartOptions.interpolation) {
+            case "linear":
             case "line": {
               context.lineTo(x,y);
               break;
