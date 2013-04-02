@@ -214,6 +214,7 @@
    *     millisPerLine: 1000,      // distance between vertical grid lines
    *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
+   *     borderVisible: true       // whether the grid lines trace the border of the chart or not
    *   },
    *   labels
    *   {
@@ -247,7 +248,8 @@
       lineWidth: 1,
       sharpLines: false,
       millisPerLine: 1000,
-      verticalSections: 2
+      verticalSections: 2,
+      borderVisible: true
     },
     labels: {
       fillStyle: '#ffffff',
@@ -525,9 +527,11 @@
       context.closePath();
     }
     // Bounding rectangle.
-    context.beginPath();
-    context.strokeRect(0, 0, dimensions.width, dimensions.height);
-    context.closePath();
+    if (chartOptions.grid.borderVisible) {
+      context.beginPath();
+      context.strokeRect(0, 0, dimensions.width, dimensions.height);
+      context.closePath();
+    }
     context.restore();
 
     // Draw any horizontal lines...
