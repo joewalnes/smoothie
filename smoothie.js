@@ -623,7 +623,9 @@
           context.fill();
         }
 
-        context.stroke();
+        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+          context.stroke();
+        }
         context.closePath();
       }
       context.restore();
