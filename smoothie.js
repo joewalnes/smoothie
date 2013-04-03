@@ -56,6 +56,9 @@
  *        Documentation and some local variable renaming for clarity, by @drewnoakes
  * v1.17: Allow control over font size (#10), by @drewnoakes
  *        Timestamp text won't overlap, by @drewnoakes
+ * v1.18: Allow control of max/min label precision, by @drewnoakes
+ *        Added 'borderVisible' chart option, by @drewnoakes
+ *        Allow drawing series with fill but no stroke (line), by @drewnoakes
  */
 
 ;(function(exports) {

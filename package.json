@@ -1,11 +1,12 @@
 {
   "name": "smoothie",
-  "version": "1.17.0",
+  "version": "1.18.0",
   "description": "Smoothie Charts: smooooooth JavaScript charts for realtime streaming data",
   "main": "./smoothie.js",
   "directories": {
     "doc": "docs",
-    "example": "examples"
+    "example": "examples",
+    "builder": "builder"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
