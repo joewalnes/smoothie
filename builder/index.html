@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="../smoothie.js"></script>
+    <link href="http://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet" type="text/css">
+    <script type="text/javascript">
+
+      var series = new TimeSeries();
+
+      // Add random data points at irregular intervals
+      var maxYValue = 10000;
+      var addValueLoop = function() {
+        setTimeout(function() {
+          // Generate a random value, centered around zero, raised to the power of 5
+          // so that larger values occur less frequently
+          var value = Math.pow(Math.random() * 2 - 1, 5) * maxYValue;
+          series.append(new Date().getTime(), value);
+          addValueLoop();
+        }, Math.random() * 1500);
+      };
+      addValueLoop();
+
+      // A function for nicely rounding numbers up for human beings.
+      // Eg: 180.2 -> 200
+      //       3.5 -> 5
+      //       8.9 -> 10
+      var ln10 = Math.log(10);
+      var roundUpHumane = function(value)
+      {
+        // calculate the magnitude of the value
+        var mag = Math.floor(Math.log(value) / ln10);
+        var magPow = Math.pow(10, mag);
+
+        // calculate the most significant digit of the value
+        var magMsd = Math.ceil(value / magPow);
+
+        // promote the MSD to either 1, 2, or 5
+        if (magMsd > 5.0)
+          magMsd = 10.0;
+        else if (magMsd > 2.0)
+          magMsd = 5.0;
+        else if (magMsd > 1.0)
+          magMsd = 2.0;
+
+        return magMsd * magPow;
+      };
+
+      var customYRangeFunction = function(range) {
+        // Find the greatest absolute value
+        var max = Math.max(Math.abs(range.min), Math.abs(range.max));
+        // Ensure we're viewing at least a quarter of the range, so that
+        // very small values don't appear exaggeratedly large
+        max = Math.max(max, 200);
+        // Round the limit up to a more pleasant number
+        max = roundUpHumane(max);
+        return {min: -max, max: max};
+      };
+
+      var sampleHorizontalLines = [
+          {color:'#ffffff', lineWidth: 1, value: 0},
+          {color:'#880000', lineWidth: 2, value: maxYValue/3},
+          {color:'#880000', lineWidth: 2, value: -maxYValue/3}
+      ];
+
+      var updateCode = function(canvas, chart) {
+        document.getElementById('html-code').textContent = '<canvas id="smoothie-chart" width="' + canvas.width + '" height="' + canvas.height + '">';
+
+        var chartOptions = toJsCode(difference(chart.options, SmoothieChart.defaultChartOptions));
+        var seriesOptions = toJsCode(difference(chart.seriesSet[0].options, SmoothieChart.defaultSeriesPresentationOptions));
+
+        document.getElementById('javascript-code').textContent =
+            "var chart = new SmoothieChart(" + chartOptions + "),\n" +
+            "    canvas = document.getElementById('smoothie-chart'),\n" +
+            "    series = new TimeSeries();\n\n" +
+            "chart.addTimeSeries(series" + (seriesOptions ? ', ' + seriesOptions : '') + ");\n" +
+            "chart.streamTo(canvas, " + chart.delay + ");";
+      };
+
+      var toJsCode = function(obj) {
+        var code = JSON.stringify(obj).replace(/"([a-z0-9_]+)":/gi,'$1:').replace(/"/g, "'");
+        if (code === '{}') {
+          code = '';
+        }
+        return code;
+      };
+
+      // returns values in a but not in b
+      var difference = function(a, b) {
+        var result = {};
+        for (var key in a)
+        {
+          if (!a.hasOwnProperty(key) || a[key] === b[key]) {
+            continue;
+          }
+
+          if (typeof(a[key]) === 'object') {
+            if (a[key] instanceof Array) {
+              // ignore arrays
+            } else {
+              var sub = difference(a[key], b[key]);
+              if (Object.keys(sub).length)
+                result[key] = sub;
+            }
+          } else {
+            result[key] = a[key];
+          }
+        }
+        return result;
+      };
+
+      function onLoad() {
+        var chart = new SmoothieChart(),
+            canvas = document.getElementById('chart');
+
+        chart.addTimeSeries(series, { strokeStyle: '#00ff00', lineWidth: 2 });
+        chart.streamTo(canvas, 500);
+
+        updateCode(canvas, chart);
+
+        var controlContainer = document.getElementById('controls'),
+            inputIdCounter = 0;
+
+        var setVisible = function(element, isVisible) {
+          element.style.display = isVisible ? '' : 'none';
+        };
+
+        var startControlSection = function(name) {
+          var controlDiv = document.createElement('h3');
+          controlDiv.textContent = name;
+          controlContainer.appendChild(controlDiv);
+        };
+
+        var bindRange = function(options) {
+          var inputId = 'input' + (inputIdCounter++),
+              scale = options.scale || 1,
+              defaultLink;
+
+          var controlDiv = document.createElement('div');
+          controlDiv.className = 'control';
+          controlContainer.appendChild(controlDiv);
+
+          var label = document.createElement('label');
+          label.className = 'slider';
+          label.htmlFor = inputId;
+          label.textContent = options.name;
+          controlDiv.appendChild(label);
+
+          var slider = document.createElement('input');
+          slider.id = inputId;
+          slider.type = 'range';
+          slider.min = options.min * scale;
+          slider.max = options.max * scale;
+          if (options.step) {
+            slider.step = options.step * scale;
+          }
+          var defaultValue = options.target[options.propertyName];
+          slider.value = defaultValue * scale;
+          slider.onchange = function() {
+            options.target[options.propertyName] = parseInt(slider.value) / scale;
+            setVisible(defaultLink, slider.value != defaultValue);
+            updateCode(canvas, chart);
+          };
+          controlDiv.appendChild(slider);
+
+          defaultLink = document.createElement('a');
+          defaultLink.href = '#';
+          defaultLink.className = 'default';
+          defaultLink.textContent = 'default';
+          defaultLink.onclick = function() {
+            slider.value = defaultValue * scale;
+            slider.onchange();
+            return false;
+          };
+          setVisible(defaultLink, slider.value != defaultValue);
+          controlDiv.appendChild(defaultLink);
+        };
+
+        var bindCheckBox = function(options) {
+          var inputId = 'input' + (inputIdCounter++),
+              defaultLink;
+
+          var controlDiv = document.createElement('div');
+          controlDiv.className = 'control';
+          controlContainer.appendChild(controlDiv);
+
+          var checkbox = document.createElement('input');
+          checkbox.id = inputId;
+          checkbox.type = 'checkbox';
+          var defaultValue = options.convertBack
+              ? options.convertBack(options.target[options.propertyName])
+              : !!options.target[options.propertyName];
+          checkbox.checked = defaultValue;
+          checkbox.onchange = function() {
+            options.target[options.propertyName] = options.convert
+                ? options.convert(checkbox.checked)
+                : !!checkbox.checked;
+            updateCode(canvas, chart);
+            setVisible(defaultLink, checkbox.checked !== defaultValue);
+          };
+          controlDiv.appendChild(checkbox);
+
+          var label = document.createElement('label');
+          label.className = 'checkbox';
+          label.htmlFor = inputId;
+          label.textContent = options.name;
+          controlDiv.appendChild(label);
+
+          defaultLink = document.createElement('a');
+          defaultLink.href = '#';
+          defaultLink.className = 'default';
+          defaultLink.textContent = 'default';
+          setVisible(defaultLink, checkbox.checked !== defaultValue);
+          defaultLink.onclick = function() {
+            checkbox.checked = defaultValue;
+            checkbox.onchange();
+            return false;
+          };
+          controlDiv.appendChild(defaultLink);
+        };
+
+        var bindColor = function(options) {
+          var inputId = 'input' + (inputIdCounter++),
+              defaultValue = options.target[options.propertyName] || '#000000',
+              colorString = defaultValue,
+              defaultEnabled = options.optional ? options.enabled : true,
+              enabled = defaultEnabled,
+              enabledCheckbox,
+              defaultLink,
+              defaultOpacity = typeof(options.opacity) === 'undefined' ? 1 : options.opacity,
+              opacity = defaultOpacity,
+              opacitySlider,
+              update = function() {
+                if (!enabled) {
+                  if (options.emptyValue)
+                    options.target[options.propertyName] = options.emptyValue;
+                  else
+                    delete options.target[options.propertyName];
+                } else if (opacity === 0) {
+                  options.target[options.propertyName] = 'transparent';
+                } else if (opacity !== 1) {
+                  var result = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorString);
+                  options.target[options.propertyName] = 'rgba('+parseInt(result[1],16)+','+parseInt(result[2],16)+','+parseInt(result[3],16)+','+opacity.toFixed(2)+')';
+                } else {
+                  options.target[options.propertyName] = colorString;
+                }
+                setVisible(defaultLink, enabled != defaultEnabled || opacity !== defaultOpacity || (defaultValue && colorString !== defaultValue));
+                updateCode(canvas, chart);
+              };
+
+          var controlDiv = document.createElement('div');
+          controlDiv.className = 'control';
+
+          var label = document.createElement('label');
+          label.className = 'color';
+          label.htmlFor = inputId;
+          label.textContent = options.name;
+          controlDiv.appendChild(label);
+
+          controlContainer.appendChild(controlDiv);
+          var colorInput = document.createElement('input');
+          colorInput.id = inputId;
+          colorInput.type = 'color';
+          colorInput.value = defaultValue;
+          colorString = colorInput.value;
+          colorInput.onchange = function() {
+            colorString = colorInput.value;
+            update();
+          };
+          controlDiv.appendChild(colorInput);
+
+          if (typeof(options.opacity) !== 'undefined') {
+            opacitySlider = document.createElement('input');
+            opacitySlider.id = inputId + '-opacity';
+            opacitySlider.className = 'opacity';
+            opacitySlider.title = 'Opacity';
+            opacitySlider.type = 'range';
+            opacitySlider.min = 0;
+            opacitySlider.max = 100;
+            opacitySlider.value = defaultOpacity * 100;
+            opacitySlider.onchange = function () {
+              opacity = opacitySlider.value / 100;
+              update();
+            };
+            controlDiv.appendChild(opacitySlider);
+          }
+
+          if (options.optional) {
+            enabledCheckbox = document.createElement('input');
+            enabledCheckbox.id = inputId+'-enabled';
+            enabledCheckbox.type = 'checkbox';
+            enabledCheckbox.checked = defaultEnabled;
+            enabledCheckbox.onchange = function() {
+              enabled = enabledCheckbox.checked;
+              update();
+            };
+            controlDiv.appendChild(enabledCheckbox);
+
+            var enabledLabel = document.createElement('label');
+            enabledLabel.className = 'checkbox';
+            enabledLabel.htmlFor = enabledCheckbox.id;
+            enabledLabel.textContent = 'Enabled';
+            controlDiv.appendChild(enabledLabel);
+          }
+
+          defaultLink = document.createElement('a');
+          defaultLink.href = '#';
+          defaultLink.className = 'default';
+          defaultLink.textContent = 'default';
+          defaultLink.onclick = function() {
+            colorString = colorInput.value = defaultValue;
+            opacity = defaultOpacity;
+            if (opacitySlider) {
+              opacitySlider.value = defaultOpacity * 100;
+            }
+            if (enabledCheckbox) {
+              enabledCheckbox.checked = defaultEnabled;
+            }
+            enabled = defaultEnabled;
+            update();
+            return false;
+          };
+          controlDiv.appendChild(defaultLink);
+          update();
+        };
+
+        // General
+        startControlSection('General');
+        bindColor({target: chart.options.grid, name: 'Background color', propertyName: 'fillStyle', opacity: 1});
+        bindRange({target: chart.options, name: 'Scroll speed', propertyName: 'millisPerPixel', min: 1, max: 100});
+        bindRange({target: canvas, name: 'Chart height', propertyName: 'height', min: 20, max: 400});
+        bindRange({target: canvas, name: 'Chart width', propertyName: 'width', min: 20, max: 1000});
+        bindRange({target: chart, name: 'Delay', propertyName: 'delay', min: 0, max: 2000});
+
+        // Series
+        startControlSection('Series');
+        bindColor({target: chart.seriesSet[0].options, name: 'Series line color', propertyName: 'strokeStyle', optional: true, enabled: true, opacity: 1, emptyValue: 'none'});
+        bindColor({target: chart.seriesSet[0].options, name: 'Series fill color', propertyName: 'fillStyle', optional: true, enabled: false, opacity: 0.3});
+        bindRange({target: chart.seriesSet[0].options, name: 'Series line width', propertyName: 'lineWidth', min: 0.5, max: 5, scale: 10});
+        bindCheckBox({
+          target: chart.options,
+          name: 'Smooth series lines',
+          propertyName: 'interpolation',
+          convert: function (checked) {
+            return checked ? 'bezier' : 'linear';
+          },
+          convertBack: function (value) {
+            console.log(value);
+            return value !== 'linear';
+          }
+        });
+
+        // Grid lines
+        startControlSection('Grid Lines');
+        bindColor({target: chart.options.grid, name: 'Grid line color', propertyName: 'strokeStyle', opacity: 1});
+        bindRange({target: chart.options.grid, name: 'Vertical sections', propertyName: 'verticalSections', min: 0, max: 20});
+        bindRange({target: chart.options.grid, name: 'Time line spacing', propertyName: 'millisPerLine', min: 1000, max: 10000, step: 1000});
+        bindCheckBox({target: chart.options.grid, name: 'Sharp grid lines', propertyName: 'sharpLines'});
+        bindCheckBox({target: chart.options.grid, name: 'Draw border', propertyName: 'borderVisible'});
+
+        // Labels
+        startControlSection('Labels');
+        bindColor({target: chart.options.labels, name: 'Label text color', propertyName: 'fillStyle', opacity: 1});
+        bindCheckBox({
+          target: chart.options.labels,
+          name: 'Show max/min labels',
+          propertyName: 'disabled',
+          convert: function (checked) {
+            return !checked;
+          },
+          convertBack: function (value) {
+            return !value;
+          }
+        });
+        bindRange({target: chart.options.labels, name: 'Font size', propertyName: 'fontSize', min: 1, max: 20});
+        bindRange({target: chart.options.labels, name: 'Label precision', propertyName: 'precision', min: 0, max: 6});
+        bindCheckBox({
+          target: chart.options,
+          name: 'Show timestamps',
+          propertyName: 'timestampFormatter',
+          convert: function (checked) {
+            return checked ? SmoothieChart.timeFormatter : undefined;
+          }
+        });
+
+        // Y-scaling
+        startControlSection('Y-scaling');
+        bindCheckBox({
+          target: chart.options,
+          name: 'Fix maximum value',
+          propertyName: 'maxValue',
+          convert: function (checked) {
+            return checked ? maxYValue : undefined;
+          }
+        });
+        bindCheckBox({
+          target: chart.options,
+          name: 'Fix minimum value',
+          propertyName: 'minValue',
+          convert: function (checked) {
+            return checked ? -maxYValue : undefined;
+          }
+        });
+        bindRange({target: chart.options, name: 'Max-value scale', propertyName: 'maxValueScale', min: 0.8, max: 1.5, scale: 100});
+        bindRange({target: chart.options, name: 'Scale adjust speed', propertyName: 'scaleSmoothing', min: .01, max: 1, scale: 1000});
+        bindCheckBox({
+          target: chart.options,
+          name: 'Custom y-value range function',
+          propertyName: 'yRangeFunction',
+          convert: function (checked) {
+            return checked ? customYRangeFunction : undefined;
+          }
+        });
+
+        // Misc
+        bindCheckBox({
+          target: chart.options,
+          name: 'Show y-value lines',
+          propertyName: 'horizontalLines',
+          convert: function (checked) {
+            return checked ? sampleHorizontalLines : [];
+          },
+          convertBack: function (value) {
+            return value && !!value.length;
+          }
+        });
+      }
+
+    </script>
+    <style>
+      body {
+        padding: 0 26px;
+        background-color: #888;
+        color: #000;
+        font-size: 13px;
+        font-family: Helvetica, arial, freesans, clean, sans-serif;
+      }
+      h1 {
+        font-family: Pacifico, sans-serif;
+        font-size: 32px;
+        text-shadow: 2px 2px 1px #444;
+        color: #EEE;
+      }
+      h3 {
+        font-family: Pacifico, sans-serif;
+        width: 700px;
+        border-top: 1px dotted #aaa;
+        padding-top: 4px;
+        margin-bottom: 4px;
+        color: #ccc;
+        text-shadow: 1px 1px 2px #000;
+      }
+      input[type='checkbox'] {
+        margin-left: 0;
+      }
+      #controls a.default {
+        margin-left: 1em;
+        font-size: 10px;
+        color: #444;
+      }
+      #controls {
+        margin-top: 26px;
+      }
+      #controls div.control {
+        min-height: 26px;
+      }
+      #controls div.control input.opacity {
+        margin: 0 12px;
+      }
+      #controls div.control input[type='checkbox'] {
+        margin-top: 10px;
+      }
+      #controls div.control label.slider,
+      #controls div.control label.color {
+        display: inline-block;
+        width: 150px;
+      }
+      #code > div {
+        margin-top: 14px;
+      }
+      #code textarea {
+        box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.45);
+        padding: 8px;
+        width: 700px;
+        border: 1px solid black;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body onload="onLoad()">
+
+    <h1>Smoothie Charts Builder</h1>
+
+    <canvas id="chart" width="500" height="100"></canvas>
+
+    <div id="controls"></div>
+
+    <h3>Code</h3>
+
+    <div id="code">
+      <div>
+        <label for="html-code">HTML:</label><br>
+        <textarea readonly id="html-code" style="height:34px;"></textarea>
+      </div>
+      <div>
+        <label for="javascript-code">JavaScript:</label><br>
+        <textarea readonly id="javascript-code" style="min-height:140px;"></textarea>
+      </div>
+    </div>
+
+  </body>
+</html>
