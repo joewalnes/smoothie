@@ -14,6 +14,7 @@ Getting Started
 *   [Hello world example](http://smoothiecharts.org/examples/example1.html)
 *   [Another example (server CPU usage)](http://smoothiecharts.org/examples/server-load.html)
 *   [Tutorial](http://smoothiecharts.org/tutorial.html)
+*   [Interactive builder](http://smoothiecharts.org/builder/)
 *   Just the JavaScript: [smoothie.js](http://github.com/joewalnes/smoothie/raw/master/smoothie.js)
 *   Full distribution (docs and examples): [zip](http://github.com/joewalnes/smoothie/zipball/master) or [tgz](http://github.com/joewalnes/smoothie/tarball/master)
 *   Repository: `git clone git@github.com:joewalnes/smoothie.git`
@@ -24,3 +25,4 @@ For help, use the [Smoothie Charts Google Group](http://groups.google.com/group/
 [License](http://smoothiecharts.org/LICENSE.txt) (MIT)
 
 - [Joe Walnes](http://joewalnes.com/)
+- [Drew Noakes](http://drewnoakes.com/)
