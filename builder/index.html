@@ -58,22 +58,46 @@
 
       var sampleHorizontalLines = [
           {color:'#ffffff', lineWidth: 1, value: 0},
-          {color:'#880000', lineWidth: 2, value: maxYValue/3},
-          {color:'#880000', lineWidth: 2, value: -maxYValue/3}
+          {color:'#880000', lineWidth: 2, value: Math.round(maxYValue/3)},
+          {color:'#880000', lineWidth: 2, value: Math.round(-maxYValue/3)}
       ];
 
       var updateCode = function(canvas, chart) {
         document.getElementById('html-code').textContent = '<canvas id="smoothie-chart" width="' + canvas.width + '" height="' + canvas.height + '">';
 
-        var chartOptions = toJsCode(difference(chart.options, SmoothieChart.defaultChartOptions));
-        var seriesOptions = toJsCode(difference(chart.seriesSet[0].options, SmoothieChart.defaultSeriesPresentationOptions));
+        var chartOptions = difference(chart.options, SmoothieChart.defaultChartOptions);
+        var seriesOptionsJs = toJsCode(difference(chart.seriesSet[0].options, SmoothieChart.defaultSeriesPresentationOptions));
 
-        document.getElementById('javascript-code').textContent =
-            "var chart = new SmoothieChart(" + chartOptions + "),\n" +
-            "    canvas = document.getElementById('smoothie-chart'),\n" +
-            "    series = new TimeSeries();\n\n" +
-            "chart.addTimeSeries(series" + (seriesOptions ? ', ' + seriesOptions : '') + ");\n" +
-            "chart.streamTo(canvas, " + chart.delay + ");";
+        var js = "";
+
+        if (chart.options.timestampFormatter) {
+          chartOptions.timestampFormatter = "SmoothieChart.timeFormatter";
+        }
+
+        if (chart.options.yRangeFunction) {
+          chartOptions.yRangeFunction = "myYRangeFunction";
+          js += "function myYRangeFunction(range) {\n";
+          js += "  // TODO implement your calculation using range.min and range.max\n";
+          js += "  var min = ...;\n";
+          js += "  var max = ...;\n";
+          js += "  return {min: min, max: max};\n";
+          js += "}\n\n";
+        }
+
+        if (chart.options.horizontalLines && chart.options.horizontalLines.length) {
+          chartOptions.horizontalLines = chart.options.horizontalLines;
+        }
+
+        js += "var chart = new SmoothieChart(" + toJsCode(chartOptions) + "),\n";
+        js += "    canvas = document.getElementById('smoothie-chart'),\n";
+        js += "    series = new TimeSeries();\n\n";
+        js += "chart.addTimeSeries(series" + (seriesOptionsJs ? ', ' + seriesOptionsJs : '') + ");\n";
+        js += "chart.streamTo(canvas, " + chart.delay + ");";
+
+        js = js.replace("'SmoothieChart.timeFormatter'", 'SmoothieChart.timeFormatter')
+               .replace("'myYRangeFunction'", 'myYRangeFunction');
+
+        document.getElementById('javascript-code').textContent = js;
       };
 
       var toJsCode = function(obj) {
