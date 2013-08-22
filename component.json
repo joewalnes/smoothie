@@ -1,0 +1,21 @@
+{
+  "name": "smoothie",
+  "repo": "joewalnes/smoothie",
+  "description": "Smoothie Charts: smooooooth JavaScript charts for realtime streaming data",
+  "version": "1.18.0",
+  "keywords": [
+    "charts",
+    "charting",
+    "realtime",
+    "stock-ticker",
+    "time series",
+    "time-series"
+  ],
+  "dependencies": {},
+  "development": {},
+  "license": "MIT",
+  "main": "smoothie.js",
+  "scripts": [
+    "smoothie.js"
+  ]
+}
