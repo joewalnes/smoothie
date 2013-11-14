@@ -238,6 +238,7 @@
     this.seriesSet = [];
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
+    this.lastRenderTimeMillis = 0;
   }
 
   SmoothieChart.defaultChartOptions = {
@@ -433,18 +434,35 @@
 
     if (!isNaN(chartMaxValue) && !isNaN(chartMinValue)) {
       var targetValueRange = chartMaxValue - chartMinValue;
-      this.currentValueRange += chartOptions.scaleSmoothing * (targetValueRange - this.currentValueRange);
-      this.currentVisMinValue += chartOptions.scaleSmoothing * (chartMinValue - this.currentVisMinValue);
+      var valueRangeDiff = (targetValueRange - this.currentValueRange);
+      var minValueDiff = (chartMinValue - this.currentVisMinValue);
+      this.isAnimatingScale = Math.abs(valueRangeDiff) > 0.1 || Math.abs(minValueDiff) > 0.1;
+      this.currentValueRange += chartOptions.scaleSmoothing * valueRangeDiff;
+      this.currentVisMinValue += chartOptions.scaleSmoothing * minValueDiff;
     }
 
     this.valueRange = { min: chartMinValue, max: chartMaxValue };
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    canvas = canvas || this.canvas;
-    time = time || new Date().getTime() - (this.delay || 0);
+    var nowMillis = new Date().getTime();
 
-    // TODO only render if the chart has moved at least 1px since the last rendered frame
+    if (!this.isAnimatingScale) {
+      // We're not animating. We can use the last render time and the scroll speed to work out whether
+      // we actually need to paint anything yet. If not, we can return immediately.
+
+      // Render at least every 1/6th of a second. The canvas may be resized, which there is
+      // no reliable way to detect.
+      var maxIdleMillis = Math.min(1000/6, this.options.millisPerPixel);
+      
+      if (nowMillis - this.lastRenderTimeMillis < maxIdleMillis) {
+        return;
+      }
+    }
+    this.lastRenderTimeMillis = nowMillis;
+    
+    canvas = canvas || this.canvas;
+    time = time || nowMillis - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
