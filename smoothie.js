@@ -268,9 +268,7 @@
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
   SmoothieChart.AnimateCompatibility = (function() {
-    // TODO this global variable will cause bugs if more than one chart is used and the browser does not support *requestAnimationFrame natively
-    var lastTime = 0,
-        requestAnimationFrame = function(callback, element) {
+    var requestAnimationFrame = function(callback, element) {
           var requestAnimationFrame =
             window.requestAnimationFrame        ||
             window.webkitRequestAnimationFrame  ||
@@ -278,13 +276,9 @@
             window.oRequestAnimationFrame       ||
             window.msRequestAnimationFrame      ||
             function(callback) {
-              var currTime = new Date().getTime(),
-                  timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                  id = window.setTimeout(function() {
-                    callback(currTime + timeToCall);
-                  }, timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
+              return window.setTimeout(function() {
+                callback(new Date().getTime());
+              }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
         },
@@ -454,7 +448,7 @@
       // Render at least every 1/6th of a second. The canvas may be resized, which there is
       // no reliable way to detect.
       var maxIdleMillis = Math.min(1000/6, this.options.millisPerPixel);
-      
+
       if (nowMillis - this.lastRenderTimeMillis < maxIdleMillis) {
         return;
       }
@@ -674,5 +668,5 @@
   exports.TimeSeries = TimeSeries;
   exports.SmoothieChart = SmoothieChart;
 
-})(typeof exports === 'undefined' ?  this : exports);
+})(typeof exports === 'undefined' ? this : exports);
 
