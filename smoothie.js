@@ -60,6 +60,7 @@
  * v1.18: Allow control of max/min label precision, by @drewnoakes
  *        Added 'borderVisible' chart option, by @drewnoakes
  *        Allow drawing series with fill but no stroke (line), by @drewnoakes
+ * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
  */
 
 ;(function(exports) {
