@@ -23,7 +23,7 @@
 /**
  * Smoothie Charts - http://smoothiecharts.org/
  * (c) 2010-2013, Joe Walnes
- *     2013, Drew Noakes
+ *     2013-2014, Drew Noakes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
@@ -61,6 +61,7 @@
  *        Added 'borderVisible' chart option, by @drewnoakes
  *        Allow drawing series with fill but no stroke (line), by @drewnoakes
  * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
+ * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
  */
 
 ;(function(exports) {
@@ -344,6 +345,37 @@
     if (timeSeries.resetBoundsTimerId) {
       // Stop resetting the bounds, if we were
       clearInterval(timeSeries.resetBoundsTimerId);
+    }
+  };
+
+  /**
+   * Gets render options for the specified <code>TimeSeries</code>.
+   *
+   * As you may use a single <code>TimeSeries</code> in multiple charts with different formatting in each usage,
+   * these settings are stored in the chart.
+   */
+  SmoothieChart.prototype.getTimeSeriesOptions = function(timeSeries) {
+    // Find the correct timeseries to remove, and remove it
+    var numSeries = this.seriesSet.length;
+    for (var i = 0; i < numSeries; i++) {
+      if (this.seriesSet[i].timeSeries === timeSeries) {
+        return this.seriesSet[i].options;
+      }
+    }
+  };
+
+  /**
+   * Brings the specified <code>TimeSeries</code> to the top of the chart. It will be rendered last.
+   */
+  SmoothieChart.prototype.bringToFront = function(timeSeries) {
+    // Find the correct timeseries to remove, and remove it
+    var numSeries = this.seriesSet.length;
+    for (var i = 0; i < numSeries; i++) {
+      if (this.seriesSet[i].timeSeries === timeSeries) {
+        var set = this.seriesSet.splice(i, 1);
+        this.seriesSet.push(set[0]);
+        break;
+      }
     }
   };
 
