@@ -23,7 +23,7 @@
 /**
  * Smoothie Charts - http://smoothiecharts.org/
  * (c) 2010-2013, Joe Walnes
- *     2013, Drew Noakes
+ *     2013-2014, Drew Noakes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
@@ -60,6 +60,8 @@
  * v1.18: Allow control of max/min label precision, by @drewnoakes
  *        Added 'borderVisible' chart option, by @drewnoakes
  *        Allow drawing series with fill but no stroke (line), by @drewnoakes
+ * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
+ * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
  */
 
 ;(function(exports) {
@@ -238,6 +240,7 @@
     this.seriesSet = [];
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
+    this.lastRenderTimeMillis = 0;
   }
 
   SmoothieChart.defaultChartOptions = {
@@ -267,9 +270,7 @@
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
   SmoothieChart.AnimateCompatibility = (function() {
-    // TODO this global variable will cause bugs if more than one chart is used and the browser does not support *requestAnimationFrame natively
-    var lastTime = 0,
-        requestAnimationFrame = function(callback, element) {
+    var requestAnimationFrame = function(callback, element) {
           var requestAnimationFrame =
             window.requestAnimationFrame        ||
             window.webkitRequestAnimationFrame  ||
@@ -277,13 +278,9 @@
             window.oRequestAnimationFrame       ||
             window.msRequestAnimationFrame      ||
             function(callback) {
-              var currTime = new Date().getTime(),
-                  timeToCall = Math.max(0, 16 - (currTime - lastTime)),
-                  id = window.setTimeout(function() {
-                    callback(currTime + timeToCall);
-                  }, timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
+              return window.setTimeout(function() {
+                callback(new Date().getTime());
+              }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
         },
@@ -348,6 +345,37 @@
     if (timeSeries.resetBoundsTimerId) {
       // Stop resetting the bounds, if we were
       clearInterval(timeSeries.resetBoundsTimerId);
+    }
+  };
+
+  /**
+   * Gets render options for the specified <code>TimeSeries</code>.
+   *
+   * As you may use a single <code>TimeSeries</code> in multiple charts with different formatting in each usage,
+   * these settings are stored in the chart.
+   */
+  SmoothieChart.prototype.getTimeSeriesOptions = function(timeSeries) {
+    // Find the correct timeseries to remove, and remove it
+    var numSeries = this.seriesSet.length;
+    for (var i = 0; i < numSeries; i++) {
+      if (this.seriesSet[i].timeSeries === timeSeries) {
+        return this.seriesSet[i].options;
+      }
+    }
+  };
+
+  /**
+   * Brings the specified <code>TimeSeries</code> to the top of the chart. It will be rendered last.
+   */
+  SmoothieChart.prototype.bringToFront = function(timeSeries) {
+    // Find the correct timeseries to remove, and remove it
+    var numSeries = this.seriesSet.length;
+    for (var i = 0; i < numSeries; i++) {
+      if (this.seriesSet[i].timeSeries === timeSeries) {
+        var set = this.seriesSet.splice(i, 1);
+        this.seriesSet.push(set[0]);
+        break;
+      }
     }
   };
 
@@ -433,18 +461,35 @@
 
     if (!isNaN(chartMaxValue) && !isNaN(chartMinValue)) {
       var targetValueRange = chartMaxValue - chartMinValue;
-      this.currentValueRange += chartOptions.scaleSmoothing * (targetValueRange - this.currentValueRange);
-      this.currentVisMinValue += chartOptions.scaleSmoothing * (chartMinValue - this.currentVisMinValue);
+      var valueRangeDiff = (targetValueRange - this.currentValueRange);
+      var minValueDiff = (chartMinValue - this.currentVisMinValue);
+      this.isAnimatingScale = Math.abs(valueRangeDiff) > 0.1 || Math.abs(minValueDiff) > 0.1;
+      this.currentValueRange += chartOptions.scaleSmoothing * valueRangeDiff;
+      this.currentVisMinValue += chartOptions.scaleSmoothing * minValueDiff;
     }
 
     this.valueRange = { min: chartMinValue, max: chartMaxValue };
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    canvas = canvas || this.canvas;
-    time = time || new Date().getTime() - (this.delay || 0);
+    var nowMillis = new Date().getTime();
 
-    // TODO only render if the chart has moved at least 1px since the last rendered frame
+    if (!this.isAnimatingScale) {
+      // We're not animating. We can use the last render time and the scroll speed to work out whether
+      // we actually need to paint anything yet. If not, we can return immediately.
+
+      // Render at least every 1/6th of a second. The canvas may be resized, which there is
+      // no reliable way to detect.
+      var maxIdleMillis = Math.min(1000/6, this.options.millisPerPixel);
+
+      if (nowMillis - this.lastRenderTimeMillis < maxIdleMillis) {
+        return;
+      }
+    }
+    this.lastRenderTimeMillis = nowMillis;
+    
+    canvas = canvas || this.canvas;
+    time = time || nowMillis - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
@@ -656,5 +701,5 @@
   exports.TimeSeries = TimeSeries;
   exports.SmoothieChart = SmoothieChart;
 
-})(typeof exports === 'undefined' ?  this : exports);
+})(typeof exports === 'undefined' ? this : exports);
 
