@@ -62,6 +62,7 @@
  *        Allow drawing series with fill but no stroke (line), by @drewnoakes
  * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
  * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
+ * v1.21: Add 'step' interpolation mode, by @drewnoakes
  */
 
 ;(function(exports) {
@@ -654,6 +655,11 @@
                 Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
                 Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
                 x, y); // endPoint (B)
+              break;
+            }
+            case "step": {
+              context.lineTo(x,lastY);
+              context.lineTo(x,y);
               break;
             }
           }
