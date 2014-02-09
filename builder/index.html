@@ -199,6 +199,50 @@
           controlDiv.appendChild(defaultLink);
         };
 
+        var bindDropDown = function(options) {
+          var inputId = 'input' + (inputIdCounter++),
+              defaultLink;
+
+          var controlDiv = document.createElement('div');
+          controlDiv.className = 'control';
+          controlContainer.appendChild(controlDiv);
+
+          var label = document.createElement('label');
+          label.className = 'slider';
+          label.htmlFor = inputId;
+          label.textContent = options.name;
+          controlDiv.appendChild(label);
+
+          var select = document.createElement('select');
+          select.id = inputId;
+          var defaultValue = options.target[options.propertyName] || options.values[0];
+          select.value = defaultValue;
+          for (var i = 0; i < options.values.length; i++)
+          {
+            var opt = document.createElement('option');
+            opt.textContent = options.values[i];
+            select.appendChild(opt);
+          }
+          select.onchange = function() {
+            options.target[options.propertyName] = select.value;
+            setVisible(defaultLink, select.value != defaultValue);
+            updateCode(canvas, chart);
+          };
+          controlDiv.appendChild(select);
+
+          defaultLink = document.createElement('a');
+          defaultLink.href = '#';
+          defaultLink.className = 'default';
+          defaultLink.textContent = 'default';
+          defaultLink.onclick = function() {
+            select.value = defaultValue;
+            select.onchange();
+            return false;
+          };
+          setVisible(defaultLink, select.value != defaultValue);
+          controlDiv.appendChild(defaultLink);
+        };
+
         var bindCheckBox = function(options) {
           var inputId = 'input' + (inputIdCounter++),
               defaultLink;
@@ -360,16 +404,11 @@
         bindColor({target: chart.seriesSet[0].options, name: 'Series line color', propertyName: 'strokeStyle', optional: true, enabled: true, opacity: 1, emptyValue: 'none'});
         bindColor({target: chart.seriesSet[0].options, name: 'Series fill color', propertyName: 'fillStyle', optional: true, enabled: false, opacity: 0.3});
         bindRange({target: chart.seriesSet[0].options, name: 'Series line width', propertyName: 'lineWidth', min: 0.5, max: 5, scale: 10});
-        bindCheckBox({
+        bindDropDown({
           target: chart.options,
-          name: 'Smooth series lines',
+          name: 'Interpolation',
           propertyName: 'interpolation',
-          convert: function (checked) {
-            return checked ? 'bezier' : 'linear';
-          },
-          convertBack: function (value) {
-            return value !== 'linear';
-          }
+          values: ['bezier', 'linear', 'step']
         });
 
         // Grid lines
