@@ -656,6 +656,11 @@
                 x, y); // endPoint (B)
               break;
             }
+            case "step": {
+              context.lineTo(x,lastY);
+              context.lineTo(x,y);
+              break;
+            }
           }
         }
 
