@@ -210,7 +210,7 @@
    *   scaleSmoothing: 0.125,      // controls the rate at which y-value zoom animation occurs
    *   millisPerPixel: 20,         // sets the speed at which the chart pans by
    *   maxDataSetLength: 2,
-   *   interpolation: 'bezier'     // or 'linear'
+   *   interpolation: 'bezier'     // one of 'bezier', 'linear', or 'step'
    *   timestampFormatter: null,   // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
    *   horizontalLines: [],        // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
    *   grid:
