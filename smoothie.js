@@ -408,6 +408,23 @@
       // We're already running, so just return
       return;
     }
+    /* Make sure the canvas has the optimal resolution on
+     * hidef screens like the Nexus 5, or Retina displays
+     */
+    var canvas_context = this.canvas.getContext('2d');
+    var canvas_sel = $(this.canvas);
+    if (window.devicePixelRatio) {
+      var convas_width = canvas_sel.attr('width');
+      var convas_height = canvas_sel.attr('height');
+      var canvas_css_width = convas_width;
+      var canvas_css_height = convas_height;
+
+      canvas_sel.attr('width', convas_width * window.devicePixelRatio);
+      canvas_sel.attr('height', convas_height * window.devicePixelRatio);
+      canvas_sel.css('width', canvas_css_width);
+      canvas_sel.css('height', canvas_css_height);
+      canvas_context.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
 
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
