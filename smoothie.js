@@ -64,6 +64,7 @@
  * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
  * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
  * v1.21: Add 'step' interpolation mode, by @drewnoakes
+ * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
  */
 
 ;(function(exports) {
@@ -204,30 +205,37 @@
    *
    * <pre>
    * {
-   *   minValue: undefined,        // specify to clamp the lower y-axis to a given value
-   *   maxValue: undefined,        // specify to clamp the upper y-axis to a given value
-   *   maxValueScale: 1,           // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
-   *   yRangeFunction: undefined,  // function({min: , max: }) { return {min: , max: }; }
-   *   scaleSmoothing: 0.125,      // controls the rate at which y-value zoom animation occurs
-   *   millisPerPixel: 20,         // sets the speed at which the chart pans by
+   *   minValue: undefined,                            // specify to clamp the lower y-axis to a given value
+   *   maxValue: undefined,                            // specify to clamp the upper y-axis to a given value
+   *   maxValueScale: 1,                               // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
+   *   yRangeFunction: undefined,                      // function({min: , max: }) { return {min: , max: }; }
+   *   scaleSmoothing: 0.125,                          // controls the rate at which y-value zoom animation occurs
+   *   millisPerPixel: 20,                             // sets the speed at which the chart pans by
+   *   yMaxFormatter: function(max, precision) {       // format the max y value
+   *     return parseFloat(max).toFixed(precision);
+   *    },
+   *   yMinFormatter: function(min, precision) {       // format the min y value
+   *     return parseFloat(min).toFixed(precision);
+   *   },
    *   maxDataSetLength: 2,
-   *   interpolation: 'bezier'     // one of 'bezier', 'linear', or 'step'
-   *   timestampFormatter: null,   // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
-   *   horizontalLines: [],        // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
+   *   interpolation: 'bezier'                         // one of 'bezier', 'linear', or 'step'
+   *   timestampFormatter: null,                       // Optional function to format time stamps for bottom of chart.
+   *                                                   // You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
+   *   horizontalLines: [],                            // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
    *   grid:
    *   {
-   *     fillStyle: '#000000',     // the background colour of the chart
-   *     lineWidth: 1,             // the pixel width of grid lines
-   *     strokeStyle: '#777777',   // colour of grid lines
-   *     millisPerLine: 1000,      // distance between vertical grid lines
-   *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
-   *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
-   *     borderVisible: true       // whether the grid lines trace the border of the chart or not
+   *     fillStyle: '#000000',                         // the background colour of the chart
+   *     lineWidth: 1,                                 // the pixel width of grid lines
+   *     strokeStyle: '#777777',                       // colour of grid lines
+   *     millisPerLine: 1000,                          // distance between vertical grid lines
+   *     sharpLines: false,                            // controls whether grid lines are 1px sharp, or softened
+   *     verticalSections: 2,                          // number of vertical sections marked out by horizontal grid lines
+   *     borderVisible: true                           // whether the grid lines trace the border of the chart or not
    *   },
    *   labels
    *   {
-   *     disabled: false,          // enables/disables labels showing the min/max values
-   *     fillStyle: '#ffffff',     // colour for text of labels,
+   *     disabled: false,                              // enables/disables labels showing the min/max values
+   *     fillStyle: '#ffffff',                         // colour for text of labels,
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
    *     precision: 2
