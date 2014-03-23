@@ -108,8 +108,8 @@ declare module "smoothie"
         scaleSmoothing?: number;
         /** Sets the speed at which the chart pans by. */
         millisPerPixel?: number;
-        yMaxFormatter?: (max:string, precision:number)=>string;
-        yMinFormatter?: (max:string, precision:number)=>string;
+        yMinFormatter?: (min:number, precision:number)=>string;
+        yMaxFormatter?: (max:number, precision:number)=>string;
         maxDataSetLength?: number;
         /** One of: 'bezier', 'linear', 'step' */
         interpolation?: string;
