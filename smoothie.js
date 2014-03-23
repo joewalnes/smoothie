@@ -255,12 +255,8 @@
 
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
-    yMaxFormatter: function(max, precision) {
-      return parseFloat(max).toFixed(precision);
-    },
-    yMinFormatter: function(min, precision) {
-      return parseFloat(min).toFixed(precision);
-    },
+    yMinFormatter: function(min, precision) { return min.toFixed(precision); },
+    yMaxFormatter: function(max, precision) { return max.toFixed(precision); },
     maxValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
