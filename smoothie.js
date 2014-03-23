@@ -240,7 +240,7 @@
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
    *     precision: 2
-   *   },
+   *   }
    * }
    * </pre>
    *
@@ -512,7 +512,7 @@
       }
     }
     this.lastRenderTimeMillis = nowMillis;
-    
+
     canvas = canvas || this.canvas;
     time = time || nowMillis - (this.delay || 0);
 
