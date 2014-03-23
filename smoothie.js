@@ -256,6 +256,7 @@
 
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
+    enableDpiScaling: true,
     yMinFormatter: function(min, precision) { return min.toFixed(precision); },
     yMaxFormatter: function(max, precision) { return max.toFixed(precision); },
     maxValueScale: 1,
@@ -414,7 +415,7 @@
       return;
     }
     // Make sure the canvas has the optimal resolution for the device's pixel ratio.
-    if (window && window.devicePixelRatio !== 1) {
+    if (this.options.enableDpiScaling && window && window.devicePixelRatio !== 1) {
       var canvasWidth = this.canvas.getAttribute('width');
       var canvasHeight = this.canvas.getAttribute('height');
 

@@ -108,6 +108,8 @@ declare module "smoothie"
         scaleSmoothing?: number;
         /** Sets the speed at which the chart pans by. */
         millisPerPixel?: number;
+        /** Whether to render at different DPI depending upon the device. Enabled by default. */
+        enableDpiScaling?: boolean;
         yMinFormatter?: (min:number, precision:number)=>string;
         yMaxFormatter?: (max:number, precision:number)=>string;
         maxDataSetLength?: number;
