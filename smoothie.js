@@ -1,6 +1,7 @@
 // MIT License:
 //
 // Copyright (c) 2010-2013, Joe Walnes
+//               2013-2014, Drew Noakes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +64,7 @@
  * v1.19: Avoid unnecessary repaints, and fixed flicker in old browsers having multiple charts in document (#40), by @asbai
  * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
  * v1.21: Add 'step' interpolation mode, by @drewnoakes
+ * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
  */
 
 ;(function(exports) {
@@ -203,34 +205,42 @@
    *
    * <pre>
    * {
-   *   minValue: undefined,        // specify to clamp the lower y-axis to a given value
-   *   maxValue: undefined,        // specify to clamp the upper y-axis to a given value
-   *   maxValueScale: 1,           // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
-   *   yRangeFunction: undefined,  // function({min: , max: }) { return {min: , max: }; }
-   *   scaleSmoothing: 0.125,      // controls the rate at which y-value zoom animation occurs
-   *   millisPerPixel: 20,         // sets the speed at which the chart pans by
+   *   minValue: undefined,                      // specify to clamp the lower y-axis to a given value
+   *   maxValue: undefined,                      // specify to clamp the upper y-axis to a given value
+   *   maxValueScale: 1,                         // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
+   *   yRangeFunction: undefined,                // function({min: , max: }) { return {min: , max: }; }
+   *   scaleSmoothing: 0.125,                    // controls the rate at which y-value zoom animation occurs
+   *   millisPerPixel: 20,                       // sets the speed at which the chart pans by
+   *   enableDpiScaling: true,                   // support rendering at different DPI depending on the device
+   *   yMinFormatter: function(min, precision) { // callback function that formats the min y value label
+   *     return min.toFixed(precision);
+   *   },
+   *   yMaxFormatter: function(max, precision) { // callback function that formats the max y value label
+   *     return max.toFixed(precision);
+   *   },
    *   maxDataSetLength: 2,
-   *   interpolation: 'bezier'     // or 'linear'
-   *   timestampFormatter: null,   // Optional function to format time stamps for bottom of chart. You may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
-   *   horizontalLines: [],        // [ { value: 0, color: '#ffffff', lineWidth: 1 } ],
+   *   interpolation: 'bezier'                   // one of 'bezier', 'linear', or 'step'
+   *   timestampFormatter: null,                 // optional function to format time stamps for bottom of chart
+   *                                             // you may use SmoothieChart.timeFormatter, or your own: function(date) { return ''; }
+   *   horizontalLines: [],                      // [ { value: 0, color: '#ffffff', lineWidth: 1 } ]
    *   grid:
    *   {
-   *     fillStyle: '#000000',     // the background colour of the chart
-   *     lineWidth: 1,             // the pixel width of grid lines
-   *     strokeStyle: '#777777',   // colour of grid lines
-   *     millisPerLine: 1000,      // distance between vertical grid lines
-   *     sharpLines: false,        // controls whether grid lines are 1px sharp, or softened
-   *     verticalSections: 2,      // number of vertical sections marked out by horizontal grid lines
-   *     borderVisible: true       // whether the grid lines trace the border of the chart or not
+   *     fillStyle: '#000000',                   // the background colour of the chart
+   *     lineWidth: 1,                           // the pixel width of grid lines
+   *     strokeStyle: '#777777',                 // colour of grid lines
+   *     millisPerLine: 1000,                    // distance between vertical grid lines
+   *     sharpLines: false,                      // controls whether grid lines are 1px sharp, or softened
+   *     verticalSections: 2,                    // number of vertical sections marked out by horizontal grid lines
+   *     borderVisible: true                     // whether the grid lines trace the border of the chart or not
    *   },
    *   labels
    *   {
-   *     disabled: false,          // enables/disables labels showing the min/max values
-   *     fillStyle: '#ffffff',     // colour for text of labels,
+   *     disabled: false,                        // enables/disables labels showing the min/max values
+   *     fillStyle: '#ffffff',                   // colour for text of labels,
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
    *     precision: 2
-   *   },
+   *   }
    * }
    * </pre>
    *
@@ -246,6 +256,9 @@
 
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
+    enableDpiScaling: true,
+    yMinFormatter: function(min, precision) { return min.toFixed(precision); },
+    yMaxFormatter: function(max, precision) { return max.toFixed(precision); },
     maxValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
@@ -401,6 +414,17 @@
       // We're already running, so just return
       return;
     }
+    // Make sure the canvas has the optimal resolution for the device's pixel ratio.
+    if (this.options.enableDpiScaling && window && window.devicePixelRatio !== 1) {
+      var canvasWidth = this.canvas.getAttribute('width');
+      var canvasHeight = this.canvas.getAttribute('height');
+
+      this.canvas.setAttribute('width', canvasWidth * window.devicePixelRatio);
+      this.canvas.setAttribute('height', canvasHeight * window.devicePixelRatio);
+      this.canvas.style.width = canvasWidth;
+      this.canvas.style.height = canvasHeight;
+      this.canvas.getContext('2d').scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
 
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
@@ -488,7 +512,7 @@
       }
     }
     this.lastRenderTimeMillis = nowMillis;
-    
+
     canvas = canvas || this.canvas;
     time = time || nowMillis - (this.delay || 0);
 
@@ -688,8 +712,8 @@
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      var maxValueString = parseFloat(this.valueRange.max).toFixed(chartOptions.labels.precision),
-          minValueString = parseFloat(this.valueRange.min).toFixed(chartOptions.labels.precision);
+      var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, chartOptions.labels.precision),
+          minValueString = chartOptions.yMinFormatter(this.valueRange.min, chartOptions.labels.precision);
       context.fillStyle = chartOptions.labels.fillStyle;
       context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, chartOptions.labels.fontSize);
       context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
