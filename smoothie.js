@@ -65,6 +65,7 @@
  * v1.20: Add SmoothieChart.getTimeSeriesOptions and SmoothieChart.bringToFront functions, by @drewnoakes
  * v1.21: Add 'step' interpolation mode, by @drewnoakes
  * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
+ * v1.23: Fix bug introduced in v1.22 (#44), by @drewnoakes
  */
 
 ;(function(exports) {
