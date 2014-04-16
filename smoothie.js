@@ -421,8 +421,8 @@
 
       this.canvas.setAttribute('width', canvasWidth * window.devicePixelRatio);
       this.canvas.setAttribute('height', canvasHeight * window.devicePixelRatio);
-      this.canvas.style.width = canvasWidth;
-      this.canvas.style.height = canvasHeight;
+      this.canvas.style.width = canvasWidth + 'px';
+      this.canvas.style.height = canvasHeight + 'px';
       this.canvas.getContext('2d').scale(window.devicePixelRatio, window.devicePixelRatio);
     }
 
