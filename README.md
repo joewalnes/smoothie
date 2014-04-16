@@ -28,5 +28,3 @@ For help, use the [Smoothie Charts Google Group](http://groups.google.com/group/
 - [Joe Walnes](http://joewalnes.com/)
 - [Drew Noakes](http://drewnoakes.com/)
 
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/joewalnes/smoothie/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
