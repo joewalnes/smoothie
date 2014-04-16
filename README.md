@@ -3,8 +3,7 @@ Smoothie Charts
 
 *Smoothie Charts* is a really small charting library designed for _live
 streaming data_. I built it to reduce the headaches I was getting from
-watching charts jerkily updating every second. What you're looking at
-now is pretty much all it does. If you like that, then read on.
+watching charts jerkily updating every second. 
 
 See [http://smoothiecharts.org](http://smoothiecharts.org)
 
