@@ -1,6 +1,6 @@
 {
   "name": "smoothie",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "description": "Smoothie Charts: smooooooth JavaScript charts for realtime streaming data",
   "main": "./smoothie.js",
   "directories": {

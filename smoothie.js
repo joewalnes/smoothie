@@ -66,6 +66,7 @@
  * v1.21: Add 'step' interpolation mode, by @drewnoakes
  * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
  * v1.23: Fix bug introduced in v1.22 (#44), by @drewnoakes
+ * v1.24: Fix bug introduced in v1.23, re-adding parseFloat to y-axis formatter defaults, by @siggy_sf
  */
 
 ;(function(exports) {
@@ -214,10 +215,10 @@
    *   millisPerPixel: 20,                       // sets the speed at which the chart pans by
    *   enableDpiScaling: true,                   // support rendering at different DPI depending on the device
    *   yMinFormatter: function(min, precision) { // callback function that formats the min y value label
-   *     return min.toFixed(precision);
+   *     return parseFloat(min).toFixed(precision);
    *   },
    *   yMaxFormatter: function(max, precision) { // callback function that formats the max y value label
-   *     return max.toFixed(precision);
+   *     return parseFloat(max).toFixed(precision);
    *   },
    *   maxDataSetLength: 2,
    *   interpolation: 'bezier'                   // one of 'bezier', 'linear', or 'step'
@@ -258,8 +259,12 @@
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
     enableDpiScaling: true,
-    yMinFormatter: function(min, precision) { return min.toFixed(precision); },
-    yMaxFormatter: function(max, precision) { return max.toFixed(precision); },
+    yMinFormatter: function(min, precision) {
+      return parseFloat(min).toFixed(precision);
+    },
+    yMaxFormatter: function(max, precision) {
+      return parseFloat(max).toFixed(precision);
+    },
     maxValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
