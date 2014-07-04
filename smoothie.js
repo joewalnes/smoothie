@@ -571,7 +571,6 @@
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
     if (chartOptions.grid.millisPerLine > 0) {
-      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
@@ -584,18 +583,6 @@
         context.lineTo(gx, dimensions.height);
         context.stroke();
         context.closePath();
-
-        // Display timestamp at bottom of this line if requested, and it won't overlap
-        if (chartOptions.timestampFormatter && gx < textUntilX) {
-          // Formats the timestamp based on user specified formatting function
-          // SmoothieChart.timeFormatter function above is one such formatting option
-          var tx = new Date(t),
-            ts = chartOptions.timestampFormatter(tx),
-            tsWidth = context.measureText(ts).width;
-          textUntilX = gx - tsWidth - 2;
-          context.fillStyle = chartOptions.labels.fillStyle;
-          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
-        }
       }
     }
 
@@ -714,6 +701,31 @@
         context.closePath();
       }
       context.restore();
+    }
+
+    // Display timestamp
+    if (chartOptions.grid.millisPerLine > 0) {
+      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
+      for (var t = time - (time % chartOptions.grid.millisPerLine);
+           t >= oldestValidTime;
+           t -= chartOptions.grid.millisPerLine) {
+        var gx = timeToXPixel(t);
+        if (chartOptions.grid.sharpLines) {
+          gx -= 0.5;
+        }
+
+        // Display timestamp at bottom of this line if requested, and it won't overlap
+        if (chartOptions.timestampFormatter && gx < textUntilX) {
+          // Formats the timestamp based on user specified formatting function
+          // SmoothieChart.timeFormatter function above is one such formatting option
+          var tx = new Date(t),
+            ts = chartOptions.timestampFormatter(tx),
+            tsWidth = context.measureText(ts).width;
+          textUntilX = gx - tsWidth - 2;
+          context.fillStyle = chartOptions.labels.fillStyle;
+          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
+        }
+      }
     }
 
     // Draw the axis values on the chart.
