@@ -161,11 +161,14 @@
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
     // Rewind until we hit an older timestamp
     var i = this.data.length - 1;
-    while (i > 0 && this.data[i][0] > timestamp) {
+    while (i >= 0 && this.data[i][0] > timestamp) {
       i--;
     }
 
-    if (this.data.length > 0 && this.data[i][0] === timestamp) {
+    if (i === -1) {
+      // This new item is the oldest data
+      this.data.splice(0, 0, [timestamp, value]);
+    else if (this.data.length > 0 && this.data[i][0] === timestamp) {
       // Update existing values in the array
       if (sumRepeatedTimeStampValues) {
         // Sum this value into the existing 'bucket'
