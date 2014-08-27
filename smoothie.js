@@ -67,6 +67,9 @@
  * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
  * v1.23: Fix bug introduced in v1.22 (#44), by @drewnoakes
  * v1.24: Fix bug introduced in v1.23, re-adding parseFloat to y-axis formatter defaults, by @siggy_sf
+ * v1.25: Fix bug seen when adding a data point to TimeSeries which is older than the current data, by @Nking92
+ *        Draw time labels on top of series, by @comolosabia
+ *        Add TimeSeries.clear function, by @drewnoakes
  */
 
 ;(function(exports) {

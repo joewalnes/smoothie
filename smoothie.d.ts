@@ -1,4 +1,4 @@
-// Type definitions for Smoothie Charts 1.21
+// Type definitions for Smoothie Charts 1.25
 // Project: https://github.com/joewalnes/smoothie
 // Definitions by: Drew Noakes <https://drewnoakes.com>
 //                 Mike H. Hawley <https://github.com/mikehhawley>
