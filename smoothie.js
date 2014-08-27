@@ -581,6 +581,7 @@
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
     if (chartOptions.grid.millisPerLine > 0) {
+      context.beginPath();
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
@@ -588,12 +589,11 @@
         if (chartOptions.grid.sharpLines) {
           gx -= 0.5;
         }
-        context.beginPath();
         context.moveTo(gx, 0);
         context.lineTo(gx, dimensions.height);
-        context.stroke();
-        context.closePath();
       }
+      context.stroke();
+      context.closePath();
     }
 
     // Horizontal (value) dividers.
