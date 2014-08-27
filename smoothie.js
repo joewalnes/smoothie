@@ -713,18 +713,18 @@
       context.restore();
     }
 
-    // Display timestamp
+    // Display timestamps along x-axis at the bottom of the chart.
     if (chartOptions.grid.millisPerLine > 0) {
       var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
         var gx = timeToXPixel(t);
+        // Only draw the timestamp if it won't overlap with the previously drawn one.
         if (chartOptions.grid.sharpLines) {
           gx -= 0.5;
         }
 
-        // Display timestamp at bottom of this line if requested, and it won't overlap
         if (chartOptions.timestampFormatter && gx < textUntilX) {
           // Formats the timestamp based on user specified formatting function
           // SmoothieChart.timeFormatter function above is one such formatting option
