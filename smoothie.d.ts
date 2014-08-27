@@ -38,6 +38,11 @@ declare module "smoothie"
         constructor(options?: ITimeSeriesOptions);
 
         /**
+         * Clears all data and state from this TimeSeries object.
+         */
+        clear(): void;
+
+        /**
          * Recalculate the min/max values for this <code>TimeSeries</code> object.
          *
          * This causes the graph to scale itself in the y-axis.

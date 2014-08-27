@@ -114,14 +114,21 @@
    */
   function TimeSeries(options) {
     this.options = Util.extend({}, TimeSeries.defaultOptions, options);
-    this.data = [];
-    this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
-    this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
+    this.clear();
   }
 
   TimeSeries.defaultOptions = {
     resetBoundsInterval: 3000,
     resetBounds: true
+  };
+
+  /**
+   * Clears all data and state from this TimeSeries object.
+   */
+  TimeSeries.prototype.clear = function() {
+    this.data = [];
+    this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
+    this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
   };
 
   /**
