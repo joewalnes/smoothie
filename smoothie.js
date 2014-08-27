@@ -66,6 +66,10 @@
  * v1.21: Add 'step' interpolation mode, by @drewnoakes
  * v1.22: Add support for different pixel ratios. Also add optional y limit formatters, by @copacetic
  * v1.23: Fix bug introduced in v1.22 (#44), by @drewnoakes
+ * v1.24: Fix bug introduced in v1.23, re-adding parseFloat to y-axis formatter defaults, by @siggy_sf
+ * v1.25: Fix bug seen when adding a data point to TimeSeries which is older than the current data, by @Nking92
+ *        Draw time labels on top of series, by @comolosabia
+ *        Add TimeSeries.clear function, by @drewnoakes
  */
 
 ;(function(exports) {
@@ -113,14 +117,21 @@
    */
   function TimeSeries(options) {
     this.options = Util.extend({}, TimeSeries.defaultOptions, options);
-    this.data = [];
-    this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
-    this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
+    this.clear();
   }
 
   TimeSeries.defaultOptions = {
     resetBoundsInterval: 3000,
     resetBounds: true
+  };
+
+  /**
+   * Clears all data and state from this TimeSeries object.
+   */
+  TimeSeries.prototype.clear = function() {
+    this.data = [];
+    this.maxValue = Number.NaN; // The maximum value ever seen in this TimeSeries.
+    this.minValue = Number.NaN; // The minimum value ever seen in this TimeSeries.
   };
 
   /**
@@ -160,11 +171,14 @@
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
     // Rewind until we hit an older timestamp
     var i = this.data.length - 1;
-    while (i > 0 && this.data[i][0] > timestamp) {
+    while (i >= 0 && this.data[i][0] > timestamp) {
       i--;
     }
 
-    if (this.data.length > 0 && this.data[i][0] === timestamp) {
+    if (i === -1) {
+      // This new item is the oldest data
+      this.data.splice(0, 0, [timestamp, value]);
+    } else if (this.data.length > 0 && this.data[i][0] === timestamp) {
       // Update existing values in the array
       if (sumRepeatedTimeStampValues) {
         // Sum this value into the existing 'bucket'
@@ -214,10 +228,10 @@
    *   millisPerPixel: 20,                       // sets the speed at which the chart pans by
    *   enableDpiScaling: true,                   // support rendering at different DPI depending on the device
    *   yMinFormatter: function(min, precision) { // callback function that formats the min y value label
-   *     return min.toFixed(precision);
+   *     return parseFloat(min).toFixed(precision);
    *   },
    *   yMaxFormatter: function(max, precision) { // callback function that formats the max y value label
-   *     return max.toFixed(precision);
+   *     return parseFloat(max).toFixed(precision);
    *   },
    *   maxDataSetLength: 2,
    *   interpolation: 'bezier'                   // one of 'bezier', 'linear', or 'step'
@@ -258,8 +272,12 @@
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
     enableDpiScaling: true,
-    yMinFormatter: function(min, precision) { return min.toFixed(precision); },
-    yMaxFormatter: function(max, precision) { return max.toFixed(precision); },
+    yMinFormatter: function(min, precision) {
+      return parseFloat(min).toFixed(precision);
+    },
+    yMaxFormatter: function(max, precision) {
+      return parseFloat(max).toFixed(precision);
+    },
     maxValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
@@ -566,7 +584,7 @@
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
     if (chartOptions.grid.millisPerLine > 0) {
-      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
+      context.beginPath();
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
@@ -574,24 +592,11 @@
         if (chartOptions.grid.sharpLines) {
           gx -= 0.5;
         }
-        context.beginPath();
         context.moveTo(gx, 0);
         context.lineTo(gx, dimensions.height);
-        context.stroke();
-        context.closePath();
-
-        // Display timestamp at bottom of this line if requested, and it won't overlap
-        if (chartOptions.timestampFormatter && gx < textUntilX) {
-          // Formats the timestamp based on user specified formatting function
-          // SmoothieChart.timeFormatter function above is one such formatting option
-          var tx = new Date(t),
-            ts = chartOptions.timestampFormatter(tx),
-            tsWidth = context.measureText(ts).width;
-          textUntilX = gx - tsWidth - 2;
-          context.fillStyle = chartOptions.labels.fillStyle;
-          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
-        }
       }
+      context.stroke();
+      context.closePath();
     }
 
     // Horizontal (value) dividers.
@@ -718,6 +723,27 @@
       context.fillStyle = chartOptions.labels.fillStyle;
       context.fillText(maxValueString, dimensions.width - context.measureText(maxValueString).width - 2, chartOptions.labels.fontSize);
       context.fillText(minValueString, dimensions.width - context.measureText(minValueString).width - 2, dimensions.height - 2);
+    }
+
+    // Display timestamps along x-axis at the bottom of the chart.
+    if (chartOptions.timestampFormatter && chartOptions.grid.millisPerLine > 0) {
+      var textUntilX = dimensions.width - context.measureText(minValueString).width + 4;
+      for (var t = time - (time % chartOptions.grid.millisPerLine);
+           t >= oldestValidTime;
+           t -= chartOptions.grid.millisPerLine) {
+        var gx = timeToXPixel(t);
+        // Only draw the timestamp if it won't overlap with the previously drawn one.
+        if (gx < textUntilX) {
+          // Formats the timestamp based on user specified formatting function
+          // SmoothieChart.timeFormatter function above is one such formatting option
+          var tx = new Date(t),
+            ts = chartOptions.timestampFormatter(tx),
+            tsWidth = context.measureText(ts).width;
+          textUntilX = gx - tsWidth - 2;
+          context.fillStyle = chartOptions.labels.fillStyle;
+          context.fillText(ts, gx - tsWidth, dimensions.height - 2);
+        }
+      }
     }
 
     context.restore(); // See .save() above.
