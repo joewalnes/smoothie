@@ -721,10 +721,6 @@
            t -= chartOptions.grid.millisPerLine) {
         var gx = timeToXPixel(t);
         // Only draw the timestamp if it won't overlap with the previously drawn one.
-        if (chartOptions.grid.sharpLines) {
-          gx -= 0.5;
-        }
-
         if (chartOptions.timestampFormatter && gx < textUntilX) {
           // Formats the timestamp based on user specified formatting function
           // SmoothieChart.timeFormatter function above is one such formatting option
