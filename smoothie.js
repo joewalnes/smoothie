@@ -70,6 +70,7 @@
  * v1.25: Fix bug seen when adding a data point to TimeSeries which is older than the current data, by @Nking92
  *        Draw time labels on top of series, by @comolosabia
  *        Add TimeSeries.clear function, by @drewnoakes
+ * v1.26: Add support for resizing on high device pixel ratio screens, by @copacetic
  */
 
 ;(function(exports) {
@@ -425,6 +426,29 @@
     this.start();
   };
 
+  SmoothieChart.prototype.resize = function() {
+    var dpr = window.devicePixelRatio;
+    var width = parseInt(this.canvas.getAttribute('width'));
+    var height = parseInt(this.canvas.getAttribute('height'));
+
+    // Make sure the canvas has the optimal resolution for the device's pixel ratio.
+    if (this.options.enableDpiScaling && window && dpr !== 1) {
+      if (!this.original_width || (this.original_width * dpr !== width)) {
+        this.original_width = width;
+        this.canvas.setAttribute('width', width * dpr);
+        this.canvas.style.width = width + 'px';
+        this.canvas.getContext('2d').scale(dpr, dpr);
+      }
+
+      if (!this.original_height || (this.original_height * dpr !== height)) {
+        this.original_height = height;
+        this.canvas.setAttribute('height', height * dpr);
+        this.canvas.style.height = height + 'px';
+        this.canvas.getContext('2d').scale(dpr, dpr);
+      }
+    }
+  };
+
   /**
    * Starts the animation of this chart.
    */
@@ -432,17 +456,6 @@
     if (this.frame) {
       // We're already running, so just return
       return;
-    }
-    // Make sure the canvas has the optimal resolution for the device's pixel ratio.
-    if (this.options.enableDpiScaling && window && window.devicePixelRatio !== 1) {
-      var canvasWidth = this.canvas.getAttribute('width');
-      var canvasHeight = this.canvas.getAttribute('height');
-
-      this.canvas.setAttribute('width', canvasWidth * window.devicePixelRatio);
-      this.canvas.setAttribute('height', canvasHeight * window.devicePixelRatio);
-      this.canvas.style.width = canvasWidth + 'px';
-      this.canvas.style.height = canvasHeight + 'px';
-      this.canvas.getContext('2d').scale(window.devicePixelRatio, window.devicePixelRatio);
     }
 
     // Renders a frame, and queues the next frame for later rendering
@@ -530,6 +543,8 @@
         return;
       }
     }
+    this.resize();
+
     this.lastRenderTimeMillis = nowMillis;
 
     canvas = canvas || this.canvas;
