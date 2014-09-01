@@ -427,12 +427,12 @@
   };
 
   SmoothieChart.prototype.resize = function() {
-    var dpr = window.devicePixelRatio;
+    var dpr = window ? window.devicePixelRatio : 1;
     var width = parseInt(this.canvas.getAttribute('width'));
     var height = parseInt(this.canvas.getAttribute('height'));
 
     // Make sure the canvas has the optimal resolution for the device's pixel ratio.
-    if (this.options.enableDpiScaling && window && dpr !== 1) {
+    if (this.options.enableDpiScaling && dpr !== 1) {
       if (!this.originalWidth || (this.originalWidth * dpr !== width)) {
         this.originalWidth = width;
         this.canvas.setAttribute('width', (width * dpr).toString());
