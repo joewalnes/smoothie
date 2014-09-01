@@ -433,15 +433,15 @@
 
     // Make sure the canvas has the optimal resolution for the device's pixel ratio.
     if (this.options.enableDpiScaling && window && dpr !== 1) {
-      if (!this.original_width || (this.original_width * dpr !== width)) {
-        this.original_width = width;
+      if (!this.originalWidth || (this.originalWidth * dpr !== width)) {
+        this.originalWidth = width;
         this.canvas.setAttribute('width', (width * dpr).toString());
         this.canvas.style.width = width + 'px';
         this.canvas.getContext('2d').scale(dpr, dpr);
       }
 
-      if (!this.original_height || (this.original_height * dpr !== height)) {
-        this.original_height = height;
+      if (!this.originalHeight || (this.originalHeight * dpr !== height)) {
+        this.originalHeight = height;
         this.canvas.setAttribute('height', (height * dpr).toString());
         this.canvas.style.height = height + 'px';
         this.canvas.getContext('2d').scale(dpr, dpr);
