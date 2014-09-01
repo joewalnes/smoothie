@@ -172,13 +172,6 @@ declare module "smoothie"
         streamTo(canvas: HTMLCanvasElement, delayMillis?: number): void;
 
         /**
-         * This only runs for devices with a device pixel ratio greater than one and enableDpiScaling on. It checks for changes
-         * in the canvas's height or width. If there is a change, it resizes the canvas and adjusts for the device pixel ratio
-         * of the window.
-         */
-        resize(): void;
-
-        /**
          * Starts the animation of this chart. Called by <code>streamTo</code>.
          */
         start(): void;
