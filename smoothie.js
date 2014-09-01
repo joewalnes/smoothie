@@ -435,14 +435,14 @@
     if (this.options.enableDpiScaling && window && dpr !== 1) {
       if (!this.original_width || (this.original_width * dpr !== width)) {
         this.original_width = width;
-        this.canvas.setAttribute('width', width * dpr);
+        this.canvas.setAttribute('width', (width * dpr).toString());
         this.canvas.style.width = width + 'px';
         this.canvas.getContext('2d').scale(dpr, dpr);
       }
 
       if (!this.original_height || (this.original_height * dpr !== height)) {
         this.original_height = height;
-        this.canvas.setAttribute('height', height * dpr);
+        this.canvas.setAttribute('height', (height * dpr).toString());
         this.canvas.style.height = height + 'px';
         this.canvas.getContext('2d').scale(dpr, dpr);
       }
