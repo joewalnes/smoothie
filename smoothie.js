@@ -426,7 +426,11 @@
     this.start();
   };
 
+  /**
+   * Make sure the canvas has the optimal resolution for the device's pixel ratio.
+   */
   SmoothieChart.prototype.resize = function() {
+    // TODO this function doesn't handle the value of enableDpiScaling changing during execution
     if (!this.options.enableDpiScaling || !window || window.devicePixelRatio === 1)
       return;
 
@@ -434,7 +438,6 @@
     var width = parseInt(this.canvas.getAttribute('width'));
     var height = parseInt(this.canvas.getAttribute('height'));
 
-    // Make sure the canvas has the optimal resolution for the device's pixel ratio.
     if (!this.originalWidth || (this.originalWidth * dpr !== width)) {
       this.originalWidth = width;
       this.canvas.setAttribute('width', (width * dpr).toString());
@@ -544,6 +547,7 @@
         return;
       }
     }
+
     this.resize();
 
     this.lastRenderTimeMillis = nowMillis;
