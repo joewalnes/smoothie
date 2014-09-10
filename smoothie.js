@@ -71,6 +71,7 @@
  *        Draw time labels on top of series, by @comolosabia
  *        Add TimeSeries.clear function, by @drewnoakes
  * v1.26: Add support for resizing on high device pixel ratio screens, by @copacetic
+ * v1.27: Fix bug introduced in v1.26 for non whole number devicePixelRatio values, by @zmbush
  */
 
 ;(function(exports) {
@@ -438,16 +439,16 @@
     var width = parseInt(this.canvas.getAttribute('width'));
     var height = parseInt(this.canvas.getAttribute('height'));
 
-    if (!this.originalWidth || (this.originalWidth * dpr !== width)) {
+    if (!this.originalWidth || (Math.floor(this.originalWidth * dpr) !== width)) {
       this.originalWidth = width;
-      this.canvas.setAttribute('width', (width * dpr).toString());
+      this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
       this.canvas.style.width = width + 'px';
       this.canvas.getContext('2d').scale(dpr, dpr);
     }
 
-    if (!this.originalHeight || (this.originalHeight * dpr !== height)) {
+    if (!this.originalHeight || (Math.floor(this.originalHeight * dpr) !== height)) {
       this.originalHeight = height;
-      this.canvas.setAttribute('height', (height * dpr).toString());
+      this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
       this.canvas.style.height = height + 'px';
       this.canvas.getContext('2d').scale(dpr, dpr);
     }
