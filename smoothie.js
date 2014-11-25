@@ -225,6 +225,7 @@
    *   minValue: undefined,                      // specify to clamp the lower y-axis to a given value
    *   maxValue: undefined,                      // specify to clamp the upper y-axis to a given value
    *   maxValueScale: 1,                         // allows proportional padding to be added above the chart. for 10% padding, specify 1.1.
+   *   minValueScale: 1,                         // allows proportional padding to be added below the chart. for 10% padding, specify 1.1.
    *   yRangeFunction: undefined,                // function({min: , max: }) { return {min: , max: }; }
    *   scaleSmoothing: 0.125,                    // controls the rate at which y-value zoom animation occurs
    *   millisPerPixel: 20,                       // sets the speed at which the chart pans by
@@ -281,6 +282,7 @@
       return parseFloat(max).toFixed(precision);
     },
     maxValueScale: 1,
+    minValueScale: 1,
     interpolation: 'bezier',
     scaleSmoothing: 0.125,
     maxDataSetLength: 2,
@@ -512,6 +514,8 @@
     // Set the minimum if we've specified one
     if (chartOptions.minValue != null) {
       chartMinValue = chartOptions.minValue;
+    } else {
+      chartMinValue -= Math.abs(chartMinValue * chartOptions.minValueScale - chartMinValue);
     }
 
     // If a custom range function is set, call it
