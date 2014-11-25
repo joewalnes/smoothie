@@ -72,6 +72,7 @@
  *        Add TimeSeries.clear function, by @drewnoakes
  * v1.26: Add support for resizing on high device pixel ratio screens, by @copacetic
  * v1.27: Fix bug introduced in v1.26 for non whole number devicePixelRatio values, by @zmbush
+ * v1.28: Add 'minValueScale' option, by @megawac
  */
 
 ;(function(exports) {
