@@ -497,11 +497,11 @@
       for (var d = 0; d < this.seriesSet.length; d++) {
         // TODO(ndunn): We could calculate / track these values as they stream in.
         var timeSeries = this.seriesSet[d].timeSeries;
-        if (!isNaN(timeSeries.maxValue)) {
+        if (chartOptions.maxValue == null && !isNaN(timeSeries.maxValue)) {
           chartMaxValue = chartMaxValue > timeSeries.maxValue ? chartMaxValue : timeSeries.maxValue;
         }
 
-        if (!isNaN(timeSeries.minValue)) {
+        if (chartOptions.minValue == null && !isNaN(timeSeries.minValue)) {
           chartMinValue = chartMinValue > timeSeries.minValue ? chartMinValue : timeSeries.minValue;
         }
       }
