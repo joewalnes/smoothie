@@ -671,6 +671,11 @@
       var timeSeries = this.seriesSet[d].timeSeries,
           dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
+          
+      if (seriesOptions.lineWidth === 0) {
+        context.restore();
+        continue;
+      }
 
       // Delete old data that's moved off the left of the chart.
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
@@ -678,6 +683,9 @@
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
       context.strokeStyle = seriesOptions.strokeStyle;
+      if (typeof(seriesOptions.lineDash) !== "undefined") {
+        context.setLineDash(seriesOptions.lineDash);
+      }
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
