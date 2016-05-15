@@ -127,6 +127,9 @@ declare module "smoothie"
         grid?: IGridOptions;
 
         labels?: ILabelOptions;
+        tooltip?: boolean;
+        tooltipLine?: { lineWidth: number, strokeStyle: string };
+        tooltipFormatter?: Function;
     }
 
     /**
