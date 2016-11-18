@@ -73,6 +73,7 @@
  * v1.26: Add support for resizing on high device pixel ratio screens, by @copacetic
  * v1.27: Fix bug introduced in v1.26 for non whole number devicePixelRatio values, by @zmbush
  * v1.28: Add 'minValueScale' option, by @megawac
+ *        Fix 'labelPos' for different size of 'minValueString' 'maxValueString', by @henryn
  */
 
 ;(function(exports) {
@@ -751,10 +752,11 @@
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
       var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, chartOptions.labels.precision),
           minValueString = chartOptions.yMinFormatter(this.valueRange.min, chartOptions.labels.precision),
-          labelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(maxValueString).width - 2;
+          maxLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(maxValueString).width - 2,
+          minLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(minValueString).width - 2;
       context.fillStyle = chartOptions.labels.fillStyle;
-      context.fillText(maxValueString, labelPos, chartOptions.labels.fontSize);
-      context.fillText(minValueString, labelPos, dimensions.height - 2);
+      context.fillText(maxValueString, maxLabelPos, chartOptions.labels.fontSize);
+      context.fillText(minValueString, minLabelPos, dimensions.height - 2);
     }
 
     // Display timestamps along x-axis at the bottom of the chart.
