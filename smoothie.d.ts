@@ -1,4 +1,4 @@
-// Type definitions for Smoothie Charts 1.25
+// Type definitions for Smoothie Charts 1.29
 // Project: https://github.com/joewalnes/smoothie
 // Definitions by: Drew Noakes <https://drewnoakes.com>
 //                 Mike H. Hawley <https://github.com/mikehhawley>
@@ -128,6 +128,9 @@ export interface IChartOptions {
     grid?: IGridOptions;
 
     labels?: ILabelOptions;
+
+    /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility.
+    responsive: boolean;
 }
 
 /**
