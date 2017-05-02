@@ -1,7 +1,7 @@
 // MIT License:
 //
 // Copyright (c) 2010-2013, Joe Walnes
-//               2013-2014, Drew Noakes
+//               2013-2017, Drew Noakes
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
 /**
  * Smoothie Charts - http://smoothiecharts.org/
  * (c) 2010-2013, Joe Walnes
- *     2013-2014, Drew Noakes
+ *     2013-2017, Drew Noakes
  *
  * v1.0: Main charting library, by Joe Walnes
  * v1.1: Auto scaling of axis, by Neil Dunn
