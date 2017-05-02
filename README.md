@@ -10,6 +10,7 @@ See [http://smoothiecharts.org](http://smoothiecharts.org)
 
 *   [Hello world example](http://smoothiecharts.org/examples/example1.html)
 *   [Another example (server CPU usage)](http://smoothiecharts.org/examples/server-load.html)
+*   [Another example (responsive layout)](http://smoothiecharts.org/examples/responsive.html)
 *   [Tutorial](http://smoothiecharts.org/tutorial.html)
 *   [Interactive builder](http://smoothiecharts.org/builder/)
 *   Just the JavaScript: [smoothie.js](http://github.com/joewalnes/smoothie/raw/master/smoothie.js)
