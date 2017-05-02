@@ -27,5 +27,5 @@ For help, use the [Smoothie Charts Google Group](http://groups.google.com/group/
 [License](http://smoothiecharts.org/LICENSE.txt) (MIT)
 
 - [Joe Walnes](http://joewalnes.com/)
-- [Drew Noakes](http://drewnoakes.com/)
+- [Drew Noakes](https://drewnoakes.com/)
 
