@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Responsive Smoothie Chart example</title>
+    <script type="text/javascript" src="../smoothie.js"></script>
+    <script type="text/javascript">
+
+      // Randomly add a data point every 500ms
+      var random = new TimeSeries();
+      setInterval(function() {
+        random.append(new Date().getTime(), Math.random() * 10000);
+      }, 500);
+
+      function createTimeline() {
+        var chart = new SmoothieChart({responsive: true});
+        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        chart.streamTo(document.getElementById("chart"), 500);
+      }
+    </script>
+  </head>
+  <body onload="createTimeline()">
+
+    <p>A responsive <a href="../">Smoothie Charts</a> example. Stretch your browser and the chart will fill the width. It's possible to stretch height too. View source.</p>
+
+    <canvas id="chart" style="width:100%; height:200px"></canvas>
+
+  </body>
+</html>
