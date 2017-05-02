@@ -189,4 +189,6 @@ export declare class SmoothieChart {
     updateValueRange(): void;
 
     render(canvas?: HTMLCanvasElement, time?: number): void;
+
+    static timeFormatter(date: Date): string;
 }
