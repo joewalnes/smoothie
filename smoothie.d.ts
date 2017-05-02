@@ -109,20 +109,20 @@ export interface IChartOptions {
     maxValue?: number;
     /** Allows proportional padding to be added above the chart. for 10% padding, specify 1.1. */
     maxValueScale?: number;
-    yRangeFunction?: (range:IRange)=>IRange;
+    yRangeFunction?: (range: IRange) => IRange;
     /** Controls the rate at which y-value zoom animation occurs. */
     scaleSmoothing?: number;
     /** Sets the speed at which the chart pans by. */
     millisPerPixel?: number;
     /** Whether to render at different DPI depending upon the device. Enabled by default. */
     enableDpiScaling?: boolean;
-    yMinFormatter?: (min:number, precision:number)=>string;
-    yMaxFormatter?: (max:number, precision:number)=>string;
+    yMinFormatter?: (min: number, precision: number) => string;
+    yMaxFormatter?: (max: number, precision: number) => string;
     maxDataSetLength?: number;
     /** One of: 'bezier', 'linear', 'step' */
     interpolation?: string;
     /** Optional function to format time stamps for bottom of chart. You may use <code>SmoothieChart.timeFormatter</code>, or your own/ */
-    timestampFormatter?: (date:Date)=>string;
+    timestampFormatter?: (date: Date) => string;
     horizontalLines?: IHorizontalLine[];
 
     grid?: IGridOptions;
