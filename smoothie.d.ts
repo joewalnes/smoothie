@@ -129,8 +129,8 @@ export interface IChartOptions {
 
     labels?: ILabelOptions;
 
-    /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility.
-    responsive: boolean;
+    /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
+    responsive?: boolean;
 }
 
 /**
