@@ -3,6 +3,7 @@
   "version": "1.29.0",
   "description": "Smoothie Charts: smooooooth JavaScript charts for realtime streaming data",
   "main": "./smoothie.js",
+  "types": "./smoothie.d.ts",
   "directories": {
     "doc": "docs",
     "example": "examples",
