@@ -22,7 +22,8 @@
     "realtime",
     "stock-ticker",
     "time series",
-    "time-series"
+    "time-series",
+    "responsive"
   ],
   "bugs": "https://github.com/joewalnes/smoothie/issues",
   "author": {
@@ -32,7 +33,7 @@
   "contributors": [
     {
       "name": "Drew Noakes",
-      "url": "http://drewnoakes.com/"
+      "url": "https://drewnoakes.com/"
     }
   ],
   "license": "MIT"
