@@ -132,7 +132,7 @@ export interface IChartOptions {
     /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
     responsive?: boolean;
 
-    /** Sets the target refrsh rate in milliseconds. FPS = 1000/rate */
+    /** Sets the target refresh rate in milliseconds. FPS = 1000/rate */
     targetRefreshRate?: number;
 }
 
