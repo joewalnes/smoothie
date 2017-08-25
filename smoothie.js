@@ -346,7 +346,8 @@
 
   SmoothieChart.defaultSeriesPresentationOptions = {
     lineWidth: 1,
-    strokeStyle: '#ffffff'
+    strokeStyle: '#ffffff',
+    lineDash: []
   };
 
   /**
@@ -358,7 +359,8 @@
    * {
    *   lineWidth: 1,
    *   strokeStyle: '#ffffff',
-   *   fillStyle: undefined
+   *   fillStyle: undefined,
+   *   lineDash: []
    * }
    * </pre>
    */
@@ -698,6 +700,7 @@
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
       context.strokeStyle = seriesOptions.strokeStyle;
+      context.setLineDash(seriesOptions.lineDash || []);
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.

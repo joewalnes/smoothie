@@ -119,7 +119,8 @@
 
           if (typeof(a[key]) === 'object') {
             if (a[key] instanceof Array) {
-              // ignore arrays
+              if (!(b[key] instanceof Array) || a[key].length !== b.length && a[key].length)
+                result[key] = a[key];
             } else {
               var sub = difference(a[key], b[key]);
               if (Object.keys(sub).length)
@@ -410,6 +411,17 @@
           name: 'Interpolation',
           propertyName: 'interpolation',
           values: ['bezier', 'linear', 'step']
+        });
+        bindCheckBox({
+          target: chart.seriesSet[0].options,
+          name: 'Use dashed line',
+          propertyName: 'lineDash',
+          convert: function (checked) {
+            return checked ? [5,5] : [];
+          },
+          convertBack: function (value) {
+            return value && value.length ? true : false;
+          }
         });
 
         // Grid lines

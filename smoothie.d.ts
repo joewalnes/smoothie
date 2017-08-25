@@ -13,6 +13,7 @@ export interface ITimeSeriesPresentationOptions {
     strokeStyle?: string;
     fillStyle?: string;
     lineWidth?: number;
+    lineDash?: number[];
 }
 
 export declare class TimeSeries {
