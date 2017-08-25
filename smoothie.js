@@ -77,6 +77,7 @@
  * v1.29: Support responsive sizing, by @drewnoakes
  * v1.29.1: Include types in package, and make property optional, by @TrentHouliston
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
+ * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
  */
 
 ;(function(exports) {
@@ -103,6 +104,18 @@
         }
       }
       return arguments[0];
+    },
+    binarySearch: function(data, value) {
+      var low = 0,
+          high = data.length;
+      while (low < high) {
+        var mid = (low + high) >> 1;
+        if (value < data[mid][0])
+          high = mid;
+        else
+          low = mid + 1;
+      }
+      return low;
     }
   };
 
@@ -264,7 +277,13 @@
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
    *     precision: 2
-   *   }
+   *   },
+   *   tooltip: false                            // show tooltip when mouse is over the chart
+   *   tooltipLine: {                            // properties for a vertical line at the cursor position
+   *     lineWidth: 1,
+   *     strokeStyle: '#BBBBBB'
+   *   },
+   *   tooltipFormatter: SmoothieChart.tooltipFormatter // formatter function for tooltip text
    * }
    * </pre>
    *
@@ -276,7 +295,23 @@
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
     this.lastRenderTimeMillis = 0;
+
+    this.mousemove = this.mousemove.bind(this);
+    this.mouseout = this.mouseout.bind(this);
   }
+
+  /** Formats the HTML string content of the tooltip. */
+  SmoothieChart.tooltipFormatter = function (timestamp, data) {
+      var timestampFormatter = this.options.timestampFormatter || SmoothieChart.timeFormatter,
+          lines = [timestampFormatter(new Date(timestamp))];
+
+      for (var i = 0; i < data.length; ++i) {
+        lines.push('<span style="color:' + data[i].series.options.strokeStyle + '">' +
+        this.options.yMaxFormatter(data[i].value, this.options.labels.precision) + '</span>');
+      }
+
+      return lines.join('<br>');
+  };
 
   SmoothieChart.defaultChartOptions = {
     millisPerPixel: 20,
@@ -310,6 +345,12 @@
       precision: 2
     },
     horizontalLines: [],
+    tooltip: false,
+    tooltipLine: {
+      lineWidth: 1,
+      strokeStyle: '#BBBBBB'
+    },
+    tooltipFormatter: SmoothieChart.tooltipFormatter,
     responsive: false
   };
 
@@ -437,6 +478,78 @@
     this.start();
   };
 
+  SmoothieChart.prototype.getTooltipEl = function () {
+    // Use a single tooltip element across all chart instances
+    var el = SmoothieChart.tooltipEl;
+    if (!el) {
+      el = SmoothieChart.tooltipEl = document.createElement('div');
+      el.className = 'smoothie-chart-tooltip';
+      el.style.position = 'absolute';
+      el.style.display = 'none';
+      document.body.appendChild(el);
+    }
+    return el;
+  };
+
+  SmoothieChart.prototype.updateTooltip = function () {
+    var el = this.getTooltipEl();
+
+    if (!this.mouseover || !this.options.tooltip) {
+      el.style.display = 'none';
+      return;
+    }
+
+    var time = this.lastRenderTimeMillis - (this.delay || 0);
+
+    // Round time down to pixel granularity, so motion appears smoother.
+    time -= time % this.options.millisPerPixel;
+
+    // x pixel to time
+    var t = this.options.scrollBackwards
+      ? time - this.mouseX * this.options.millisPerPixel
+      : time - (this.canvas.offsetWidth - this.mouseX) * this.options.millisPerPixel;
+
+    var data = [];
+
+     // For each data set...
+    for (var d = 0; d < this.seriesSet.length; d++) {
+      var timeSeries = this.seriesSet[d].timeSeries,
+          // find datapoint closest to time 't'
+          closeIdx = Util.binarySearch(timeSeries.data, t);
+
+      if (closeIdx > 0 && closeIdx < timeSeries.data.length) {
+        data.push({ series: this.seriesSet[d], index: closeIdx, value: timeSeries.data[closeIdx][1] });
+      }
+    }
+
+    if (data.length) {
+      el.innerHTML = this.options.tooltipFormatter.call(this, t, data);
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  };
+
+  SmoothieChart.prototype.mousemove = function (evt) {
+    this.mouseover = true;
+    this.mouseX = evt.offsetX;
+    this.mouseY = evt.offsetY;
+    this.mousePageX = evt.pageX;
+    this.mousePageY = evt.pageY;
+
+    var el = this.getTooltipEl();
+    el.style.top = Math.round(this.mousePageY) + 'px';
+    el.style.left = Math.round(this.mousePageX) + 'px';
+    this.updateTooltip();
+  };
+
+  SmoothieChart.prototype.mouseout = function () {
+    this.mouseover = false;
+    this.mouseX = this.mouseY = -1;
+    if (SmoothieChart.tooltipEl)
+      SmoothieChart.tooltipEl.style.display = 'none';
+  };
+
   /**
    * Make sure the canvas has the optimal resolution for the device's pixel ratio.
    */
@@ -488,6 +601,9 @@
       return;
     }
 
+    this.canvas.addEventListener('mousemove', this.mousemove);
+    this.canvas.addEventListener('mouseout', this.mouseout);
+
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
       this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
@@ -506,6 +622,8 @@
     if (this.frame) {
       SmoothieChart.AnimateCompatibility.cancelAnimationFrame(this.frame);
       delete this.frame;
+      this.canvas.removeEventListener('mousemove', this.mousemove);
+      this.canvas.removeEventListener('mouseout', this.mouseout);
     }
   };
 
@@ -577,6 +695,7 @@
     }
 
     this.resize();
+    this.updateTooltip();
 
     this.lastRenderTimeMillis = nowMillis;
 
@@ -767,6 +886,18 @@
       context.restore();
     }
 
+    if (chartOptions.tooltip && this.mouseX >= 0) {
+      // Draw vertical bar to show tooltip position
+      context.lineWidth = chartOptions.tooltipLine.lineWidth;
+      context.strokeStyle = chartOptions.tooltipLine.strokeStyle;
+      context.beginPath();
+      context.moveTo(this.mouseX, 0);
+      context.lineTo(this.mouseX, dimensions.height);
+      context.closePath();
+      context.stroke();
+      this.updateTooltip();
+    }
+
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
       var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, chartOptions.labels.precision),
@@ -822,4 +953,3 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
-

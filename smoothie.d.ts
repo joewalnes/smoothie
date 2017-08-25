@@ -129,6 +129,10 @@ export interface IChartOptions {
 
     labels?: ILabelOptions;
 
+    tooltip?: boolean;
+    tooltipLine?: { lineWidth: number, strokeStyle: string };
+    tooltipFormatter?: (timestamp: number, data: {series: TimeSeries, index: number, value: number}[]) => string;
+
     /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
     responsive?: boolean;
 }
