@@ -16,7 +16,7 @@
           var value = Math.pow(Math.random() * 2 - 1, 5) * maxYValue;
           series.append(new Date().getTime(), value);
           addValueLoop();
-        }, Math.random() * 1500);
+        }, Math.random() * 500);
       };
       addValueLoop();
 
@@ -69,6 +69,8 @@
         var seriesOptionsJs = toJsCode(difference(chart.seriesSet[0].options, SmoothieChart.defaultSeriesPresentationOptions));
 
         var js = "";
+
+        document.getElementById('css-code').style.display = chart.options.tooltip ? 'block' : 'none';
 
         if (chart.options.timestampFormatter) {
           chartOptions.timestampFormatter = "SmoothieChart.timeFormatter";
@@ -398,6 +400,8 @@
         bindRange({target: canvas, name: 'Chart height', propertyName: 'height', min: 20, max: 400});
         bindRange({target: canvas, name: 'Chart width', propertyName: 'width', min: 20, max: 1000});
         bindRange({target: chart, name: 'Delay', propertyName: 'delay', min: 0, max: 2000});
+        bindCheckBox({target: chart.options, name: 'Scroll Backwards', propertyName: 'scrollBackwards'});
+        bindCheckBox({target: chart.options, name: 'Show Tooltip', propertyName: 'tooltip'});
 
         // Series
         startControlSection('Series');
@@ -463,6 +467,7 @@
           }
         });
         bindRange({target: chart.options, name: 'Max-value scale', propertyName: 'maxValueScale', min: 0.8, max: 1.5, scale: 100});
+        bindRange({target: chart.options, name: 'Min-value scale', propertyName: 'minValueScale', min: 0.8, max: 1.5, scale: 100});
         bindRange({target: chart.options, name: 'Scale adjust speed', propertyName: 'scaleSmoothing', min: .01, max: 1, scale: 1000});
         bindCheckBox({
           target: chart.options,
@@ -546,6 +551,16 @@
         border: 1px solid black;
         box-sizing: border-box;
       }
+
+      div.smoothie-chart-tooltip {
+        background: #444;
+        padding: 1em;
+        margin-top: 20px;
+        font-family: consolas;
+        color: white;
+        font-size: 10px;
+        pointer-events: none;
+      }
     </style>
   </head>
   <body onload="onLoad()">
@@ -566,6 +581,19 @@
       <div>
         <label for="javascript-code">JavaScript:</label><br>
         <textarea readonly id="javascript-code" style="min-height:140px;"></textarea>
+      </div>
+      <div id="css-code">
+        <label for="css-code">CSS:</label><br>
+        <textarea readonly id="css-code" style="min-height:160px;">div.smoothie-chart-tooltip {
+  background: #444;
+  padding: 1em;
+  margin-top: 20px;
+  font-family: consolas;
+  color: white;
+  font-size: 10px;
+  pointer-events: none;
+}
+        </textarea>
       </div>
     </div>
 
