@@ -310,7 +310,8 @@
       precision: 2
     },
     horizontalLines: [],
-    responsive: false
+    responsive: false,
+    targetRefreshRate: 16
   };
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
@@ -438,6 +439,14 @@
   };
 
   /**
+   * Sets the target FPS
+   * @param fps the desired FPS
+   */
+  SmoothieChart.prototype.setTargetFPS = function(fps) {
+    this.options.targetRefreshRate = 1000 / fps;
+  }
+
+  /**
    * Make sure the canvas has the optimal resolution for the device's pixel ratio.
    */
   SmoothieChart.prototype.resize = function () {
@@ -562,6 +571,8 @@
 
   SmoothieChart.prototype.render = function(canvas, time) {
     var nowMillis = new Date().getTime();
+    //Do we want to render?
+    if (nowMillis - this.lastRenderTimeMillis < this.options.targetRefreshRate) return;
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether

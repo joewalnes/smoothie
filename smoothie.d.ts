@@ -131,6 +131,9 @@ export interface IChartOptions {
 
     /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
     responsive?: boolean;
+
+    /** Sets the target refresh rate in milliseconds. FPS = 1000/rate */
+    targetRefreshRate?: number;
 }
 
 /**
@@ -194,4 +197,10 @@ export declare class SmoothieChart {
     render(canvas?: HTMLCanvasElement, time?: number): void;
 
     static timeFormatter(date: Date): string;
+
+    /**
+     * Sets the target FPS
+     * @param fps the desired FPS
+     */
+    setTargetFPS(fps: number): void;
 }
