@@ -75,6 +75,8 @@
  * v1.28: Add 'minValueScale' option, by @megawac
  *        Fix 'labelPos' for different size of 'minValueString' 'maxValueString', by @henryn
  * v1.29: Support responsive sizing, by @drewnoakes
+ * v1.29.1: Include types in package, and make property optional, by @TrentHouliston
+ * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  */
 
 ;(function(exports) {
