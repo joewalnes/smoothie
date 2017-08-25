@@ -1,4 +1,4 @@
-// Type definitions for Smoothie Charts 1.29
+// Type definitions for Smoothie Charts 1.32
 // Project: https://github.com/joewalnes/smoothie
 // Definitions by: Drew Noakes <https://drewnoakes.com>
 //                 Mike H. Hawley <https://github.com/mikehhawley>
@@ -135,6 +135,9 @@ export interface IChartOptions {
 
     /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
     responsive?: boolean;
+
+    /** The maximum frame rate the chart will render at, in FPS. Default is <code>0</code>, meaning no limit. */
+    limitFPS?: number;
 }
 
 /**

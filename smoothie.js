@@ -78,6 +78,7 @@
  * v1.29.1: Include types in package, and make property optional, by @TrentHouliston
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
+ * v1.32: Support frame rate limit, by @dpuyosa
  */
 
 ;(function(exports) {
@@ -283,7 +284,9 @@
    *     lineWidth: 1,
    *     strokeStyle: '#BBBBBB'
    *   },
-   *   tooltipFormatter: SmoothieChart.tooltipFormatter // formatter function for tooltip text
+   *   tooltipFormatter: SmoothieChart.tooltipFormatter, // formatter function for tooltip text
+   *   responsive: false,                        // whether the chart should adapt to the size of the canvas
+   *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
    * </pre>
    *
@@ -351,7 +354,8 @@
       strokeStyle: '#BBBBBB'
     },
     tooltipFormatter: SmoothieChart.tooltipFormatter,
-    responsive: false
+    responsive: false,
+    limitFPS: 0
   };
 
   // Based on http://inspirit.github.com/jsfeat/js/compatibility.js
@@ -680,6 +684,10 @@
 
   SmoothieChart.prototype.render = function(canvas, time) {
     var nowMillis = new Date().getTime();
+
+    // Respect any frame rate limit.
+    if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
+      return;
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether
