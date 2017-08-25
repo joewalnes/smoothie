@@ -402,7 +402,17 @@
         bindRange({target: chart, name: 'Delay', propertyName: 'delay', min: 0, max: 2000});
         bindCheckBox({target: chart.options, name: 'Scroll Backwards', propertyName: 'scrollBackwards'});
         bindCheckBox({target: chart.options, name: 'Show Tooltip', propertyName: 'tooltip'});
-
+        bindCheckBox({
+          target: chart.options,
+          name: 'Limit FPS',
+          propertyName: 'limitFPS',
+          convert: function (checked) {
+            return checked ? 15 : 0;
+          },
+          convertBack: function (value) {
+            return value !== 0;
+          }
+        });
         // Series
         startControlSection('Series');
         bindColor({target: chart.seriesSet[0].options, name: 'Series line color', propertyName: 'strokeStyle', optional: true, enabled: true, opacity: 1, emptyValue: 'none'});
