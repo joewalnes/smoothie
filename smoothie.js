@@ -369,7 +369,7 @@
             window.msRequestAnimationFrame      ||
             function(callback) {
               return window.setTimeout(function() {
-                callback(new Date().getTime());
+                callback(Date.now());
               }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
@@ -683,7 +683,7 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = new Date().getTime();
+    var nowMillis = Date.now();
 
     // Respect any frame rate limit.
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
