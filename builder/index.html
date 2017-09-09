@@ -14,7 +14,7 @@
           // Generate a random value, centered around zero, raised to the power of 5
           // so that larger values occur less frequently
           var value = Math.pow(Math.random() * 2 - 1, 5) * maxYValue;
-          series.append(new Date().getTime(), value);
+          series.append(Date.now(), value);
           addValueLoop();
         }, Math.random() * 1500);
       };

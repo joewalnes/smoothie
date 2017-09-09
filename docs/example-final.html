@@ -16,8 +16,8 @@
       var line1 = new TimeSeries();
       var line2 = new TimeSeries();
       setInterval(function() {
-        line1.append(new Date().getTime(), Math.random());
-        line2.append(new Date().getTime(), Math.random());
+        line1.append(Date.now(), Math.random());
+        line2.append(Date.now(), Math.random());
       }, 1000);
 
       var smoothie = new SmoothieChart({ grid: { strokeStyle: 'rgb(125, 0, 0)', fillStyle: 'rgb(60, 0, 0)', lineWidth: 1, millisPerLine: 250, verticalSections: 6 } });
