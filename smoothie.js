@@ -320,7 +320,7 @@
             window.msRequestAnimationFrame      ||
             function(callback) {
               return window.setTimeout(function() {
-                callback(new Date().getTime());
+                callback(Date.now());
               }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
@@ -542,7 +542,7 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = new Date().getTime();
+    var nowMillis = Date.now();
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether
