@@ -54,8 +54,8 @@ var line2 = new TimeSeries();
 
 // Add a random value to each line every second
 setInterval(function() {
-  line1.append(new Date().getTime(), Math.random());
-  line2.append(new Date().getTime(), Math.random());
+  line1.append(Date.now(), Math.random());
+  line2.append(Date.now(), Math.random());
 }, 1000);
 
 // Add to SmoothieChart
@@ -68,8 +68,8 @@ smoothie.addTimeSeries(line2);</pre>
         var line1 = new TimeSeries();
         var line2 = new TimeSeries();
         setInterval(function() {
-          line1.append(new Date().getTime(), Math.random());
-          line2.append(new Date().getTime(), Math.random());
+          line1.append(Date.now(), Math.random());
+          line2.append(Date.now(), Math.random());
         }, 1000);
 
         var smoothie = new SmoothieChart();
@@ -101,8 +101,8 @@ smoothie.addTimeSeries(line2);</pre>
         var line1 = new TimeSeries();
         var line2 = new TimeSeries();
         setInterval(function() {
-          line1.append(new Date().getTime(), Math.random());
-          line2.append(new Date().getTime(), Math.random());
+          line1.append(Date.now(), Math.random());
+          line2.append(Date.now(), Math.random());
         }, 1000);
 
         var smoothie = new SmoothieChart();
@@ -131,8 +131,8 @@ smoothie.addTimeSeries(line2,
         var line1 = new TimeSeries();
         var line2 = new TimeSeries();
         setInterval(function() {
-          line1.append(new Date().getTime(), Math.random());
-          line2.append(new Date().getTime(), Math.random());
+          line1.append(Date.now(), Math.random());
+          line2.append(Date.now(), Math.random());
         }, 1000);
 
         var smoothie = new SmoothieChart({

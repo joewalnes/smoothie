@@ -32,7 +32,7 @@
       var dataSet1 = new TimeSeries(), dataSet2 = new TimeSeries(), dataSet3 = new TimeSeries();
 
       setInterval(function() {
-        var now = new Date().getTime();
+        var now = Date.now();
         dataSet1.append(now, Math.random());
         dataSet2.append(now, Math.random());
         dataSet3.append(now, Math.random());
