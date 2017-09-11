@@ -83,6 +83,9 @@
 
 ;(function(exports) {
 
+  // Date.now polyfill
+  Date.now = Date.now || function() { return new Date().getTime(); };
+
   var Util = {
     extend: function() {
       arguments[0] = arguments[0] || {};
