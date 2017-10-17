@@ -3,7 +3,7 @@
   "main": "smoothie.js",
   "homepage": "http://smoothiecharts.org",
   "authors": [
-    { "name": "Joe Walnes", "homepage": "http://joewalnes.com" },
+    { "name": "Joe Walnes", "homepage": "https://joewalnes.com" },
     { "name": "Drew Noakes", "homepage": "https://drewnoakes.com" }
   ],
   "repository": {
