@@ -79,7 +79,8 @@
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
  * v1.32: Support frame rate limit, by @dpuyosa
- * v1.33: Fixed problem with proper tooltip display across multiple chart instances on the same page
+ * v1.33: Use Date static method instead of instance, by @nnnoel
+ *        Fix bug with tooltips when multiple charts on a page, by @jpmbiz70
  */
 
 ;(function(exports) {
