@@ -79,6 +79,7 @@
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
  * v1.32: Support frame rate limit, by @dpuyosa
+ * v1.33: Fixed problem with proper tooltip display across multiple chart instances on the same page
  */
 
 ;(function(exports) {
@@ -486,17 +487,18 @@
   };
 
   SmoothieChart.prototype.getTooltipEl = function () {
-    // Use a single tooltip element across all chart instances
-    var el = SmoothieChart.tooltipEl;
-    if (!el) {
-      el = SmoothieChart.tooltipEl = document.createElement('div');
-      el.className = 'smoothie-chart-tooltip';
-      el.style.position = 'absolute';
-      el.style.display = 'none';
-      document.body.appendChild(el);
-    }
-    return el;
-  };
+    // Use a separate tooltip for each element across all chart instances
+        var el = SmoothieChart.tooltipEl;
+        // Create the tool tip element lazily
+        if (!this.tooltipEl) {
+            this.tooltipEl = document.createElement('div');
+            this.tooltipEl.className = 'smoothie-chart-tooltip';
+            this.tooltipEl.style.position = 'absolute';
+            this.tooltipEl.style.display = 'none';
+            document.body.appendChild(this.tooltipEl);
+        }
+        return this.tooltipEl;
+    };
 
   SmoothieChart.prototype.updateTooltip = function () {
     var el = this.getTooltipEl();
