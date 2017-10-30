@@ -21,6 +21,42 @@ See [http://smoothiecharts.org](http://smoothiecharts.org)
 *   Yarn: `yarn install smoothie`
 *   [Introducing Smoothie Charts](http://joewalnes.com/2010/08/10/introducing-smoothie-charts/) (blog entry)
 
+---
+
+### Example
+
+Given a `<canvas>`:
+
+```html
+<canvas id="chart" width="400" height="100"></canvas>
+```
+
+Create a time series and chart with code resembling:
+
+```js
+// Create a time series
+var series = new TimeSeries();
+
+// Find the canvas
+var canvas = document.getElementById('chart');
+
+// Create the chart
+var chart = new SmoothieChart();
+chart.addTimeSeries(series, { strokeStyle: 'rgba(0, 255, 0, 1)' });
+chart.streamTo(canvas, 500);
+```
+
+Then, add data to your time series and it will be displayed on the chart:
+
+```js
+// Randomly add a data point every 500ms
+setInterval(function() {
+    series.append(Date.now(), Math.random() * 10000);
+}, 500);
+```
+
+---
+
 ### Questions
 
 For help, use the [Smoothie Charts Google Group](http://groups.google.com/group/smoothie-charts).
