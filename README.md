@@ -1,6 +1,6 @@
 *Smoothie Charts* is a really small charting library designed for _live
 streaming data_. I built it to reduce the headaches I was getting from
-watching charts jerkily updating every second. 
+watching charts jerkily updating every second.
 
 See [http://smoothiecharts.org](http://smoothiecharts.org)
 
@@ -17,6 +17,8 @@ See [http://smoothiecharts.org](http://smoothiecharts.org)
 *   Full distribution (docs and examples): [zip](http://github.com/joewalnes/smoothie/zipball/master) or [tgz](http://github.com/joewalnes/smoothie/tarball/master)
 *   Repository: `git clone git@github.com:joewalnes/smoothie.git`
 *   Bower: `bower install smoothie`
+*   NPM: `npm install smoothie`
+*   Yarn: `yarn install smoothie`
 *   [Introducing Smoothie Charts](http://joewalnes.com/2010/08/10/introducing-smoothie-charts/) (blog entry)
 
 ### Questions
