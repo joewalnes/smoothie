@@ -79,9 +79,14 @@
  * v1.30: Fix inverted logic in devicePixelRatio support, by @scanlime
  * v1.31: Support tooltips, by @Sly1024 and @drewnoakes
  * v1.32: Support frame rate limit, by @dpuyosa
+ * v1.33: Use Date static method instead of instance, by @nnnoel
+ *        Fix bug with tooltips when multiple charts on a page, by @jpmbiz70
  */
 
 ;(function(exports) {
+
+  // Date.now polyfill
+  Date.now = Date.now || function() { return new Date().getTime(); };
 
   var Util = {
     extend: function() {
@@ -369,7 +374,7 @@
             window.msRequestAnimationFrame      ||
             function(callback) {
               return window.setTimeout(function() {
-                callback(new Date().getTime());
+                callback(Date.now());
               }, 16);
             };
           return requestAnimationFrame.call(window, callback, element);
@@ -483,16 +488,15 @@
   };
 
   SmoothieChart.prototype.getTooltipEl = function () {
-    // Use a single tooltip element across all chart instances
-    var el = SmoothieChart.tooltipEl;
-    if (!el) {
-      el = SmoothieChart.tooltipEl = document.createElement('div');
-      el.className = 'smoothie-chart-tooltip';
-      el.style.position = 'absolute';
-      el.style.display = 'none';
-      document.body.appendChild(el);
+    // Create the tool tip element lazily
+    if (!this.tooltipEl) {
+      this.tooltipEl = document.createElement('div');
+      this.tooltipEl.className = 'smoothie-chart-tooltip';
+      this.tooltipEl.style.position = 'absolute';
+      this.tooltipEl.style.display = 'none';
+      document.body.appendChild(this.tooltipEl);
     }
-    return el;
+    return this.tooltipEl;
   };
 
   SmoothieChart.prototype.updateTooltip = function () {
@@ -683,7 +687,7 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = new Date().getTime();
+    var nowMillis = Date.now();
 
     // Respect any frame rate limit.
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
