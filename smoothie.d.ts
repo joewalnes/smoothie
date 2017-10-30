@@ -119,8 +119,8 @@ export interface IChartOptions {
     yMinFormatter?: (min: number, precision: number) => string;
     yMaxFormatter?: (max: number, precision: number) => string;
     maxDataSetLength?: number;
-    /** One of: 'bezier', 'linear', 'step' */
-    interpolation?: string;
+    /** Controls how lines are drawn between data points. Defaults to "bezier". */
+    interpolation?: "linear" | "step" | "bezier";
     /** Optional function to format time stamps for bottom of chart. You may use <code>SmoothieChart.timeFormatter</code>, or your own/ */
     timestampFormatter?: (date: Date) => string;
     horizontalLines?: IHorizontalLine[];
