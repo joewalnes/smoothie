@@ -488,8 +488,6 @@
   };
 
   SmoothieChart.prototype.getTooltipEl = function () {
-    // Use a separate tooltip for each element across all chart instances
-        var el = SmoothieChart.tooltipEl;
         // Create the tool tip element lazily
         if (!this.tooltipEl) {
             this.tooltipEl = document.createElement('div');
