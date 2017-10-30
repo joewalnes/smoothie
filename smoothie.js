@@ -488,16 +488,16 @@
   };
 
   SmoothieChart.prototype.getTooltipEl = function () {
-        // Create the tool tip element lazily
-        if (!this.tooltipEl) {
-            this.tooltipEl = document.createElement('div');
-            this.tooltipEl.className = 'smoothie-chart-tooltip';
-            this.tooltipEl.style.position = 'absolute';
-            this.tooltipEl.style.display = 'none';
-            document.body.appendChild(this.tooltipEl);
-        }
-        return this.tooltipEl;
-    };
+    // Create the tool tip element lazily
+    if (!this.tooltipEl) {
+      this.tooltipEl = document.createElement('div');
+      this.tooltipEl.className = 'smoothie-chart-tooltip';
+      this.tooltipEl.style.position = 'absolute';
+      this.tooltipEl.style.display = 'none';
+      document.body.appendChild(this.tooltipEl);
+    }
+    return this.tooltipEl;
+  };
 
   SmoothieChart.prototype.updateTooltip = function () {
     var el = this.getTooltipEl();
