@@ -638,33 +638,33 @@
   SmoothieChart.prototype.updateValueRange = function() {
     // Calculate the current scale of the chart, from all time series.
     var chartOptions = this.options,
-        chartMaxValue = Number.NaN,
-        chartMinValue = Number.NaN;
+        chartMaxValue = chartOptions.maxValue,
+        chartMinValue = chartOptions.minValue;
 
-    for (var d = 0; d < this.seriesSet.length; d++) {
-      // TODO(ndunn): We could calculate / track these values as they stream in.
-      var timeSeries = this.seriesSet[d].timeSeries;
-      if (!isNaN(timeSeries.maxValue)) {
-        chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
-      }
+    if (isNaN(chartMinValue + chartMaxValue)) {
+      for (var d = 0; d < this.seriesSet.length; d++) {
+        // TODO(ndunn): We could calculate / track these values as they stream in.
+        var timeSeries = this.seriesSet[d].timeSeries;
+        if (chartOptions.maxValue == null && !isNaN(timeSeries.maxValue)) {
+          chartMaxValue = chartMaxValue > timeSeries.maxValue ? chartMaxValue : timeSeries.maxValue;
+        }
 
-      if (!isNaN(timeSeries.minValue)) {
-        chartMinValue = !isNaN(chartMinValue) ? Math.min(chartMinValue, timeSeries.minValue) : timeSeries.minValue;
+        if (chartOptions.minValue == null && !isNaN(timeSeries.minValue)) {
+          chartMinValue = chartMinValue > timeSeries.minValue ? chartMinValue : timeSeries.minValue;
+        }
       }
     }
 
+    var range = chartMaxValue - chartMinValue;
+
     // Scale the chartMaxValue to add padding at the top if required
-    if (chartOptions.maxValue != null) {
-      chartMaxValue = chartOptions.maxValue;
-    } else {
-      chartMaxValue *= chartOptions.maxValueScale;
+    if (chartOptions.maxValue == null) {
+      chartMaxValue += range * chartOptions.maxValueScale - range;
     }
 
     // Set the minimum if we've specified one
-    if (chartOptions.minValue != null) {
-      chartMinValue = chartOptions.minValue;
-    } else {
-      chartMinValue -= Math.abs(chartMinValue * chartOptions.minValueScale - chartMinValue);
+    if (chartOptions.minValue == null) {
+      chartMinValue -= range * chartOptions.minValueScale - range;
     }
 
     // If a custom range function is set, call it
@@ -675,8 +675,7 @@
     }
 
     if (!isNaN(chartMaxValue) && !isNaN(chartMinValue)) {
-      var targetValueRange = chartMaxValue - chartMinValue;
-      var valueRangeDiff = (targetValueRange - this.currentValueRange);
+      var valueRangeDiff = (chartMaxValue - chartMinValue) - this.currentValueRange;
       var minValueDiff = (chartMinValue - this.currentVisMinValue);
       this.isAnimatingScale = Math.abs(valueRangeDiff) > 0.1 || Math.abs(minValueDiff) > 0.1;
       this.currentValueRange += chartOptions.scaleSmoothing * valueRangeDiff;
