@@ -41,6 +41,11 @@ export declare class TimeSeries {
      * Adjust or inspect the upper y-axis for this <code>TimeSeries</code> object.
      */
     maxValue: number;
+    
+    /**
+     * Hide this <code>TimeSeries</code> object in the chart.
+     */
+    disabled: boolean;
 
     /**
      * Clears all data and state from this TimeSeries object.
