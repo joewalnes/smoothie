@@ -143,6 +143,7 @@
    */
   function TimeSeries(options) {
     this.options = Util.extend({}, TimeSeries.defaultOptions, options);
+    this.disabled = false;
     this.clear();
   }
 
@@ -521,10 +522,13 @@
 
      // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
-      var timeSeries = this.seriesSet[d].timeSeries,
-          // find datapoint closest to time 't'
-          closeIdx = Util.binarySearch(timeSeries.data, t);
-
+      var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
+      
+      // find datapoint closest to time 't'
+      var closeIdx = Util.binarySearch(timeSeries.data, t);
       if (closeIdx > 0 && closeIdx < timeSeries.data.length) {
         data.push({ series: this.seriesSet[d], index: closeIdx, value: timeSeries.data[closeIdx][1] });
       }
@@ -644,6 +648,10 @@
     for (var d = 0; d < this.seriesSet.length; d++) {
       // TODO(ndunn): We could calculate / track these values as they stream in.
       var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
+      
       if (!isNaN(timeSeries.maxValue)) {
         chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
       }
@@ -819,8 +827,12 @@
     // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
       context.save();
-      var timeSeries = this.seriesSet[d].timeSeries,
-          dataSet = timeSeries.data,
+      var timeSeries = this.seriesSet[d].timeSeries;
+      if (timeSeries.disabled) {
+          continue;
+      }
+      
+      var dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
 
       // Delete old data that's moved off the left of the chart.
