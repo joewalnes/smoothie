@@ -291,6 +291,7 @@
    *     strokeStyle: '#BBBBBB'
    *   },
    *   tooltipFormatter: SmoothieChart.tooltipFormatter, // formatter function for tooltip text
+   *   nonRealtimeData: false,                   // use time of latest data as current time
    *   responsive: false,                        // whether the chart should adapt to the size of the canvas
    *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
@@ -360,6 +361,7 @@
       strokeStyle: '#BBBBBB'
     },
     tooltipFormatter: SmoothieChart.tooltipFormatter,
+    nonRealtimeData: false,
     responsive: false,
     limitFPS: 0
   };
@@ -619,7 +621,24 @@
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
       this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
-        this.render();
+        if(this.options.nonRealtimeData){
+           var dateZero = new Date(0);
+           // find the data point with the latest timestamp          
+           var maxTimeStamp = this.seriesSet.reduce(function(max, series){
+             var dataSet = series.timeSeries.data;
+             if(dataSet && dataSet.length > 0)
+             {
+              // timestamp corresponds to element 0 of the data point
+              var lastDataTimeStamp = dataSet[dataSet.length-1][0];
+              max = max > lastDataTimeStamp ? max : lastDataTimeStamp;
+             }
+             return max;
+          }, dateZero);
+          // use the max timestamp as current time
+          this.render(this.canvas, maxTimeStamp > dateZero ? maxTimeStamp : null);
+        } else {
+          this.render();
+        }
         animate();
       }.bind(this));
     }.bind(this);
