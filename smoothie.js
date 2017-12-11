@@ -305,6 +305,7 @@
     this.currentValueRange = 1;
     this.currentVisMinValue = 0;
     this.lastRenderTimeMillis = 0;
+    this.lastChartTimestamp = 0;
 
     this.mousemove = this.mousemove.bind(this);
     this.mouseout = this.mouseout.bind(this);
@@ -510,10 +511,7 @@
       return;
     }
 
-    var time = this.lastRenderTimeMillis - (this.delay || 0);
-
-    // Round time down to pixel granularity, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    var time = this.lastChartTimestamp;
 
     // x pixel to time
     var t = this.options.scrollBackwards
@@ -743,6 +741,8 @@
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
+
+    this.lastChartTimestamp = time;
 
     var context = canvas.getContext('2d'),
         chartOptions = this.options,
