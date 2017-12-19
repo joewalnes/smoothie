@@ -283,7 +283,8 @@
    *     fillStyle: '#ffffff',                   // colour for text of labels,
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',
-   *     precision: 2
+   *     precision: 2,
+   *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
    *   },
    *   tooltip: false                            // show tooltip when mouse is over the chart
    *   tooltipLine: {                            // properties for a vertical line at the cursor position
@@ -352,7 +353,8 @@
       disabled: false,
       fontSize: 10,
       fontFamily: 'monospace',
-      precision: 2
+      precision: 2,
+      showIntermediateLabels: false,
     },
     horizontalLines: [],
     tooltip: false,
@@ -950,6 +952,24 @@
       context.fillStyle = chartOptions.labels.fillStyle;
       context.fillText(maxValueString, maxLabelPos, chartOptions.labels.fontSize);
       context.fillText(minValueString, minLabelPos, dimensions.height - 2);
+    }
+
+    // Display intermediate y axis labels along y-axis to the left of the chart
+    if ( chartOptions.labels.showIntermediateLabels 
+          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max) 
+          && chartOptions.grid.verticalSections > 0) {
+      // show a label above every vertical section divider
+      var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
+      var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
+      for (var v = 0; v < chartOptions.grid.verticalSections; v++) {
+        var gy = dimensions.height - Math.round(v * stepPixels);
+        if (chartOptions.grid.sharpLines) {
+          gy -= 0.5;
+        }
+        var yValue = (this.valueRange.min + (v * step)).toPrecision(chartOptions.labels.precision);
+        context.fillStyle = chartOptions.labels.fillStyle;
+        context.fillText(yValue, 0, gy - chartOptions.grid.lineWidth);
+      }
     }
 
     // Display timestamps along x-axis at the bottom of the chart.
