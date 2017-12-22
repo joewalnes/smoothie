@@ -293,6 +293,9 @@
    *   },
    *   tooltipFormatter: SmoothieChart.tooltipFormatter, // formatter function for tooltip text
    *   nonRealtimeData: false,                   // use time of latest data as current time
+   *   displayDataFromPercentile: 1,             // display not latest data, but data from the given percentile
+   *                                             // useful when trying to see old data saved by setting a high value for maxDataSetLength
+   *                                             // should be a value between 0 and 1 
    *   responsive: false,                        // whether the chart should adapt to the size of the canvas
    *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
@@ -340,6 +343,7 @@
     scaleSmoothing: 0.125,
     maxDataSetLength: 2,
     scrollBackwards: false,
+    displayDataFromPercentile: 1,
     grid: {
       fillStyle: '#000000',
       strokeStyle: '#777777',
@@ -626,14 +630,17 @@
            // find the data point with the latest timestamp          
            var maxTimeStamp = this.seriesSet.reduce(function(max, series){
              var dataSet = series.timeSeries.data;
+             var indexToCheck = Math.round(this.options.displayDataFromPercentile * dataSet.length) - 1;
+             indexToCheck = indexToCheck >= 0 ? indexToCheck : 0;
+             indexToCheck = indexToCheck <= dataSet.length -1 ? indexToCheck : dataSet.length -1;
              if(dataSet && dataSet.length > 0)
              {
               // timestamp corresponds to element 0 of the data point
-              var lastDataTimeStamp = dataSet[dataSet.length-1][0];
+              var lastDataTimeStamp = dataSet[indexToCheck][0];
               max = max > lastDataTimeStamp ? max : lastDataTimeStamp;
              }
              return max;
-          }, dateZero);
+          }.bind(this), dateZero);
           // use the max timestamp as current time
           this.render(this.canvas, maxTimeStamp > dateZero ? maxTimeStamp : null);
         } else {
