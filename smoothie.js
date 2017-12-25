@@ -81,6 +81,7 @@
  * v1.32: Support frame rate limit, by @dpuyosa
  * v1.33: Use Date static method instead of instance, by @nnnoel
  *        Fix bug with tooltips when multiple charts on a page, by @jpmbiz70
+ *        Fix another bug with tooltips when multiple charts on one page, by @ralphwetzel
  */
 
 ;(function(exports) {
@@ -295,7 +296,7 @@
    *   nonRealtimeData: false,                   // use time of latest data as current time
    *   displayDataFromPercentile: 1,             // display not latest data, but data from the given percentile
    *                                             // useful when trying to see old data saved by setting a high value for maxDataSetLength
-   *                                             // should be a value between 0 and 1 
+   *                                             // should be a value between 0 and 1
    *   responsive: false,                        // whether the chart should adapt to the size of the canvas
    *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
@@ -311,8 +312,8 @@
     this.lastRenderTimeMillis = 0;
     this.lastChartTimestamp = 0;
 
-    this.mousemove = this.mousemove.bind(this);
-    this.mouseout = this.mouseout.bind(this);
+    this.callback_mousemove = this.mousemove.bind(this);
+    this.callback_mouseout = this.mouseout.bind(this);
   }
 
   /** Formats the HTML string content of the tooltip. */
@@ -532,7 +533,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       // find datapoint closest to time 't'
       var closeIdx = Util.binarySearch(timeSeries.data, t);
       if (closeIdx > 0 && closeIdx < timeSeries.data.length) {
@@ -564,8 +565,8 @@
   SmoothieChart.prototype.mouseout = function () {
     this.mouseover = false;
     this.mouseX = this.mouseY = -1;
-    if (SmoothieChart.tooltipEl)
-      SmoothieChart.tooltipEl.style.display = 'none';
+    if (this.tooltipEl)
+      this.tooltipEl.style.display = 'none';
   };
 
   /**
@@ -619,15 +620,15 @@
       return;
     }
 
-    this.canvas.addEventListener('mousemove', this.mousemove);
-    this.canvas.addEventListener('mouseout', this.mouseout);
+    this.canvas.addEventListener('mousemove', this.callback_mousemove);
+    this.canvas.addEventListener('mouseout', this.callback_mouseout);
 
     // Renders a frame, and queues the next frame for later rendering
     var animate = function() {
       this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
         if(this.options.nonRealtimeData){
            var dateZero = new Date(0);
-           // find the data point with the latest timestamp          
+           // find the data point with the latest timestamp
            var maxTimeStamp = this.seriesSet.reduce(function(max, series){
              var dataSet = series.timeSeries.data;
              var indexToCheck = Math.round(this.options.displayDataFromPercentile * dataSet.length) - 1;
@@ -660,8 +661,8 @@
     if (this.frame) {
       SmoothieChart.AnimateCompatibility.cancelAnimationFrame(this.frame);
       delete this.frame;
-      this.canvas.removeEventListener('mousemove', this.mousemove);
-      this.canvas.removeEventListener('mouseout', this.mouseout);
+      this.canvas.removeEventListener('mousemove', this.callback_mousemove);
+      this.canvas.removeEventListener('mouseout', this.callback_mouseout);
     }
   };
 
@@ -677,7 +678,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       if (!isNaN(timeSeries.maxValue)) {
         chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
       }
@@ -859,7 +860,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       var dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
 
@@ -962,8 +963,8 @@
     }
 
     // Display intermediate y axis labels along y-axis to the left of the chart
-    if ( chartOptions.labels.showIntermediateLabels 
-          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max) 
+    if ( chartOptions.labels.showIntermediateLabels
+          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)
           && chartOptions.grid.verticalSections > 0) {
       // show a label above every vertical section divider
       var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
