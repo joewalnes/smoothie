@@ -572,8 +572,8 @@
   SmoothieChart.prototype.mouseout = function () {
     this.mouseover = false;
     this.mouseX = this.mouseY = -1;
-    if (SmoothieChart.tooltipEl)
-      SmoothieChart.tooltipEl.style.display = 'none';
+    if (this.tooltipEl)
+      this.tooltipEl.style.display = 'none';
   };
 
   /**
