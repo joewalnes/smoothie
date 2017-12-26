@@ -985,8 +985,8 @@
         //left of right axis?
         intermediateLabelPos = 
           chartOptions.labels.intermediateLabelSameAxis
-          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(minValueString).width - 2) 
-          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(minValueString).width - 2 : 0);
+          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2) 
+          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
          
         context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
       }
