@@ -41,7 +41,7 @@ export declare class TimeSeries {
      * Adjust or inspect the upper y-axis for this <code>TimeSeries</code> object.
      */
     maxValue: number;
-    
+
     /**
      * Hide this <code>TimeSeries</code> object in the chart.
      */
@@ -113,6 +113,7 @@ export interface IChartOptions {
     /** Specify to clamp the upper y-axis to a given value. */
     maxValue?: number;
     /** Allows proportional padding to be added above the chart. for 10% padding, specify 1.1. */
+    minValueScale?: number;
     maxValueScale?: number;
     yRangeFunction?: (range: IRange) => IRange;
     /** Controls the rate at which y-value zoom animation occurs. */
