@@ -447,6 +447,16 @@
             return !value;
           }
         });
+        bindCheckBox({
+          target: chart.options.labels,
+          name: 'Show intermediate labels',
+          propertyName: 'showIntermediateLabels',
+        });
+        bindCheckBox({
+          target: chart.options.labels,
+          name: 'Show intermediate labels on same axis',
+          propertyName: 'intermediateLabelSameAxis',
+        });
         bindRange({target: chart.options.labels, name: 'Font size', propertyName: 'fontSize', min: 1, max: 20});
         bindRange({target: chart.options.labels, name: 'Label precision', propertyName: 'precision', min: 0, max: 6});
         bindCheckBox({
