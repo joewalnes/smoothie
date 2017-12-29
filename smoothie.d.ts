@@ -112,8 +112,9 @@ export interface IChartOptions {
     minValue?: number;
     /** Specify to clamp the upper y-axis to a given value. */
     maxValue?: number;
-    /** Allows proportional padding to be added above the chart. for 10% padding, specify 1.1. */
+    /** Allows proportional padding to be added above the chart. For 10% padding, specify 1.1. */
     minValueScale?: number;
+    /** Allows proportional padding to be added below the chart. For 10% padding, specify 1.1. */
     maxValueScale?: number;
     yRangeFunction?: (range: IRange) => IRange;
     /** Controls the rate at which y-value zoom animation occurs. */
@@ -122,7 +123,9 @@ export interface IChartOptions {
     millisPerPixel?: number;
     /** Whether to render at different DPI depending upon the device. Enabled by default. */
     enableDpiScaling?: boolean;
+    /** Callback function that formats the min y value label */
     yMinFormatter?: (min: number, precision: number) => string;
+    /** Callback function that formats the max y value label */
     yMaxFormatter?: (max: number, precision: number) => string;
     maxDataSetLength?: number;
     /** Controls how lines are drawn between data points. Defaults to "bezier". */
