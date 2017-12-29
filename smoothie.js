@@ -261,6 +261,9 @@
    *   yMaxFormatter: function(max, precision) { // callback function that formats the max y value label
    *     return parseFloat(max).toFixed(precision);
    *   },
+   *   yIntermediateFormatter: function(intermediate, precision) { // callback function that formats the intermediate y value labels
+   *     return parseFloat(intermediate).toFixed(precision);
+   *   },
    *   maxDataSetLength: 2,
    *   interpolation: 'bezier'                   // one of 'bezier', 'linear', or 'step'
    *   timestampFormatter: null,                 // optional function to format time stamps for bottom of chart
@@ -285,6 +288,7 @@
    *     fontFamily: 'sans-serif',
    *     precision: 2,
    *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
+   *     intermediateLabelSameAxis: true,
    *   },
    *   tooltip: false                            // show tooltip when mouse is over the chart
    *   tooltipLine: {                            // properties for a vertical line at the cursor position
@@ -337,6 +341,9 @@
     yMaxFormatter: function(max, precision) {
       return parseFloat(max).toFixed(precision);
     },
+    yIntermediateFormatter: function(intermediate, precision) {
+      return parseFloat(intermediate).toFixed(precision);
+    },
     maxValueScale: 1,
     minValueScale: 1,
     interpolation: 'bezier',
@@ -360,6 +367,7 @@
       fontFamily: 'monospace',
       precision: 2,
       showIntermediateLabels: false,
+      intermediateLabelSameAxis: true,
     },
     horizontalLines: [],
     tooltip: false,
@@ -968,14 +976,19 @@
       // show a label above every vertical section divider
       var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
       var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
-      for (var v = 0; v < chartOptions.grid.verticalSections; v++) {
+      for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
         var gy = dimensions.height - Math.round(v * stepPixels);
         if (chartOptions.grid.sharpLines) {
           gy -= 0.5;
         }
-        var yValue = (this.valueRange.min + (v * step)).toPrecision(chartOptions.labels.precision);
-        context.fillStyle = chartOptions.labels.fillStyle;
-        context.fillText(yValue, 0, gy - chartOptions.grid.lineWidth);
+        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
+        //left of right axis?
+        intermediateLabelPos = 
+          chartOptions.labels.intermediateLabelSameAxis
+          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2) 
+          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
+         
+        context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
       }
     }
 
