@@ -1,3 +1,5 @@
+![npm version](https://img.shields.io/npm/v/smoothie.svg)
+
 *Smoothie Charts* is a really small charting library designed for _live
 streaming data_. I built it to reduce the headaches I was getting from
 watching charts jerkily updating every second.
