@@ -97,6 +97,9 @@ export interface ILabelOptions {
     fontSize?: number;
     fontFamily?: string;
     precision?: number;
+    /** Shows intermediate labels between min and max values along y axis. */
+    showIntermediateLabels?: boolean;
+    intermediateLabelSameAxis?: boolean;
 }
 
 export interface IRange { min: number; max: number }
@@ -127,6 +130,8 @@ export interface IChartOptions {
     yMinFormatter?: (min: number, precision: number) => string;
     /** Callback function that formats the max y value label */
     yMaxFormatter?: (max: number, precision: number) => string;
+    /** Callback function that formats the intermediate y value labels */
+    yIntermediateFormatter?: (intermediate: number, precision: number) => string;
     maxDataSetLength?: number;
     /** Controls how lines are drawn between data points. Defaults to "bezier". */
     interpolation?: "linear" | "step" | "bezier";
@@ -141,6 +146,16 @@ export interface IChartOptions {
     tooltip?: boolean;
     tooltipLine?: { lineWidth: number, strokeStyle: string };
     tooltipFormatter?: (timestamp: number, data: {series: TimeSeries, index: number, value: number}[]) => string;
+
+    /** Whether to use time of latest data as current time. */
+    nonRealtimeData?: boolean;
+
+    /**
+     * Displays not the latest data, but data from the given percentile.
+     * Useful when trying to see old data saved by setting a high value for maxDataSetLength.
+     * Should be a value between 0 and 1.
+     */
+    displayDataFromPercentile?: number;
 
     /** Allows the chart to stretch according to its containers and layout settings. Default is <code>false</code>, for backwards compatibility. */
     responsive?: boolean;
