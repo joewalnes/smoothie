@@ -299,9 +299,9 @@
    *   nonRealtimeData: false,                   // use time of latest data as current time
    *   displayDataFromPercentile: 1,             // display not latest data, but data from the given percentile
    *                                             // useful when trying to see old data saved by setting a high value for maxDataSetLength
-   *                                             // should be a value between 0 and 1 
+   *                                             // should be a value between 0 and 1
    *   responsive: false,                        // whether the chart should adapt to the size of the canvas
-   *   limitFPS: 0                         // maximum frame rate the chart will render at, in FPS (zero means no limit)
+   *   limitFPS: 0                               // maximum frame rate the chart will render at, in FPS (zero means no limit)
    * }
    * </pre>
    *
@@ -540,7 +540,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       // find datapoint closest to time 't'
       var closeIdx = Util.binarySearch(timeSeries.data, t);
       if (closeIdx > 0 && closeIdx < timeSeries.data.length) {
@@ -635,7 +635,7 @@
       this.frame = SmoothieChart.AnimateCompatibility.requestAnimationFrame(function() {
         if(this.options.nonRealtimeData){
            var dateZero = new Date(0);
-           // find the data point with the latest timestamp          
+           // find the data point with the latest timestamp
            var maxTimeStamp = this.seriesSet.reduce(function(max, series){
              var dataSet = series.timeSeries.data;
              var indexToCheck = Math.round(this.options.displayDataFromPercentile * dataSet.length) - 1;
@@ -685,7 +685,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       if (!isNaN(timeSeries.maxValue)) {
         chartMaxValue = !isNaN(chartMaxValue) ? Math.max(chartMaxValue, timeSeries.maxValue) : timeSeries.maxValue;
       }
@@ -867,7 +867,7 @@
       if (timeSeries.disabled) {
           continue;
       }
-      
+
       var dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
 
@@ -970,8 +970,8 @@
     }
 
     // Display intermediate y axis labels along y-axis to the left of the chart
-    if ( chartOptions.labels.showIntermediateLabels 
-          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max) 
+    if ( chartOptions.labels.showIntermediateLabels
+          && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)
           && chartOptions.grid.verticalSections > 0) {
       // show a label above every vertical section divider
       var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
@@ -983,11 +983,11 @@
         }
         var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
         //left of right axis?
-        intermediateLabelPos = 
+        intermediateLabelPos =
           chartOptions.labels.intermediateLabelSameAxis
-          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2) 
+          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
           : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
-         
+
         context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
       }
     }
