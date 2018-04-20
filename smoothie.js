@@ -597,10 +597,12 @@
       if (width !== this.lastWidth) {
         this.lastWidth = width;
         this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
+        this.canvas.getContext('2d').scale(dpr, dpr);
       }
       if (height !== this.lastHeight) {
         this.lastHeight = height;
         this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
+        this.canvas.getContext('2d').scale(dpr, dpr);
       }
     } else if (dpr !== 1) {
       // Older behaviour: use the canvas's inner dimensions and scale the element's size
