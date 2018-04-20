@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="../smoothie.js"></script>
+    <script type="text/javascript">
+
+      var series1 = new TimeSeries();
+      var series2 = new TimeSeries();
+
+      // Randomly add a data point every 500ms
+      setInterval(function() {
+        var now = Date.now();
+        var val = Math.random() * 10000;
+        series1.append(now, val);
+        series2.append(now, val);
+      }, 500);
+
+      function createTimeline() {
+        var chart1 = new SmoothieChart();
+        chart1.addTimeSeries(series1, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        chart1.streamTo(document.getElementById("chart"), 500);
+
+        var chart2 = new SmoothieChart({ responsive: true });
+        chart2.addTimeSeries(series2, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4});
+        chart2.streamTo(document.getElementById("chart-responsive"), 500);
+      }
+    </script>
+  </head>
+  <body onload="createTimeline()" style="background-color:#333333">
+
+    <h2>Non-responsive chart</h2>
+    <canvas id="chart" width="100" height="100"></canvas>
+
+    <h2>Responsive chart</h2>
+    <canvas id="chart-responsive" style="width:100%;height:100px"></canvas>
+
+  </body>
+</html>
