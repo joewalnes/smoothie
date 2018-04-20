@@ -2,7 +2,6 @@
 // Project: https://github.com/joewalnes/smoothie
 // Definitions by: Drew Noakes <https://drewnoakes.com>
 //                 Mike H. Hawley <https://github.com/mikehhawley>
-// Definitions: https://github.com/borisyankov/DefinitelyTyped/smoothie
 
 export interface ITimeSeriesOptions {
     resetBounds?: boolean;
