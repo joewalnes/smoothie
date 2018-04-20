@@ -87,6 +87,7 @@
  *        Add displayDataFromPercentile option, by @annazhelt (#95)
  *        Fix bug when hiding tooltip element, by @ralphwetzel (#96)
  *        Support intermediate y-axis labels, by @beikeland (#99)
+ * v1.35: Fix issue with responsive mode at high DPI, by @drewnoakes (#101)
  */
 
 ;(function(exports) {
