@@ -20,7 +20,7 @@ See [http://smoothiecharts.org](http://smoothiecharts.org)
 *   Repository: `git clone git@github.com:joewalnes/smoothie.git`
 *   Bower: `bower install smoothie`
 *   NPM: `npm install smoothie`
-*   Yarn: `yarn install smoothie`
+*   Yarn: `yarn add smoothie`
 *   [Introducing Smoothie Charts](http://joewalnes.com/2010/08/10/introducing-smoothie-charts/) (blog entry)
 
 ---
