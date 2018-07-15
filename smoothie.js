@@ -329,10 +329,16 @@
   /** Formats the HTML string content of the tooltip. */
   SmoothieChart.tooltipFormatter = function (timestamp, data) {
       var timestampFormatter = this.options.timestampFormatter || SmoothieChart.timeFormatter,
-          lines = [timestampFormatter(new Date(timestamp))];
+          lines = [timestampFormatter(new Date(timestamp))],
+          label;
 
       for (var i = 0; i < data.length; ++i) {
+        label = data[i].series.options.tooltipLabel || ''
+        if (label !== ''){
+            label = label + ' ';
+        }
         lines.push('<span style="color:' + data[i].series.options.strokeStyle + '">' +
+        label +
         this.options.yMaxFormatter(data[i].value, this.options.labels.precision) + '</span>');
       }
 
@@ -1045,3 +1051,5 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
+
+
