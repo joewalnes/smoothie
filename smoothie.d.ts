@@ -12,6 +12,7 @@ export interface ITimeSeriesPresentationOptions {
     strokeStyle?: string;
     fillStyle?: string;
     lineWidth?: number;
+    tooltipLabel?: string;
 }
 
 export declare class TimeSeries {
