@@ -88,6 +88,9 @@
  *        Fix bug when hiding tooltip element, by @ralphwetzel (#96)
  *        Support intermediate y-axis labels, by @beikeland (#99)
  * v1.35: Fix issue with responsive mode at high DPI, by @drewnoakes (#101)
+ * v1.36: Add tooltipLabel to ITimeSeriesPresentationOptions.
+ *        If tooltipLabel is present, tooltipLabel displays inside tooltip
+ *        next to value, by @jackdesert (#102)
  */
 
 ;(function(exports) {
@@ -439,7 +442,8 @@
    * {
    *   lineWidth: 1,
    *   strokeStyle: '#ffffff',
-   *   fillStyle: undefined
+   *   fillStyle: undefined,
+   *   tooltipLabel: undefined
    * }
    * </pre>
    */
