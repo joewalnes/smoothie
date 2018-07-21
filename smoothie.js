@@ -88,6 +88,9 @@
  *        Fix bug when hiding tooltip element, by @ralphwetzel (#96)
  *        Support intermediate y-axis labels, by @beikeland (#99)
  * v1.35: Fix issue with responsive mode at high DPI, by @drewnoakes (#101)
+ * v1.36: Add tooltipLabel to ITimeSeriesPresentationOptions.
+ *        If tooltipLabel is present, tooltipLabel displays inside tooltip
+ *        next to value, by @jackdesert (#102)
  */
 
 ;(function(exports) {
@@ -329,10 +332,16 @@
   /** Formats the HTML string content of the tooltip. */
   SmoothieChart.tooltipFormatter = function (timestamp, data) {
       var timestampFormatter = this.options.timestampFormatter || SmoothieChart.timeFormatter,
-          lines = [timestampFormatter(new Date(timestamp))];
+          lines = [timestampFormatter(new Date(timestamp))],
+          label;
 
       for (var i = 0; i < data.length; ++i) {
+        label = data[i].series.options.tooltipLabel || ''
+        if (label !== ''){
+            label = label + ' ';
+        }
         lines.push('<span style="color:' + data[i].series.options.strokeStyle + '">' +
+        label +
         this.options.yMaxFormatter(data[i].value, this.options.labels.precision) + '</span>');
       }
 
@@ -433,7 +442,8 @@
    * {
    *   lineWidth: 1,
    *   strokeStyle: '#ffffff',
-   *   fillStyle: undefined
+   *   fillStyle: undefined,
+   *   tooltipLabel: undefined
    * }
    * </pre>
    */
@@ -1045,3 +1055,5 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
+
+
