@@ -91,6 +91,7 @@
  * v1.36: Add tooltipLabel to ITimeSeriesPresentationOptions.
  *        If tooltipLabel is present, tooltipLabel displays inside tooltip
  *        next to value, by @jackdesert (#102)
+ *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
  */
 
 ;(function(exports) {
