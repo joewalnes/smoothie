@@ -950,9 +950,15 @@
       if (dataSet.length > 1) {
         if (seriesOptions.fillStyle) {
           // Close up the fill region.
-          context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-          context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-          context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+          if (chartOptions.scrollBackwards) {
+            context.lineTo(lastX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(firstX, firstY);
+          } else {
+            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
+            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
+            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+          }
           context.fillStyle = seriesOptions.fillStyle;
           context.fill();
         }
@@ -1055,5 +1061,4 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
-
 
