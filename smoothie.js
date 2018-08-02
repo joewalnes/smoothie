@@ -899,13 +899,14 @@
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
-      var firstX = 0, lastX = 0, lastY = 0;
+      var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
       for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
         var x = timeToXPixel(dataSet[i][0]),
             y = valueToYPixel(dataSet[i][1]);
 
         if (i === 0) {
           firstX = x;
+          firstY = y;
           context.moveTo(x, y);
         } else {
           switch (chartOptions.interpolation) {
