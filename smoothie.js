@@ -301,6 +301,14 @@
    *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
    *     intermediateLabelSameAxis: true,
    *   },
+   *   tag
+   *   {
+   *     text: '',                               // the text to show on the left
+   *     fillStyle: '#ffffff',                   // colour for text
+   *     fontSize: 15,
+   *     fontFamily: 'sans-serif',
+   *     verticalAlign: 'middle'                 // one of 'top', 'middle', or 'bottom'
+   *   },
    *   tooltip: false                            // show tooltip when mouse is over the chart
    *   tooltipLine: {                            // properties for a vertical line at the cursor position
    *     lineWidth: 1,
@@ -385,6 +393,13 @@
       precision: 2,
       showIntermediateLabels: false,
       intermediateLabelSameAxis: true,
+    },
+    tag: {
+      text: '',
+      fillStyle: '#ffffff',
+      fontSize: 15,
+      fontFamily: 'monospace',
+      verticalAlign: 'middle'
     },
     horizontalLines: [],
     tooltip: false,
@@ -1048,6 +1063,24 @@
           }
         }
       }
+    }
+
+    // Display tag.
+    if (chartOptions.tag.text !== '') {
+      context.font = chartOptions.tag.fontSize + 'px ' + chartOptions.tag.fontFamily;
+      var tagXPos = chartOptions.scrollBackwards ? dimensions.width - context.measureText(chartOptions.tag.text).width - 2 : 2;
+      if (chartOptions.tag.verticalAlign == 'bottom') {
+        context.textBaseline = 'bottom';
+        var tagYPos = dimensions.height;
+      } else if (chartOptions.tag.verticalAlign == 'middle') {
+        context.textBaseline = 'middle';
+        var tagYPos = dimensions.height / 2;
+      } else {
+        context.textBaseline = 'top';
+        var tagYPos = 0;
+      }
+      context.fillStyle = chartOptions.tag.fillStyle;
+      context.fillText(chartOptions.tag.text, tagXPos, tagYPos);
     }
 
     context.restore(); // See .save() above.
