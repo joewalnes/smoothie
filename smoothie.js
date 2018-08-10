@@ -92,6 +92,7 @@
  *        If tooltipLabel is present, tooltipLabel displays inside tooltip
  *        next to value, by @jackdesert (#102)
  *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
+ *        Add tag option, by @mesca
  */
 
 ;(function(exports) {
@@ -303,7 +304,7 @@
    *   },
    *   tag
    *   {
-   *     text: '',                               // the text to show on the left
+   *     text: '',                               // the text to display on the left side of the chart
    *     fillStyle: '#ffffff',                   // colour for text
    *     fontSize: 15,
    *     fontFamily: 'sans-serif',

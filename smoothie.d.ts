@@ -102,6 +102,17 @@ export interface ILabelOptions {
     intermediateLabelSameAxis?: boolean;
 }
 
+export interface ITagOptions {
+    /** The text to display on the left side of the chart. Defaults to "". */
+    text?: string;
+    /** Colour for text. */
+    fillStyle?: string;
+    fontSize?: number;
+    fontFamily?: string;
+    /** The vertical position of the text. Defaults to "middle". */
+    verticalAlign?: "top" | "middle" | "bottom";
+}
+
 export interface IRange { min: number; max: number }
 
 export interface IHorizontalLine {
@@ -142,6 +153,8 @@ export interface IChartOptions {
     grid?: IGridOptions;
 
     labels?: ILabelOptions;
+
+    tag?: ITagOptions;
 
     tooltip?: boolean;
     tooltipLine?: { lineWidth: number, strokeStyle: string };
