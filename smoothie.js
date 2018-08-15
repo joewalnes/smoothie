@@ -92,7 +92,7 @@
  *        If tooltipLabel is present, tooltipLabel displays inside tooltip
  *        next to value, by @jackdesert (#102)
  *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
- *        Add tag option, by @mesca
+ *        Add title option, by @mesca
  */
 
 ;(function(exports) {
@@ -302,7 +302,7 @@
    *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
    *     intermediateLabelSameAxis: true,
    *   },
-   *   tag
+   *   title
    *   {
    *     text: '',                               // the text to display on the left side of the chart
    *     fillStyle: '#ffffff',                   // colour for text
@@ -395,7 +395,7 @@
       showIntermediateLabels: false,
       intermediateLabelSameAxis: true,
     },
-    tag: {
+    title: {
       text: '',
       fillStyle: '#ffffff',
       fontSize: 15,
@@ -1066,22 +1066,22 @@
       }
     }
 
-    // Display tag.
-    if (chartOptions.tag.text !== '') {
-      context.font = chartOptions.tag.fontSize + 'px ' + chartOptions.tag.fontFamily;
-      var tagXPos = chartOptions.scrollBackwards ? dimensions.width - context.measureText(chartOptions.tag.text).width - 2 : 2;
-      if (chartOptions.tag.verticalAlign == 'bottom') {
+    // Display title.
+    if (chartOptions.title.text !== '') {
+      context.font = chartOptions.title.fontSize + 'px ' + chartOptions.title.fontFamily;
+      var titleXPos = chartOptions.scrollBackwards ? dimensions.width - context.measureText(chartOptions.title.text).width - 2 : 2;
+      if (chartOptions.title.verticalAlign == 'bottom') {
         context.textBaseline = 'bottom';
-        var tagYPos = dimensions.height;
-      } else if (chartOptions.tag.verticalAlign == 'middle') {
+        var titleYPos = dimensions.height;
+      } else if (chartOptions.title.verticalAlign == 'middle') {
         context.textBaseline = 'middle';
-        var tagYPos = dimensions.height / 2;
+        var titleYPos = dimensions.height / 2;
       } else {
         context.textBaseline = 'top';
-        var tagYPos = 0;
+        var titleYPos = 0;
       }
-      context.fillStyle = chartOptions.tag.fillStyle;
-      context.fillText(chartOptions.tag.text, tagXPos, tagYPos);
+      context.fillStyle = chartOptions.title.fillStyle;
+      context.fillText(chartOptions.title.text, titleXPos, titleYPos);
     }
 
     context.restore(); // See .save() above.
