@@ -102,7 +102,7 @@ export interface ILabelOptions {
     intermediateLabelSameAxis?: boolean;
 }
 
-export interface ITagOptions {
+export interface ITitleOptions {
     /** The text to display on the left side of the chart. Defaults to "". */
     text?: string;
     /** Colour for text. */
@@ -154,7 +154,7 @@ export interface IChartOptions {
 
     labels?: ILabelOptions;
 
-    tag?: ITagOptions;
+    title?: ITitleOptions;
 
     tooltip?: boolean;
     tooltipLine?: { lineWidth: number, strokeStyle: string };
