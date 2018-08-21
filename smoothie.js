@@ -599,7 +599,9 @@
     this.mouseY = evt.offsetY;
     this.mousePageX = evt.pageX;
     this.mousePageY = evt.pageY;
-
+    if(!this.options.tooltip){
+     return; 
+    }
     var el = this.getTooltipEl();
     el.style.top = Math.round(this.mousePageY) + 'px';
     el.style.left = Math.round(this.mousePageX) + 'px';
