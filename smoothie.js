@@ -552,6 +552,9 @@
   };
 
   SmoothieChart.prototype.updateTooltip = function () {
+    if(!this.options.tooltip){
+     return; 
+    }
     var el = this.getTooltipEl();
 
     if (!this.mouseover || !this.options.tooltip) {
