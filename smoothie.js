@@ -1007,9 +1007,19 @@
           minValueString = chartOptions.yMinFormatter(this.valueRange.min, chartOptions.labels.precision),
           maxLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(maxValueString).width - 2,
           minLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(minValueString).width - 2;
+          
+      var numSections = chartOptions.grid.verticalSections;
+      var deltaValue = (this.valueRange.max-this.valueRange.min) / numSections;
+      var deltaValueString = "";
+          
       context.fillStyle = chartOptions.labels.fillStyle;
       context.fillText(maxValueString, maxLabelPos, chartOptions.labels.fontSize);
       context.fillText(minValueString, minLabelPos, dimensions.height - 2);
+      
+      for (var i = 1; i < numSections; i++) {
+        deltaValueString = parseFloat(this.valueRange.max -i*deltaValue).toFixed(2);
+        context.fillText(deltaValueString, dimensions.width - context.measureText(deltaValueString).width - 2, parseFloat(dimensions.height*i/numSections - 2).toFixed(2));
+      }
     }
 
     // Display intermediate y axis labels along y-axis to the left of the chart
@@ -1097,4 +1107,3 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
-
