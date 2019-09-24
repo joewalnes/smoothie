@@ -552,6 +552,9 @@
   };
 
   SmoothieChart.prototype.updateTooltip = function () {
+    if(!this.options.tooltip){
+     return; 
+    }
     var el = this.getTooltipEl();
 
     if (!this.mouseover || !this.options.tooltip) {
@@ -596,7 +599,9 @@
     this.mouseY = evt.offsetY;
     this.mousePageX = evt.pageX;
     this.mousePageY = evt.pageY;
-
+    if(!this.options.tooltip){
+     return; 
+    }
     var el = this.getTooltipEl();
     el.style.top = Math.round(this.mousePageY) + 'px';
     el.style.left = Math.round(this.mousePageX) + 'px';
