@@ -208,6 +208,21 @@
    * whether it is replaced, or the values summed (defaults to false.)
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
+    var metaData
+    if ((typeof(value) === "undefined") &&
+        (typeof(sumRepeatedTimeStampValues) === "undefined") &&
+        (typeof(timestamp) === "object")) {
+      var ob = timestamp;
+      timestamp = ob.timestamp;
+      value = ob.value;
+      sumRepeatedTimeStampValues = ob.sumRepeatedTimeStampValues;
+      
+      delete ob.timestamp;
+      delete ob.value;
+      delete ob.sumRepeatedTimeStampValues;
+      
+      metaData = ob
+    }
     // Rewind until we hit an older timestamp
     var i = this.data.length - 1;
     while (i >= 0 && this.data[i][0] > timestamp) {
@@ -229,10 +244,10 @@
       }
     } else if (i < this.data.length - 1) {
       // Splice into the correct position to keep timestamps in order
-      this.data.splice(i + 1, 0, [timestamp, value]);
+      this.data.splice(i + 1, 0, [timestamp, value, metaData]);
     } else {
       // Add to the end of the array
-      this.data.push([timestamp, value]);
+      this.data.push([timestamp, value, metaData]);
     }
 
     this.maxValue = isNaN(this.maxValue) ? value : Math.max(this.maxValue, value);
@@ -911,27 +926,51 @@
 
       var dataSet = timeSeries.data,
           seriesOptions = this.seriesSet[d].options;
-
+          
       // Delete old data that's moved off the left of the chart.
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
 
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
       context.strokeStyle = seriesOptions.strokeStyle;
+      if (typeof(seriesOptions.lineDash) !== "undefined") {
+        context.setLineDash(seriesOptions.lineDash);
+      } else {
+        context.setLineDash([]);
+      }
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
       var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
       for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
         var x = timeToXPixel(dataSet[i][0]),
-            y = valueToYPixel(dataSet[i][1]);
+            y = valueToYPixel(dataSet[i][1]),
+            metaData = dataSet[i][2];
 
         if (i === 0) {
           firstX = x;
           firstY = y;
           context.moveTo(x, y);
         } else {
-          switch (chartOptions.interpolation) {
+          var interpolation;
+          if (typeof(metaData) !== "undefined") {
+            interpolation = metaData.interpolation || chartOptions.interpolation
+            
+            if (typeof(metaData.text) !== "undefined") {
+              context.save();
+              context.font = metaData.text.font;
+              context.strokeStyle = metaData.text.strokeStyle;
+              context.fillStyle = metaData.text.fillStyle;
+              var tx = x + (metaData.text.dx || 0),
+                  ty = y + (metaData.text.dy || 0);
+              context.fillText(metaData.text.text, x, y);
+              context.restore();
+            }
+            
+          } else {
+            interpolation = chartOptions.interpolation
+          }
+          switch (interpolation) {
             case "linear":
             case "line": {
               context.lineTo(x,y);
@@ -964,6 +1003,11 @@
               context.lineTo(x,y);
               break;
             }
+            case "jump": { 
+              // Only to be used to create gaps in the data
+              // Never use as interpolation method
+              context.moveTo(x, y);
+            }
           }
         }
 
@@ -986,7 +1030,7 @@
           context.fill();
         }
 
-        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none' && (seriesOptions.lineWidth !== 0)) {
           context.stroke();
         }
         context.closePath();
