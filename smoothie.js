@@ -909,7 +909,6 @@
           if (typeof dataSet[i][1] === 'string' ) {
             context.moveTo(x, 0);
             context.lineTo(x, dimensions.height);
-            textWidth = context.measureText(dataSet[i][1]).width;
             context.fillStyle = seriesOptions.strokeStyle;
             context.fillText(dataSet[i][1], x + 5, 10);
           } else {
@@ -919,7 +918,6 @@
           if (typeof dataSet[i][1] === 'string') {
             context.moveTo(x, 0);
             context.lineTo(x, dimensions.height);
-            textWidth = context.measureText(dataSet[i][1]).width;
             context.fillStyle = seriesOptions.strokeStyle;
             context.fillText(dataSet[i][1], x + 5, 10);
           } else {
