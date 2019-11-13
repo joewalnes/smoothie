@@ -93,6 +93,7 @@
  *        next to value, by @jackdesert (#102)
  *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
  *        Add title option, by @mesca
+ *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  */
 
 ;(function(exports) {
