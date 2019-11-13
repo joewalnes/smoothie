@@ -93,6 +93,7 @@
  *        next to value, by @jackdesert (#102)
  *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
  *        Add title option, by @mesca
+ *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  */
 
 ;(function(exports) {
@@ -208,6 +209,10 @@
    * whether it is replaced, or the values summed (defaults to false.)
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
+	// Reject NaN
+	if (isNaN(timestamp) || isNaN(value)){
+		return
+	}  
     // Rewind until we hit an older timestamp
     var i = this.data.length - 1;
     while (i >= 0 && this.data[i][0] > timestamp) {
