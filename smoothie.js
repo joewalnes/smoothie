@@ -208,6 +208,10 @@
    * whether it is replaced, or the values summed (defaults to false.)
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
+	// Reject NaN
+	if (isNaN(timestamp) || isNaN(value)){
+		return
+	}  
     // Rewind until we hit an older timestamp
     var i = this.data.length - 1;
     while (i >= 0 && this.data[i][0] > timestamp) {
