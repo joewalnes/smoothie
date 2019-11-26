@@ -210,7 +210,7 @@
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
 	// Reject NaN
-	if (isNaN(timestamp) || isNaN(value)){
+	if (isNaN(timestamp) || (typeof value !== 'string' && isNaN(value))){
 		return
 	}  
     // Rewind until we hit an older timestamp
@@ -558,7 +558,7 @@
 
   SmoothieChart.prototype.updateTooltip = function () {
     if(!this.options.tooltip){
-     return; 
+      return;
     }
     var el = this.getTooltipEl();
 
@@ -605,7 +605,7 @@
     this.mousePageX = evt.pageX;
     this.mousePageY = evt.pageY;
     if(!this.options.tooltip){
-     return; 
+      return;
     }
     var el = this.getTooltipEl();
     el.style.top = Math.round(this.mousePageY) + 'px';
@@ -933,41 +933,54 @@
 
         if (i === 0) {
           firstX = x;
-          firstY = y;
-          context.moveTo(x, y);
+          if (typeof dataSet[i][1] === 'string' ) {
+            context.moveTo(x, 0);
+            context.lineTo(x, dimensions.height);
+            context.fillStyle = seriesOptions.strokeStyle;
+            context.fillText(dataSet[i][1], x + 5, 10);
+          } else {
+            context.moveTo(x, y);
+          }
         } else {
-          switch (chartOptions.interpolation) {
-            case "linear":
-            case "line": {
-              context.lineTo(x,y);
-              break;
-            }
-            case "bezier":
-            default: {
-              // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
-              //
-              // Assuming A was the last point in the line plotted and B is the new point,
-              // we draw a curve with control points P and Q as below.
-              //
-              // A---P
-              //     |
-              //     |
-              //     |
-              //     Q---B
-              //
-              // Importantly, A and P are at the same y coordinate, as are B and Q. This is
-              // so adjacent curves appear to flow as one.
-              //
-              context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-                Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-                Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-                x, y); // endPoint (B)
-              break;
-            }
-            case "step": {
-              context.lineTo(x,lastY);
-              context.lineTo(x,y);
-              break;
+          if (typeof dataSet[i][1] === 'string') {
+            context.moveTo(x, 0);
+            context.lineTo(x, dimensions.height);
+            context.fillStyle = seriesOptions.strokeStyle;
+            context.fillText(dataSet[i][1], x + 5, 10);
+          } else {
+            switch (chartOptions.interpolation) {
+              case "linear":
+              case "line": {
+                context.lineTo(x,y);
+                break;
+              }
+              case "bezier":
+              default: {
+                // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
+                //
+                // Assuming A was the last point in the line plotted and B is the new point,
+                // we draw a curve with control points P and Q as below.
+                //
+                // A---P
+                //     |
+                //     |
+                //     |
+                //     Q---B
+                //
+                // Importantly, A and P are at the same y coordinate, as are B and Q. This is
+                // so adjacent curves appear to flow as one.
+                //
+                context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+                  Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+                  Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+                  x, y); // endPoint (B)
+                break;
+              }
+              case "step": {
+                context.lineTo(x,lastY);
+                context.lineTo(x,y);
+                break;
+              }
             }
           }
         }
@@ -1107,4 +1120,3 @@
   exports.SmoothieChart = SmoothieChart;
 
 })(typeof exports === 'undefined' ? this : exports);
-
