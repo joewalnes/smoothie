@@ -210,7 +210,7 @@
    */
   TimeSeries.prototype.append = function(timestamp, value, sumRepeatedTimeStampValues) {
 	// Reject NaN
-	if (isNaN(timestamp) || isNaN(value)){
+	if (isNaN(timestamp) || (typeof value !== 'string' && isNaN(value))){
 		return
 	}  
     // Rewind until we hit an older timestamp
@@ -307,6 +307,14 @@
    *     showIntermediateLabels: false,          // shows intermediate labels between min and max values along y axis
    *     intermediateLabelSameAxis: true,
    *   },
+   *   title
+   *   {
+   *     text: '',                               // the text to display on the left side of the chart
+   *     fillStyle: '#ffffff',                   // colour for text
+   *     fontSize: 15,
+   *     fontFamily: 'sans-serif',
+   *     verticalAlign: 'middle'                 // one of 'top', 'middle', or 'bottom'
+   *   },
    *   tooltip: false                            // show tooltip when mouse is over the chart
    *   tooltipLine: {                            // properties for a vertical line at the cursor position
    *     lineWidth: 1,
@@ -339,7 +347,8 @@
   /** Formats the HTML string content of the tooltip. */
   SmoothieChart.tooltipFormatter = function (timestamp, data) {
       var timestampFormatter = this.options.timestampFormatter || SmoothieChart.timeFormatter,
-          lines = [timestampFormatter(new Date(timestamp))];
+          lines = [timestampFormatter(new Date(timestamp))],
+          label;
 
       for (var i = 0; i < data.length; ++i) {
         label = data[i].series.options.tooltipLabel || ''
