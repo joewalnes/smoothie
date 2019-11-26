@@ -67,7 +67,7 @@ export declare class TimeSeries {
      * @param sumRepeatedTimeStampValues if <code>timestamp</code> has an exact match in the series, this flag controls
      * whether it is replaced, or the values summed (defaults to false.)
      */
-    append(timestamp: number, value: any, sumRepeatedTimeStampValues?: boolean): void;
+    append(timestamp: number, value: number | string, sumRepeatedTimeStampValues?: boolean): void;
 
     dropOldData(oldestValidTime: number, maxDataSetLength: number): void;
 }
