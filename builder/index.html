@@ -419,7 +419,7 @@
         bindColor({target: chart.seriesSet[0].options, name: 'Series fill color', propertyName: 'fillStyle', optional: true, enabled: false, opacity: 0.3});
         bindRange({target: chart.seriesSet[0].options, name: 'Series line width', propertyName: 'lineWidth', min: 0.5, max: 5, scale: 10});
         bindDropDown({
-          target: chart.options,
+          target: chart.seriesSet[0].options,
           name: 'Interpolation',
           propertyName: 'interpolation',
           values: ['bezier', 'linear', 'step']

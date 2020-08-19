@@ -465,6 +465,7 @@
    *   lineWidth: 1,
    *   strokeStyle: '#ffffff',
    *   fillStyle: undefined,
+   *   interpolation: undefined;
    *   tooltipLabel: undefined
    * }
    * </pre>
@@ -936,7 +937,7 @@
           firstY = y;
           context.moveTo(x, y);
         } else {
-          switch (chartOptions.interpolation) {
+          switch (seriesOptions.interpolation || chartOptions.interpolation) {
             case "linear":
             case "line": {
               context.lineTo(x,y);
