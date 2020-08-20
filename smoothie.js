@@ -94,6 +94,7 @@
  *        Fix bug rendering issue in series fill when using scroll backwards, by @olssonfredrik
  *        Add title option, by @mesca
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
+ *        Allow setting interpolation per time series, by @WofWca (#123)
  */
 
 ;(function(exports) {
