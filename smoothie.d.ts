@@ -12,6 +12,11 @@ export interface ITimeSeriesPresentationOptions {
     strokeStyle?: string;
     fillStyle?: string;
     lineWidth?: number;
+    /**
+     * Controls how lines are drawn between data points.
+     * Default value is controlled by <code>SmoothieChart</code>'s <code>interpolation</code> option.
+     */
+    interpolation?: "linear" | "step" | "bezier";
     tooltipLabel?: string;
 }
 
@@ -144,8 +149,8 @@ export interface IChartOptions {
     /** Callback function that formats the intermediate y value labels */
     yIntermediateFormatter?: (intermediate: number, precision: number) => string;
     maxDataSetLength?: number;
-    /** Controls how lines are drawn between data points. Defaults to "bezier". */
-    interpolation?: "linear" | "step" | "bezier";
+    /** Default value for time series presentation options' <code>interpolation</code>. Defaults to "bezier". */
+    interpolation?: ITimeSeriesPresentationOptions['interpolation'];
     /** Optional function to format time stamps for bottom of chart. You may use <code>SmoothieChart.timeFormatter</code>, or your own/ */
     timestampFormatter?: (date: Date) => string;
     horizontalLines?: IHorizontalLine[];
