@@ -551,6 +551,7 @@
     if (!this.tooltipEl) {
       this.tooltipEl = document.createElement('div');
       this.tooltipEl.className = 'smoothie-chart-tooltip';
+      this.tooltipEl.style.pointerEvents = 'none';
       this.tooltipEl.style.position = 'absolute';
       this.tooltipEl.style.display = 'none';
       document.body.appendChild(this.tooltipEl);
