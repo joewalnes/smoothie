@@ -798,7 +798,6 @@
     }
 
     this.resize();
-    this.updateTooltip();
 
     this.lastRenderTimeMillis = nowMillis;
 
@@ -1011,8 +1010,8 @@
       context.lineTo(this.mouseX, dimensions.height);
       context.closePath();
       context.stroke();
-      this.updateTooltip();
     }
+    this.updateTooltip();
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
