@@ -95,6 +95,7 @@
  *        Add title option, by @mesca
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
+ *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
  */
 
 ;(function(exports) {
