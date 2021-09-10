@@ -341,6 +341,8 @@
     this.currentVisMinValue = 0;
     this.lastRenderTimeMillis = 0;
     this.lastChartTimestamp = 0;
+    // this.lastFrameWindowStart = Date.now();
+    this.lastFrameWindowStart = 0;
 
     this.mousemove = this.mousemove.bind(this);
     this.mouseout = this.mouseout.bind(this);
@@ -787,21 +789,67 @@
 
     time = time || nowMillis - (this.delay || 0);
 
-    // Round time down to pixel granularity, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    // time -= time % this.options.millisPerPixel;
 
-    if (!this.isAnimatingScale) {
-      // We're not animating. We can use the last render time and the scroll speed to work out whether
-      // we actually need to paint anything yet. If not, we can return immediately.
-      var sameTime = this.lastChartTimestamp === time;
-      if (sameTime) {
-        // Render at least every 1/6th of a second. The canvas may be resized, which there is
-        // no reliable way to detect.
-        var needToRenderInCaseCanvasResized = nowMillis - this.lastRenderTimeMillis > 1000/6;
-        if (!needToRenderInCaseCanvasResized) {
+    // if (!this.isAnimatingScale) {
+    //   // We're not animating. We can use the last render time and the scroll speed to work out whether
+    //   // we actually need to paint anything yet. If not, we can return immediately.
+    //   var sameTime = this.lastChartTimestamp === time;
+    //   if (sameTime) {
+    //     // Render at least every 1/6th of a second. The canvas may be resized, which there is
+    //     // no reliable way to detect.
+    //     var needToRenderInCaseCanvasResized = nowMillis - this.lastRenderTimeMillis > 1000/6;
+    //     if (!needToRenderInCaseCanvasResized) {
+    //       return;
+    //     }
+    //   }
+    // }
+
+    // We increment time in pixel steps, so pixel interpolation on the image is always the same,
+    // so lines do not appear to wobble as they move along the canvas.
+    const period = this.options.millisPerPixel;
+    // This is like `lastFrameWindowEnd = this.lastFrameWindowStart + period`, but
+    // with truncation / floating point error mitigation.
+    const lastFrameWindowEnd = Math.round(this.lastFrameWindowStart / period + 1) * period;
+    let nextFrameWindowStart = lastFrameWindowEnd;
+    console.log((time - nextFrameWindowStart) / period, time - nextFrameWindowStart);
+    if (time >= nextFrameWindowStart) {
+      // The amount of frame timing accuracy (frame temporal placement) (how much off a frame can be from the time it ideally belongs to) we allow to sacrifice in order to keep chart movement speed smooth
+      // const maxFrameTimeOffsetMillis = 1000 / 50; // one 50 FPS frame should be an alright margin.
+      const maxFrameTimeOffsetMillis = 20;
+      // const maxFrameTimeOffsetMillis = 100;
+      const minNextFrameTime = time - maxFrameTimeOffsetMillis;
+      const minNextFrameWindowStart = minNextFrameTime - minNextFrameTime % period;
+
+      if (nextFrameWindowStart < minNextFrameWindowStart) {
+        // Have to skip some intermediate frames.
+        console.log('Skipping n frames', (nextFrameWindowStart - minNextFrameWindowStart) / period, nextFrameWindowStart - minNextFrameWindowStart)
+        nextFrameWindowStart = minNextFrameWindowStart;
+      }
+      // nextFrameWindowStart = Math.max(nextFrameWindowStart, minNextFrameWindowStart);
+    } else {
+      if (time < this.lastFrameWindowStart) {
+        // This can only happen if the value of the `time` argument is smaller than the value
+        // passed to it on the previous call. Which currenly only happens when the user calls it manually.
+        nextFrameWindowStart = time - time % period;
+      } else {
+        if (!this.isAnimatingScale) {
+          // Don't have to redraw anything.
+          console.log('same frame, until next frame', time - this.lastFrameWindowStart)
           return;
         }
       }
+    }
+    this.lastFrameWindowStart = nextFrameWindowStart;
+    time = nextFrameWindowStart;
+
+    // // Debug assertions.
+    // const num = (time / this.options.millisPerPixel);
+    // if (Math.abs(num - Math.round(num)) > 0.0001) {
+    //   console.error('Time not rounded', num - Math.round(num), time % this.options.millisPerPixel, time, this.options.millisPerPixel)
+    // }
+    if (time <= this.lastChartTimestamp) {
+      console.warn('same or smaller time', time, this.lastChartTimestamp)
     }
 
     this.lastRenderTimeMillis = nowMillis;
