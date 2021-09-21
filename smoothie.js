@@ -295,7 +295,6 @@
    *     lineWidth: 1,                           // the pixel width of grid lines
    *     strokeStyle: '#777777',                 // colour of grid lines
    *     millisPerLine: 1000,                    // distance between vertical grid lines
-   *     sharpLines: false,                      // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,                    // number of vertical sections marked out by horizontal grid lines
    *     borderVisible: true                     // whether the grid lines trace the border of the chart or not
    *   },
@@ -388,7 +387,6 @@
       fillStyle: '#000000',
       strokeStyle: '#777777',
       lineWidth: 1,
-      sharpLines: false,
       millisPerLine: 1000,
       verticalSections: 2,
       borderVisible: true
@@ -864,9 +862,6 @@
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
         var gx = timeToXPixel(t);
-        if (chartOptions.grid.sharpLines) {
-          gx -= 0.5;
-        }
         context.moveTo(gx, 0);
         context.lineTo(gx, dimensions.height);
       }
@@ -877,9 +872,6 @@
     // Horizontal (value) dividers.
     for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
       var gy = Math.round(v * dimensions.height / chartOptions.grid.verticalSections);
-      if (chartOptions.grid.sharpLines) {
-        gy -= 0.5;
-      }
       context.beginPath();
       context.moveTo(0, gy);
       context.lineTo(dimensions.width, gy);
@@ -1034,9 +1026,6 @@
       var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
       for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
         var gy = dimensions.height - Math.round(v * stepPixels);
-        if (chartOptions.grid.sharpLines) {
-          gy -= 0.5;
-        }
         var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
         //left of right axis?
         intermediateLabelPos =
