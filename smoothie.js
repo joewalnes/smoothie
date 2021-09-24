@@ -911,17 +911,17 @@
 
     // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
-      var timeSeries = this.seriesSet[d].timeSeries;
+      var timeSeries = this.seriesSet[d].timeSeries,
+          dataSet = timeSeries.data;
 
       // Delete old data that's moved off the left of the chart.
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
-      if (timeSeries.disabled) {
+      if (dataSet.length <= 1 || timeSeries.disabled) {
           continue;
       }
       context.save();
 
-      var dataSet = timeSeries.data,
-          seriesOptions = this.seriesSet[d].options;
+      var seriesOptions = this.seriesSet[d].options;
 
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
@@ -930,7 +930,7 @@
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
       var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
-      for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
+      for (var i = 0; i < dataSet.length; i++) {
         var x = timeToXPixel(dataSet[i][0]),
             y = valueToYPixel(dataSet[i][1]);
 
@@ -978,27 +978,26 @@
         lastX = x; lastY = y;
       }
 
-      if (dataSet.length > 1) {
-        if (seriesOptions.fillStyle) {
-          // Close up the fill region.
-          if (chartOptions.scrollBackwards) {
-            context.lineTo(lastX, dimensions.height + seriesOptions.lineWidth);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
-            context.lineTo(firstX, firstY);
-          } else {
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
-          }
-          context.fillStyle = seriesOptions.fillStyle;
-          context.fill();
+      if (seriesOptions.fillStyle) {
+        // Close up the fill region.
+        if (chartOptions.scrollBackwards) {
+          context.lineTo(lastX, dimensions.height + seriesOptions.lineWidth);
+          context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+          context.lineTo(firstX, firstY);
+        } else {
+          context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
+          context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
+          context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
         }
-
-        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
-          context.stroke();
-        }
-        context.closePath();
+        context.fillStyle = seriesOptions.fillStyle;
+        context.fill();
       }
+
+      if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+        context.stroke();
+      }
+      context.closePath();
+
       context.restore();
     }
 
