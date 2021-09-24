@@ -929,49 +929,47 @@
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
-      var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
-      for (var i = 0; i < dataSet.length; i++) {
+      var firstX = timeToXPixel(dataSet[0][0]),
+        firstY = valueToYPixel(dataSet[0][1]),
+        lastX = firstX,
+        lastY = firstY;
+      context.moveTo(firstX, firstY);
+      for (var i = 1; i < dataSet.length; i++) {
         var x = timeToXPixel(dataSet[i][0]),
             y = valueToYPixel(dataSet[i][1]);
 
-        if (i === 0) {
-          firstX = x;
-          firstY = y;
-          context.moveTo(x, y);
-        } else {
-          switch (seriesOptions.interpolation || chartOptions.interpolation) {
-            case "linear":
-            case "line": {
-              context.lineTo(x,y);
-              break;
-            }
-            case "bezier":
-            default: {
-              // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
-              //
-              // Assuming A was the last point in the line plotted and B is the new point,
-              // we draw a curve with control points P and Q as below.
-              //
-              // A---P
-              //     |
-              //     |
-              //     |
-              //     Q---B
-              //
-              // Importantly, A and P are at the same y coordinate, as are B and Q. This is
-              // so adjacent curves appear to flow as one.
-              //
-              context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-                Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-                Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-                x, y); // endPoint (B)
-              break;
-            }
-            case "step": {
-              context.lineTo(x,lastY);
-              context.lineTo(x,y);
-              break;
-            }
+        switch (seriesOptions.interpolation || chartOptions.interpolation) {
+          case "linear":
+          case "line": {
+            context.lineTo(x,y);
+            break;
+          }
+          case "bezier":
+          default: {
+            // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
+            //
+            // Assuming A was the last point in the line plotted and B is the new point,
+            // we draw a curve with control points P and Q as below.
+            //
+            // A---P
+            //     |
+            //     |
+            //     |
+            //     Q---B
+            //
+            // Importantly, A and P are at the same y coordinate, as are B and Q. This is
+            // so adjacent curves appear to flow as one.
+            //
+            context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+              Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+              Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+              x, y); // endPoint (B)
+            break;
+          }
+          case "step": {
+            context.lineTo(x,lastY);
+            context.lineTo(x,y);
+            break;
           }
         }
 
