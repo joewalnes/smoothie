@@ -215,30 +215,42 @@
 	if (isNaN(timestamp) || isNaN(value)){
 		return
 	}  
-    // Rewind until we hit an older timestamp
-    var i = this.data.length - 1;
-    while (i >= 0 && this.data[i][0] > timestamp) {
-      i--;
-    }
 
-    if (i === -1) {
-      // This new item is the oldest data
-      this.data.splice(0, 0, [timestamp, value]);
-    } else if (this.data.length > 0 && this.data[i][0] === timestamp) {
-      // Update existing values in the array
-      if (sumRepeatedTimeStampValues) {
-        // Sum this value into the existing 'bucket'
-        this.data[i][1] += value;
-        value = this.data[i][1];
-      } else {
-        // Replace the previous value
-        this.data[i][1] = value;
+    var lastI = this.data.length - 1;
+    if (lastI >= 0) {
+      // Rewind until we find the place for the new data
+      var i = lastI;
+      while (true) {
+        var iThData = this.data[i];
+        if (timestamp >= iThData[0]) {
+          if (timestamp === iThData[0]) {
+            // Update existing values in the array
+            if (sumRepeatedTimeStampValues) {
+              // Sum this value into the existing 'bucket'
+              iThData[1] += value;
+              value = iThData[1];
+            } else {
+              // Replace the previous value
+              iThData[1] = value;
+            }
+          } else {
+            // Splice into the correct position to keep timestamps in order
+            this.data.splice(i + 1, 0, [timestamp, value]);
+          }
+
+          break;
+        }
+
+        i--;
+        if (i < 0) {
+          // This new item is the oldest data
+          this.data.splice(0, 0, [timestamp, value]);
+
+          break;
+        }
       }
-    } else if (i < this.data.length - 1) {
-      // Splice into the correct position to keep timestamps in order
-      this.data.splice(i + 1, 0, [timestamp, value]);
     } else {
-      // Add to the end of the array
+      // It's the first element
       this.data.push([timestamp, value]);
     }
 
