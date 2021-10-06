@@ -935,9 +935,6 @@
 
       var seriesOptions = this.seriesSet[d].options;
 
-      // Set style for this dataSet.
-      context.lineWidth = seriesOptions.lineWidth;
-      context.strokeStyle = seriesOptions.strokeStyle;
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
@@ -1005,6 +1002,8 @@
       }
 
       if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+        context.lineWidth = seriesOptions.lineWidth;
+        context.strokeStyle = seriesOptions.strokeStyle;
         context.stroke();
       }
       context.closePath();
