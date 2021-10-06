@@ -947,8 +947,9 @@
         lastY = firstY;
       context.moveTo(firstX, firstY);
       for (var i = 1; i < dataSet.length; i++) {
-        var x = timeToXPixel(dataSet[i][0]),
-            y = valueToYPixel(dataSet[i][1]);
+        var iThData = dataSet[i],
+            x = timeToXPixel(iThData[0]),
+            y = valueToYPixel(iThData[1]);
 
         switch (seriesOptions.interpolation || chartOptions.interpolation) {
           case "linear":
