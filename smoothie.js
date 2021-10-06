@@ -592,7 +592,7 @@
     // x pixel to time
     var t = this.options.scrollBackwards
       ? time - this.mouseX * this.options.millisPerPixel
-      : time - (this.canvas.offsetWidth - this.mouseX) * this.options.millisPerPixel;
+      : time - (this.clientWidth - this.mouseX) * this.options.millisPerPixel;
 
     var data = [];
 
