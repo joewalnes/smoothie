@@ -1024,19 +1024,20 @@
     }
     this.updateTooltip();
 
+    var labelsOptions = chartOptions.labels;
     // Draw the axis values on the chart.
-    if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, chartOptions.labels.precision),
-          minValueString = chartOptions.yMinFormatter(this.valueRange.min, chartOptions.labels.precision),
+    if (!labelsOptions.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
+      var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, labelsOptions.precision),
+          minValueString = chartOptions.yMinFormatter(this.valueRange.min, labelsOptions.precision),
           maxLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(maxValueString).width - 2,
           minLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(minValueString).width - 2;
-      context.fillStyle = chartOptions.labels.fillStyle;
-      context.fillText(maxValueString, maxLabelPos, chartOptions.labels.fontSize);
+      context.fillStyle = labelsOptions.fillStyle;
+      context.fillText(maxValueString, maxLabelPos, labelsOptions.fontSize);
       context.fillText(minValueString, minLabelPos, dimensions.height - 2);
     }
 
     // Display intermediate y axis labels along y-axis to the left of the chart
-    if ( chartOptions.labels.showIntermediateLabels
+    if ( labelsOptions.showIntermediateLabels
           && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)
           && chartOptions.grid.verticalSections > 0) {
       // show a label above every vertical section divider
@@ -1047,10 +1048,10 @@
         if (chartOptions.grid.sharpLines) {
           gy -= 0.5;
         }
-        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
+        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), labelsOptions.precision);
         //left of right axis?
         intermediateLabelPos =
-          chartOptions.labels.intermediateLabelSameAxis
+          labelsOptions.intermediateLabelSameAxis
           ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
           : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
 
