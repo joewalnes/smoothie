@@ -11,8 +11,13 @@
       }, 500);
       
       function createTimeline() {
-        var chart = new SmoothieChart();
-        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 4 });
+        var chart = new SmoothieChart({
+          millisPerPixel: 1000 / (74.6 / 3),
+          interpolation: 'step',
+          maxValue: 10000,
+          minValue: 0,
+        });
+        chart.addTimeSeries(random, { strokeStyle: 'rgba(0, 255, 0, 1)', fillStyle: 'rgba(0, 255, 0, 0.2)', lineWidth: 2 * 1 / window.devicePixelRatio });
         chart.streamTo(document.getElementById("chart"), 500);
       }
     </script>
