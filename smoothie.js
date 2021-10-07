@@ -923,7 +923,10 @@
       }
 
       var dataSet = timeSeries.data,
-          seriesOptions = this.seriesSet[d].options;
+          seriesOptions = this.seriesSet[d].options,
+          // Keep in mind that `context.lineWidth = 0` doesn't actually set it to `0`.
+          drawStroke = seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none',
+          lineWidthMaybeZero = drawStroke ? seriesOptions.lineWidth : 0;
 
       // Delete old data that's moved off the left of the chart.
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
@@ -936,8 +939,8 @@
       // Retain lastX, lastY for calculating the control points of bezier curves.
       var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
       for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
-        var x = timeToXPosition(dataSet[i][0], seriesOptions.lineWidth),
-            y = valueToYPosition(dataSet[i][1], seriesOptions.lineWidth);
+        var x = timeToXPosition(dataSet[i][0], lineWidthMaybeZero),
+            y = valueToYPosition(dataSet[i][1], lineWidthMaybeZero);
 
         if (i === 0) {
           firstX = x;
@@ -987,19 +990,19 @@
         if (seriesOptions.fillStyle) {
           // Close up the fill region.
           if (chartOptions.scrollBackwards) {
-            context.lineTo(lastX, dimensions.height + seriesOptions.lineWidth);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(lastX, dimensions.height + lineWidthMaybeZero);
+            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
             context.lineTo(firstX, firstY);
           } else {
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, lastY);
+            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, dimensions.height + lineWidthMaybeZero + 1);
+            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
           }
           context.fillStyle = seriesOptions.fillStyle;
           context.fill();
         }
 
-        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+        if (drawStroke) {
           context.stroke();
         }
         context.closePath();
