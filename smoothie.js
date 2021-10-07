@@ -555,6 +555,10 @@
    */
   SmoothieChart.prototype.streamTo = function(canvas, delayMillis) {
     this.canvas = canvas;
+
+    this.clientWidth = parseInt(this.canvas.getAttribute('width'));
+    this.clientHeight = parseInt(this.canvas.getAttribute('height'));
+
     this.delay = delayMillis;
     this.start();
   };
@@ -658,24 +662,33 @@
         this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
         this.canvas.getContext('2d').scale(dpr, dpr);
       }
-    } else if (dpr !== 1) {
-      // Older behaviour: use the canvas's inner dimensions and scale the element's size
-      // according to that size and the device pixel ratio (eg: high DPI)
+
+      this.clientWidth = width;
+      this.clientHeight = height;
+    } else {
       width = parseInt(this.canvas.getAttribute('width'));
       height = parseInt(this.canvas.getAttribute('height'));
 
-      if (!this.originalWidth || (Math.floor(this.originalWidth * dpr) !== width)) {
-        this.originalWidth = width;
-        this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
-        this.canvas.style.width = width + 'px';
-        this.canvas.getContext('2d').scale(dpr, dpr);
-      }
+      if (dpr !== 1) {
+        // Older behaviour: use the canvas's inner dimensions and scale the element's size
+        // according to that size and the device pixel ratio (eg: high DPI)
 
-      if (!this.originalHeight || (Math.floor(this.originalHeight * dpr) !== height)) {
-        this.originalHeight = height;
-        this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
-        this.canvas.style.height = height + 'px';
-        this.canvas.getContext('2d').scale(dpr, dpr);
+        if (Math.floor(this.clientWidth * dpr) !== width) {
+          this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
+          this.canvas.style.width = width + 'px';
+          this.clientWidth = width;
+          this.canvas.getContext('2d').scale(dpr, dpr);
+        }
+
+        if (Math.floor(this.clientHeight * dpr) !== height) {
+          this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
+          this.canvas.style.height = height + 'px';
+          this.clientHeight = height;
+          this.canvas.getContext('2d').scale(dpr, dpr);
+        }
+      } else {
+        this.clientWidth = width;
+        this.clientHeight = height;
       }
     }
   };
@@ -824,7 +837,8 @@
 
     var context = canvas.getContext('2d'),
         chartOptions = this.options,
-        dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
+        // Using `this.clientWidth` instead of `canvas.clientWidth` because the latter is slow.
+        dimensions = { top: 0, left: 0, width: this.clientWidth, height: this.clientHeight },
         // Calculate the threshold time for the oldest data points.
         oldestValidTime = time - (dimensions.width * chartOptions.millisPerPixel),
         valueToYPixel = function(value) {
