@@ -946,48 +946,55 @@
       var firstX = timeToXPixel(dataSet[0][0]),
         firstY = valueToYPixel(dataSet[0][1]),
         lastX = firstX,
-        lastY = firstY;
+        lastY = firstY,
+        draw;
       context.moveTo(firstX, firstY);
-      for (var i = 1; i < dataSet.length; i++) {
-        var iThData = dataSet[i],
-            x = timeToXPixel(iThData[0]),
-            y = valueToYPixel(iThData[1]);
-
-        switch (seriesOptions.interpolation || chartOptions.interpolation) {
-          case "linear":
-          case "line": {
+      switch (seriesOptions.interpolation || chartOptions.interpolation) {
+        case "linear":
+        case "line": {
+          draw = function(x, y, lastX, lastY) {
             context.lineTo(x,y);
-            break;
           }
-          case "bezier":
-          default: {
-            // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
-            //
-            // Assuming A was the last point in the line plotted and B is the new point,
-            // we draw a curve with control points P and Q as below.
-            //
-            // A---P
-            //     |
-            //     |
-            //     |
-            //     Q---B
-            //
-            // Importantly, A and P are at the same y coordinate, as are B and Q. This is
-            // so adjacent curves appear to flow as one.
-            //
+          break;
+        }
+        case "bezier":
+        default: {
+          // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
+          //
+          // Assuming A was the last point in the line plotted and B is the new point,
+          // we draw a curve with control points P and Q as below.
+          //
+          // A---P
+          //     |
+          //     |
+          //     |
+          //     Q---B
+          //
+          // Importantly, A and P are at the same y coordinate, as are B and Q. This is
+          // so adjacent curves appear to flow as one.
+          //
+          draw = function(x, y, lastX, lastY) {
             context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
               Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
               Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
               x, y); // endPoint (B)
-            break;
           }
-          case "step": {
+          break;
+        }
+        case "step": {
+          draw = function(x, y, lastX, lastY) {
             context.lineTo(x,lastY);
             context.lineTo(x,y);
-            break;
           }
+          break;
         }
+      }
 
+      for (var i = 1; i < dataSet.length; i++) {
+        var iThData = dataSet[i],
+            x = timeToXPixel(iThData[0]),
+            y = valueToYPixel(iThData[1]);
+        draw(x, y, lastX, lastY);
         lastX = x; lastY = y;
       }
 
