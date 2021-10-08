@@ -785,7 +785,7 @@
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
       return;
 
-    time = time || nowMillis - (this.delay || 0);
+    time = (time || nowMillis) - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
