@@ -97,6 +97,7 @@
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
  *        Improve performance, by @WofWca (#135)
+ *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  */
 
 ;(function(exports) {
