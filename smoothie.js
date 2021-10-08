@@ -96,6 +96,7 @@
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
+ *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  */
 
 ;(function(exports) {
