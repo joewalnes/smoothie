@@ -96,6 +96,7 @@
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
+ *        Improve performance, by @WofWca (#135)
  */
 
 ;(function(exports) {
