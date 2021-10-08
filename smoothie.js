@@ -1018,7 +1018,6 @@
         context.strokeStyle = seriesOptions.strokeStyle;
         context.stroke();
       }
-      context.closePath();
     }
 
     if (chartOptions.tooltip && this.mouseX >= 0) {
