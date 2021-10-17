@@ -100,6 +100,7 @@
  *        Fix: make all lines sharp, by @WofWca (#134)
  *        Improve performance, by @WofWca (#135)
  *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
+ *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  */
 
 ;(function(exports) {
@@ -1009,25 +1010,19 @@
         lastX = x; lastY = y;
       }
 
-      if (seriesOptions.fillStyle) {
-        // Close up the fill region.
-        if (chartOptions.scrollBackwards) {
-          context.lineTo(lastX, dimensions.height + lineWidthMaybeZero);
-          context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
-          context.lineTo(firstX, firstY);
-        } else {
-          context.lineTo(dimensions.width + lineWidthMaybeZero + 1, lastY);
-          context.lineTo(dimensions.width + lineWidthMaybeZero + 1, dimensions.height + lineWidthMaybeZero + 1);
-          context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
-        }
-        context.fillStyle = seriesOptions.fillStyle;
-        context.fill();
-      }
-
       if (drawStroke) {
         context.lineWidth = seriesOptions.lineWidth;
         context.strokeStyle = seriesOptions.strokeStyle;
         context.stroke();
+      }
+
+      if (seriesOptions.fillStyle) {
+        // Close up the fill region.
+        context.lineTo(lastX, dimensions.height + lineWidthMaybeZero + 1);
+        context.lineTo(firstX, dimensions.height + lineWidthMaybeZero + 1);
+
+        context.fillStyle = seriesOptions.fillStyle;
+        context.fill();
       }
     }
 
