@@ -99,6 +99,7 @@
  *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
  *        Fix: make all lines sharp, by @WofWca (#134)
  *        Improve performance, by @WofWca (#135)
+ *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  */
 
 ;(function(exports) {
@@ -821,7 +822,7 @@
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
       return;
 
-    time = time || nowMillis - (this.delay || 0);
+    time = (time || nowMillis) - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
