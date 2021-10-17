@@ -95,6 +95,7 @@
  *        Add title option, by @mesca
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
+ *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
  */
 
 ;(function(exports) {
@@ -784,32 +785,31 @@
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
       return;
 
-    if (!this.isAnimatingScale) {
-      // We're not animating. We can use the last render time and the scroll speed to work out whether
-      // we actually need to paint anything yet. If not, we can return immediately.
-
-      // Render at least every 1/6th of a second. The canvas may be resized, which there is
-      // no reliable way to detect.
-      var maxIdleMillis = Math.min(1000/6, this.options.millisPerPixel);
-
-      if (nowMillis - this.lastRenderTimeMillis < maxIdleMillis) {
-        return;
-      }
-    }
-
-    this.resize();
-    this.updateTooltip();
-
-    this.lastRenderTimeMillis = nowMillis;
-
-    canvas = canvas || this.canvas;
     time = time || nowMillis - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
 
+    if (!this.isAnimatingScale) {
+      // We're not animating. We can use the last render time and the scroll speed to work out whether
+      // we actually need to paint anything yet. If not, we can return immediately.
+      var sameTime = this.lastChartTimestamp === time;
+      if (sameTime) {
+        // Render at least every 1/6th of a second. The canvas may be resized, which there is
+        // no reliable way to detect.
+        var needToRenderInCaseCanvasResized = nowMillis - this.lastRenderTimeMillis > 1000/6;
+        if (!needToRenderInCaseCanvasResized) {
+          return;
+        }
+      }
+    }
+
+    this.lastRenderTimeMillis = nowMillis;
     this.lastChartTimestamp = time;
 
+    this.resize();
+
+    canvas = canvas || this.canvas;
     var context = canvas.getContext('2d'),
         chartOptions = this.options,
         dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
@@ -1011,8 +1011,8 @@
       context.lineTo(this.mouseX, dimensions.height);
       context.closePath();
       context.stroke();
-      this.updateTooltip();
     }
+    this.updateTooltip();
 
     // Draw the axis values on the chart.
     if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
