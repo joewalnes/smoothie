@@ -397,7 +397,7 @@
     grid: {
       fillStyle: '#000000',
       strokeStyle: '#777777',
-      lineWidth: 1,
+      lineWidth: 2,
       millisPerLine: 1000,
       verticalSections: 2,
       borderVisible: true
