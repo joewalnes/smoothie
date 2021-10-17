@@ -97,6 +97,7 @@
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
  *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
+ *        Fix: make all lines sharp, by @WofWca (#134)
  */
 
 ;(function(exports) {
@@ -138,7 +139,17 @@
           low = mid + 1;
       }
       return low;
-    }
+    },
+    // So lines (especially vertical and horizontal) look a) consistent along their length and b) sharp.
+    pixelSnap: function(position, lineWidth) {
+      if (lineWidth % 2 === 0) {
+        // Closest pixel edge.
+        return Math.round(position);
+      } else {
+        // Closest pixel center.
+        return Math.floor(position) + 0.5;
+      }
+    },
   };
 
   /**
@@ -296,7 +307,6 @@
    *     lineWidth: 1,                           // the pixel width of grid lines
    *     strokeStyle: '#777777',                 // colour of grid lines
    *     millisPerLine: 1000,                    // distance between vertical grid lines
-   *     sharpLines: false,                      // controls whether grid lines are 1px sharp, or softened
    *     verticalSections: 2,                    // number of vertical sections marked out by horizontal grid lines
    *     borderVisible: true                     // whether the grid lines trace the border of the chart or not
    *   },
@@ -389,7 +399,6 @@
       fillStyle: '#000000',
       strokeStyle: '#777777',
       lineWidth: 1,
-      sharpLines: false,
       millisPerLine: 1000,
       verticalSections: 2,
       borderVisible: true
@@ -816,17 +825,18 @@
         dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
         // Calculate the threshold time for the oldest data points.
         oldestValidTime = time - (dimensions.width * chartOptions.millisPerPixel),
-        valueToYPixel = function(value) {
-          var offset = value - this.currentVisMinValue;
-          return this.currentValueRange === 0
-            ? dimensions.height
-            : dimensions.height - (Math.round((offset / this.currentValueRange) * dimensions.height));
+        valueToYPosition = function(value, lineWidth) {
+          var offset = value - this.currentVisMinValue,
+              unsnapped = this.currentValueRange === 0
+                ? dimensions.height
+                : dimensions.height * (1 - offset / this.currentValueRange);
+          return Util.pixelSnap(unsnapped, lineWidth);
         }.bind(this),
-        timeToXPixel = function(t) {
-          if(chartOptions.scrollBackwards) {
-            return Math.round((time - t) / chartOptions.millisPerPixel);
-          }
-          return Math.round(dimensions.width - ((time - t) / chartOptions.millisPerPixel));
+        timeToXPosition = function(t, lineWidth) {
+          var unsnapped = chartOptions.scrollBackwards
+            ? (time - t) / chartOptions.millisPerPixel
+            : dimensions.width - ((time - t) / chartOptions.millisPerPixel);
+          return Util.pixelSnap(unsnapped, lineWidth);
         };
 
     this.updateValueRange();
@@ -864,10 +874,7 @@
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
-        var gx = timeToXPixel(t);
-        if (chartOptions.grid.sharpLines) {
-          gx -= 0.5;
-        }
+        var gx = timeToXPosition(t, chartOptions.grid.lineWidth);
         context.moveTo(gx, 0);
         context.lineTo(gx, dimensions.height);
       }
@@ -877,10 +884,7 @@
 
     // Horizontal (value) dividers.
     for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
-      var gy = Math.round(v * dimensions.height / chartOptions.grid.verticalSections);
-      if (chartOptions.grid.sharpLines) {
-        gy -= 0.5;
-      }
+      var gy = Util.pixelSnap(v * dimensions.height / chartOptions.grid.verticalSections, chartOptions.grid.lineWidth);
       context.beginPath();
       context.moveTo(0, gy);
       context.lineTo(dimensions.width, gy);
@@ -899,9 +903,10 @@
     if (chartOptions.horizontalLines && chartOptions.horizontalLines.length) {
       for (var hl = 0; hl < chartOptions.horizontalLines.length; hl++) {
         var line = chartOptions.horizontalLines[hl],
-            hly = Math.round(valueToYPixel(line.value)) - 0.5;
+            lineWidth = line.lineWidth || 1,
+            hly = valueToYPosition(line.value, lineWidth);
         context.strokeStyle = line.color || '#ffffff';
-        context.lineWidth = line.lineWidth || 1;
+        context.lineWidth = lineWidth;
         context.beginPath();
         context.moveTo(0, hly);
         context.lineTo(dimensions.width, hly);
@@ -922,7 +927,10 @@
       context.save();
 
       var dataSet = timeSeries.data,
-          seriesOptions = this.seriesSet[d].options;
+          seriesOptions = this.seriesSet[d].options,
+          // Keep in mind that `context.lineWidth = 0` doesn't actually set it to `0`.
+          drawStroke = seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none',
+          lineWidthMaybeZero = drawStroke ? seriesOptions.lineWidth : 0;
 
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
@@ -932,8 +940,8 @@
       // Retain lastX, lastY for calculating the control points of bezier curves.
       var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
       for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
-        var x = timeToXPixel(dataSet[i][0]),
-            y = valueToYPixel(dataSet[i][1]);
+        var x = timeToXPosition(dataSet[i][0], lineWidthMaybeZero),
+            y = valueToYPosition(dataSet[i][1], lineWidthMaybeZero);
 
         if (i === 0) {
           firstX = x;
@@ -983,19 +991,19 @@
         if (seriesOptions.fillStyle) {
           // Close up the fill region.
           if (chartOptions.scrollBackwards) {
-            context.lineTo(lastX, dimensions.height + seriesOptions.lineWidth);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(lastX, dimensions.height + lineWidthMaybeZero);
+            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
             context.lineTo(firstX, firstY);
           } else {
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, lastY);
-            context.lineTo(dimensions.width + seriesOptions.lineWidth + 1, dimensions.height + seriesOptions.lineWidth + 1);
-            context.lineTo(firstX, dimensions.height + seriesOptions.lineWidth);
+            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, lastY);
+            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, dimensions.height + lineWidthMaybeZero + 1);
+            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
           }
           context.fillStyle = seriesOptions.fillStyle;
           context.fill();
         }
 
-        if (seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none') {
+        if (drawStroke) {
           context.stroke();
         }
         context.closePath();
@@ -1035,9 +1043,6 @@
       var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
       for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
         var gy = dimensions.height - Math.round(v * stepPixels);
-        if (chartOptions.grid.sharpLines) {
-          gy -= 0.5;
-        }
         var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
         //left of right axis?
         intermediateLabelPos =
@@ -1057,7 +1062,7 @@
       for (var t = time - (time % chartOptions.grid.millisPerLine);
            t >= oldestValidTime;
            t -= chartOptions.grid.millisPerLine) {
-        var gx = timeToXPixel(t);
+        var gx = timeToXPosition(t, 0);
         // Only draw the timestamp if it won't overlap with the previously drawn one.
         if ((!chartOptions.scrollBackwards && gx < textUntilX) || (chartOptions.scrollBackwards && gx > textUntilX))  {
           // Formats the timestamp based on user specified formatting function

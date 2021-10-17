@@ -86,8 +86,6 @@ export interface IGridOptions {
     strokeStyle?: string;
     /** Distance between vertical grid lines. */
     millisPerLine?: number;
-    /** Controls whether grid lines are 1px sharp, or softened. */
-    sharpLines?: boolean;
     /** Number of vertical sections marked out by horizontal grid lines. */
     verticalSections?: number;
     /** Whether the grid lines trace the border of the chart or not. */
