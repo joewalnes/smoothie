@@ -96,6 +96,7 @@
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
+ *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
  */
 
 ;(function(exports) {
@@ -911,17 +912,17 @@
 
     // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
-      context.save();
       var timeSeries = this.seriesSet[d].timeSeries;
-      if (timeSeries.disabled) {
-          continue;
-      }
-
-      var dataSet = timeSeries.data,
-          seriesOptions = this.seriesSet[d].options;
 
       // Delete old data that's moved off the left of the chart.
       timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
+      if (timeSeries.disabled) {
+          continue;
+      }
+      context.save();
+
+      var dataSet = timeSeries.data,
+          seriesOptions = this.seriesSet[d].options;
 
       // Set style for this dataSet.
       context.lineWidth = seriesOptions.lineWidth;
