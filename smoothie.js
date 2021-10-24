@@ -872,6 +872,10 @@
 
     context.font = chartOptions.labels.fontSize + 'px ' + chartOptions.labels.fontFamily;
 
+    // Save the state of the canvas context, any transformations applied in this method
+    // will get removed from the stack at the end of this method when .restore() is called.
+    context.save();
+
     // Move the origin.
     context.translate(dimensions.left, dimensions.top);
 
@@ -883,11 +887,14 @@
     context.clip();
 
     // Clear the working area.
+    context.save();
     context.fillStyle = chartOptions.grid.fillStyle;
     context.clearRect(0, 0, dimensions.width, dimensions.height);
     context.fillRect(0, 0, dimensions.width, dimensions.height);
+    context.restore();
 
     // Grid lines...
+    context.save();
     context.lineWidth = chartOptions.grid.lineWidth;
     context.strokeStyle = chartOptions.grid.strokeStyle;
     // Vertical (time) dividers.
@@ -919,6 +926,7 @@
       context.strokeRect(0, 0, dimensions.width, dimensions.height);
       context.closePath();
     }
+    context.restore();
 
     // Draw any horizontal lines...
     if (chartOptions.horizontalLines && chartOptions.horizontalLines.length) {
@@ -946,6 +954,7 @@
       if (dataSet.length <= 1 || timeSeries.disabled) {
           continue;
       }
+      context.save();
 
       var seriesOptions = this.seriesSet[d].options,
           // Keep in mind that `context.lineWidth = 0` doesn't actually set it to `0`.
@@ -1024,6 +1033,8 @@
         context.fillStyle = seriesOptions.fillStyle;
         context.fill();
       }
+
+      context.restore();
     }
 
     if (chartOptions.tooltip && this.mouseX >= 0) {
@@ -1118,6 +1129,8 @@
       context.fillStyle = chartOptions.title.fillStyle;
       context.fillText(chartOptions.title.text, titleXPos, titleYPos);
     }
+
+    context.restore(); // See .save() above.
   };
 
   // Sample timestamp formatting function
