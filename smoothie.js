@@ -96,7 +96,11 @@
  *        Fix data drop stoppage by rejecting NaNs in append(), by @timdrysdale
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
+ *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
  *        Fix: make all lines sharp, remove the `grid.sharpLines` option by @WofWca (#134)
+ *        Improve performance, by @WofWca (#135)
+ *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
+ *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  */
 
 ;(function(exports) {
@@ -226,30 +230,42 @@
 	if (isNaN(timestamp) || isNaN(value)){
 		return
 	}  
-    // Rewind until we hit an older timestamp
-    var i = this.data.length - 1;
-    while (i >= 0 && this.data[i][0] > timestamp) {
-      i--;
-    }
 
-    if (i === -1) {
-      // This new item is the oldest data
-      this.data.splice(0, 0, [timestamp, value]);
-    } else if (this.data.length > 0 && this.data[i][0] === timestamp) {
-      // Update existing values in the array
-      if (sumRepeatedTimeStampValues) {
-        // Sum this value into the existing 'bucket'
-        this.data[i][1] += value;
-        value = this.data[i][1];
-      } else {
-        // Replace the previous value
-        this.data[i][1] = value;
+    var lastI = this.data.length - 1;
+    if (lastI >= 0) {
+      // Rewind until we find the place for the new data
+      var i = lastI;
+      while (true) {
+        var iThData = this.data[i];
+        if (timestamp >= iThData[0]) {
+          if (timestamp === iThData[0]) {
+            // Update existing values in the array
+            if (sumRepeatedTimeStampValues) {
+              // Sum this value into the existing 'bucket'
+              iThData[1] += value;
+              value = iThData[1];
+            } else {
+              // Replace the previous value
+              iThData[1] = value;
+            }
+          } else {
+            // Splice into the correct position to keep timestamps in order
+            this.data.splice(i + 1, 0, [timestamp, value]);
+          }
+
+          break;
+        }
+
+        i--;
+        if (i < 0) {
+          // This new item is the oldest data
+          this.data.splice(0, 0, [timestamp, value]);
+
+          break;
+        }
       }
-    } else if (i < this.data.length - 1) {
-      // Splice into the correct position to keep timestamps in order
-      this.data.splice(i + 1, 0, [timestamp, value]);
     } else {
-      // Add to the end of the array
+      // It's the first element
       this.data.push([timestamp, value]);
     }
 
@@ -552,6 +568,10 @@
    */
   SmoothieChart.prototype.streamTo = function(canvas, delayMillis) {
     this.canvas = canvas;
+
+    this.clientWidth = parseInt(this.canvas.getAttribute('width'));
+    this.clientHeight = parseInt(this.canvas.getAttribute('height'));
+
     this.delay = delayMillis;
     this.start();
   };
@@ -585,7 +605,7 @@
     // x pixel to time
     var t = this.options.scrollBackwards
       ? time - this.mouseX * this.options.millisPerPixel
-      : time - (this.canvas.offsetWidth - this.mouseX) * this.options.millisPerPixel;
+      : time - (this.clientWidth - this.mouseX) * this.options.millisPerPixel;
 
     var data = [];
 
@@ -655,24 +675,33 @@
         this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
         this.canvas.getContext('2d').scale(dpr, dpr);
       }
-    } else if (dpr !== 1) {
-      // Older behaviour: use the canvas's inner dimensions and scale the element's size
-      // according to that size and the device pixel ratio (eg: high DPI)
+
+      this.clientWidth = width;
+      this.clientHeight = height;
+    } else {
       width = parseInt(this.canvas.getAttribute('width'));
       height = parseInt(this.canvas.getAttribute('height'));
 
-      if (!this.originalWidth || (Math.floor(this.originalWidth * dpr) !== width)) {
-        this.originalWidth = width;
-        this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
-        this.canvas.style.width = width + 'px';
-        this.canvas.getContext('2d').scale(dpr, dpr);
-      }
+      if (dpr !== 1) {
+        // Older behaviour: use the canvas's inner dimensions and scale the element's size
+        // according to that size and the device pixel ratio (eg: high DPI)
 
-      if (!this.originalHeight || (Math.floor(this.originalHeight * dpr) !== height)) {
-        this.originalHeight = height;
-        this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
-        this.canvas.style.height = height + 'px';
-        this.canvas.getContext('2d').scale(dpr, dpr);
+        if (Math.floor(this.clientWidth * dpr) !== width) {
+          this.canvas.setAttribute('width', (Math.floor(width * dpr)).toString());
+          this.canvas.style.width = width + 'px';
+          this.clientWidth = width;
+          this.canvas.getContext('2d').scale(dpr, dpr);
+        }
+
+        if (Math.floor(this.clientHeight * dpr) !== height) {
+          this.canvas.setAttribute('height', (Math.floor(height * dpr)).toString());
+          this.canvas.style.height = height + 'px';
+          this.clientHeight = height;
+          this.canvas.getContext('2d').scale(dpr, dpr);
+        }
+      } else {
+        this.clientWidth = width;
+        this.clientHeight = height;
       }
     }
   };
@@ -794,7 +823,7 @@
     if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
       return;
 
-    time = time || nowMillis - (this.delay || 0);
+    time = (time || nowMillis) - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
@@ -821,7 +850,8 @@
     canvas = canvas || this.canvas;
     var context = canvas.getContext('2d'),
         chartOptions = this.options,
-        dimensions = { top: 0, left: 0, width: canvas.clientWidth, height: canvas.clientHeight },
+        // Using `this.clientWidth` instead of `canvas.clientWidth` because the latter is slow.
+        dimensions = { top: 0, left: 0, width: this.clientWidth, height: this.clientHeight },
         // Calculate the threshold time for the oldest data points.
         oldestValidTime = time - (dimensions.width * chartOptions.millisPerPixel),
         valueToYPosition = function(value, lineWidth) {
@@ -916,97 +946,94 @@
 
     // For each data set...
     for (var d = 0; d < this.seriesSet.length; d++) {
-      context.save();
-      var timeSeries = this.seriesSet[d].timeSeries;
-      if (timeSeries.disabled) {
+      var timeSeries = this.seriesSet[d].timeSeries,
+          dataSet = timeSeries.data;
+
+      // Delete old data that's moved off the left of the chart.
+      timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
+      if (dataSet.length <= 1 || timeSeries.disabled) {
           continue;
       }
+      context.save();
 
-      var dataSet = timeSeries.data,
-          seriesOptions = this.seriesSet[d].options,
+      var seriesOptions = this.seriesSet[d].options,
           // Keep in mind that `context.lineWidth = 0` doesn't actually set it to `0`.
           drawStroke = seriesOptions.strokeStyle && seriesOptions.strokeStyle !== 'none',
           lineWidthMaybeZero = drawStroke ? seriesOptions.lineWidth : 0;
 
-      // Delete old data that's moved off the left of the chart.
-      timeSeries.dropOldData(oldestValidTime, chartOptions.maxDataSetLength);
-
-      // Set style for this dataSet.
-      context.lineWidth = seriesOptions.lineWidth;
-      context.strokeStyle = seriesOptions.strokeStyle;
       // Draw the line...
       context.beginPath();
       // Retain lastX, lastY for calculating the control points of bezier curves.
-      var firstX = 0, firstY = 0, lastX = 0, lastY = 0;
-      for (var i = 0; i < dataSet.length && dataSet.length !== 1; i++) {
-        var x = timeToXPosition(dataSet[i][0], lineWidthMaybeZero),
-            y = valueToYPosition(dataSet[i][1], lineWidthMaybeZero);
-
-        if (i === 0) {
-          firstX = x;
-          firstY = y;
-          context.moveTo(x, y);
-        } else {
-          switch (seriesOptions.interpolation || chartOptions.interpolation) {
-            case "linear":
-            case "line": {
-              context.lineTo(x,y);
-              break;
-            }
-            case "bezier":
-            default: {
-              // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
-              //
-              // Assuming A was the last point in the line plotted and B is the new point,
-              // we draw a curve with control points P and Q as below.
-              //
-              // A---P
-              //     |
-              //     |
-              //     |
-              //     Q---B
-              //
-              // Importantly, A and P are at the same y coordinate, as are B and Q. This is
-              // so adjacent curves appear to flow as one.
-              //
-              context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
-                Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
-                Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
-                x, y); // endPoint (B)
-              break;
-            }
-            case "step": {
-              context.lineTo(x,lastY);
-              context.lineTo(x,y);
-              break;
-            }
+      var firstX = timeToXPosition(dataSet[0][0], lineWidthMaybeZero),
+        firstY = valueToYPosition(dataSet[0][1], lineWidthMaybeZero),
+        lastX = firstX,
+        lastY = firstY,
+        draw;
+      context.moveTo(firstX, firstY);
+      switch (seriesOptions.interpolation || chartOptions.interpolation) {
+        case "linear":
+        case "line": {
+          draw = function(x, y, lastX, lastY) {
+            context.lineTo(x,y);
           }
+          break;
         }
+        case "bezier":
+        default: {
+          // Great explanation of Bezier curves: http://en.wikipedia.org/wiki/Bezier_curve#Quadratic_curves
+          //
+          // Assuming A was the last point in the line plotted and B is the new point,
+          // we draw a curve with control points P and Q as below.
+          //
+          // A---P
+          //     |
+          //     |
+          //     |
+          //     Q---B
+          //
+          // Importantly, A and P are at the same y coordinate, as are B and Q. This is
+          // so adjacent curves appear to flow as one.
+          //
+          draw = function(x, y, lastX, lastY) {
+            context.bezierCurveTo( // startPoint (A) is implicit from last iteration of loop
+              Math.round((lastX + x) / 2), lastY, // controlPoint1 (P)
+              Math.round((lastX + x)) / 2, y, // controlPoint2 (Q)
+              x, y); // endPoint (B)
+          }
+          break;
+        }
+        case "step": {
+          draw = function(x, y, lastX, lastY) {
+            context.lineTo(x,lastY);
+            context.lineTo(x,y);
+          }
+          break;
+        }
+      }
 
+      for (var i = 1; i < dataSet.length; i++) {
+        var iThData = dataSet[i],
+            x = timeToXPosition(iThData[0], lineWidthMaybeZero),
+            y = valueToYPosition(iThData[1], lineWidthMaybeZero);
+        draw(x, y, lastX, lastY);
         lastX = x; lastY = y;
       }
 
-      if (dataSet.length > 1) {
-        if (seriesOptions.fillStyle) {
-          // Close up the fill region.
-          if (chartOptions.scrollBackwards) {
-            context.lineTo(lastX, dimensions.height + lineWidthMaybeZero);
-            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
-            context.lineTo(firstX, firstY);
-          } else {
-            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, lastY);
-            context.lineTo(dimensions.width + lineWidthMaybeZero + 1, dimensions.height + lineWidthMaybeZero + 1);
-            context.lineTo(firstX, dimensions.height + lineWidthMaybeZero);
-          }
-          context.fillStyle = seriesOptions.fillStyle;
-          context.fill();
-        }
-
-        if (drawStroke) {
-          context.stroke();
-        }
-        context.closePath();
+      if (drawStroke) {
+        context.lineWidth = seriesOptions.lineWidth;
+        context.strokeStyle = seriesOptions.strokeStyle;
+        context.stroke();
       }
+
+      if (seriesOptions.fillStyle) {
+        // Close up the fill region.
+        context.lineTo(lastX, dimensions.height + lineWidthMaybeZero + 1);
+        context.lineTo(firstX, dimensions.height + lineWidthMaybeZero + 1);
+
+        context.fillStyle = seriesOptions.fillStyle;
+        context.fill();
+      }
+
       context.restore();
     }
 
@@ -1022,32 +1049,33 @@
     }
     this.updateTooltip();
 
+    var labelsOptions = chartOptions.labels;
     // Draw the axis values on the chart.
-    if (!chartOptions.labels.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
-      var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, chartOptions.labels.precision),
-          minValueString = chartOptions.yMinFormatter(this.valueRange.min, chartOptions.labels.precision),
+    if (!labelsOptions.disabled && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)) {
+      var maxValueString = chartOptions.yMaxFormatter(this.valueRange.max, labelsOptions.precision),
+          minValueString = chartOptions.yMinFormatter(this.valueRange.min, labelsOptions.precision),
           maxLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(maxValueString).width - 2,
           minLabelPos = chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(minValueString).width - 2;
-      context.fillStyle = chartOptions.labels.fillStyle;
-      context.fillText(maxValueString, maxLabelPos, chartOptions.labels.fontSize);
+      context.fillStyle = labelsOptions.fillStyle;
+      context.fillText(maxValueString, maxLabelPos, labelsOptions.fontSize);
       context.fillText(minValueString, minLabelPos, dimensions.height - 2);
     }
 
     // Display intermediate y axis labels along y-axis to the left of the chart
-    if ( chartOptions.labels.showIntermediateLabels
+    if ( labelsOptions.showIntermediateLabels
           && !isNaN(this.valueRange.min) && !isNaN(this.valueRange.max)
           && chartOptions.grid.verticalSections > 0) {
       // show a label above every vertical section divider
       var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
       var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
       for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
-        var gy = dimensions.height - Math.round(v * stepPixels);
-        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), chartOptions.labels.precision);
-        //left of right axis?
-        intermediateLabelPos =
-          chartOptions.labels.intermediateLabelSameAxis
-          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
-          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
+        var gy = dimensions.height - Math.round(v * stepPixels),
+            yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), labelsOptions.precision),
+            //left of right axis?
+            intermediateLabelPos =
+              labelsOptions.intermediateLabelSameAxis
+              ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
+              : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
 
         context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
       }
