@@ -1069,13 +1069,13 @@
       var step = (this.valueRange.max - this.valueRange.min) / chartOptions.grid.verticalSections;
       var stepPixels = dimensions.height / chartOptions.grid.verticalSections;
       for (var v = 1; v < chartOptions.grid.verticalSections; v++) {
-        var gy = dimensions.height - Math.round(v * stepPixels);
-        var yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), labelsOptions.precision);
-        //left of right axis?
-        intermediateLabelPos =
-          labelsOptions.intermediateLabelSameAxis
-          ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
-          : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
+        var gy = dimensions.height - Math.round(v * stepPixels),
+            yValue = chartOptions.yIntermediateFormatter(this.valueRange.min + (v * step), labelsOptions.precision),
+            //left of right axis?
+            intermediateLabelPos =
+              labelsOptions.intermediateLabelSameAxis
+              ? (chartOptions.scrollBackwards ? 0 : dimensions.width - context.measureText(yValue).width - 2)
+              : (chartOptions.scrollBackwards ? dimensions.width - context.measureText(yValue).width - 2 : 0);
 
         context.fillText(yValue, intermediateLabelPos, gy - chartOptions.grid.lineWidth);
       }
