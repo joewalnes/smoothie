@@ -413,6 +413,7 @@
             return value !== 0;
           }
         });
+
         // Series
         startControlSection('Series');
         bindColor({target: chart.seriesSet[0].options, name: 'Series line color', propertyName: 'strokeStyle', optional: true, enabled: true, opacity: 1, emptyValue: 'none'});
@@ -430,7 +431,7 @@
         bindColor({target: chart.options.grid, name: 'Grid line color', propertyName: 'strokeStyle', opacity: 1});
         bindRange({target: chart.options.grid, name: 'Vertical sections', propertyName: 'verticalSections', min: 0, max: 20});
         bindRange({target: chart.options.grid, name: 'Time line spacing', propertyName: 'millisPerLine', min: 1000, max: 10000, step: 1000});
-        bindCheckBox({target: chart.options.grid, name: 'Draw border', propertyName: 'borderVisible'});
+        bindCheckBox({target: chart.options.grid, name: 'Draw outer border', propertyName: 'borderVisible'});
 
         // Labels
         startControlSection('Labels');
