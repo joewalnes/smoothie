@@ -97,7 +97,7 @@
  *        Allow setting interpolation per time series, by @WofWca (#123)
  *        Fix chart constantly jumping in 1-2 pixel steps, by @WofWca (#131)
  *        Fix a memory leak appearing when some `timeSeries.disabled === true`, by @WofWca (#132)
- *        Fix: make all lines sharp, by @WofWca (#134)
+ *        Fix: make all lines sharp, remove the `grid.sharpLines` option by @WofWca (#134)
  *        Improve performance, by @WofWca (#135)
  *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
