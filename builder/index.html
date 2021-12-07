@@ -432,6 +432,17 @@
         bindRange({target: chart.options.grid, name: 'Vertical sections', propertyName: 'verticalSections', min: 0, max: 20});
         bindRange({target: chart.options.grid, name: 'Time line spacing', propertyName: 'millisPerLine', min: 1000, max: 10000, step: 1000});
         bindCheckBox({target: chart.options.grid, name: 'Draw outer border', propertyName: 'borderVisible'});
+        bindCheckBox({
+          target: chart.options,
+          name: 'Show y-value lines',
+          propertyName: 'horizontalLines',
+          convert: function (checked) {
+            return checked ? sampleHorizontalLines : [];
+          },
+          convertBack: function (value) {
+            return value && !!value.length;
+          }
+        });
 
         // Labels
         startControlSection('Labels');
@@ -495,19 +506,6 @@
           propertyName: 'yRangeFunction',
           convert: function (checked) {
             return checked ? customYRangeFunction : undefined;
-          }
-        });
-
-        // Misc
-        bindCheckBox({
-          target: chart.options,
-          name: 'Show y-value lines',
-          propertyName: 'horizontalLines',
-          convert: function (checked) {
-            return checked ? sampleHorizontalLines : [];
-          },
-          convertBack: function (value) {
-            return value && !!value.length;
           }
         });
       }
