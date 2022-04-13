@@ -936,7 +936,6 @@
         context.lineTo(gx, dimensions.height);
       }
       context.stroke();
-      context.closePath();
     }
 
     // Horizontal (value) dividers.
@@ -946,13 +945,10 @@
       context.moveTo(0, gy);
       context.lineTo(dimensions.width, gy);
       context.stroke();
-      context.closePath();
     }
     // Bounding rectangle.
     if (chartOptions.grid.borderVisible) {
-      context.beginPath();
       context.strokeRect(0, 0, dimensions.width, dimensions.height);
-      context.closePath();
     }
     context.restore();
 
@@ -968,7 +964,6 @@
         context.moveTo(0, hly);
         context.lineTo(dimensions.width, hly);
         context.stroke();
-        context.closePath();
       }
     }
 
@@ -1072,7 +1067,6 @@
       context.beginPath();
       context.moveTo(this.mouseX, 0);
       context.lineTo(this.mouseX, dimensions.height);
-      context.closePath();
       context.stroke();
     }
     this.updateTooltip();
