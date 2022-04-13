@@ -832,17 +832,18 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = Date.now();
+    var chartOptions = this.options,
+        nowMillis = Date.now();
 
     // Respect any frame rate limit.
-    if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
+    if (chartOptions.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/chartOptions.limitFPS))
       return;
 
     time = (time || nowMillis) - (this.delay || 0);
 
     // Round time down to pixel granularity, so that pixel sample values remain the same,
     // just shifted 1px to the left, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    time -= time % chartOptions.millisPerPixel;
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether
@@ -865,7 +866,6 @@
 
     canvas = canvas || this.canvas;
     var context = canvas.getContext('2d'),
-        chartOptions = this.options,
         // Using `this.clientWidth` instead of `canvas.clientWidth` because the latter is slow.
         dimensions = { top: 0, left: 0, width: this.clientWidth, height: this.clientHeight },
         // Calculate the threshold time for the oldest data points.
