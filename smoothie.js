@@ -106,6 +106,7 @@
  *        Improve performance, by @WofWca (#135)
  *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
+ * v1.36.1: Fix a potential XSS when `tooltipLabel` or `strokeStyle` are controlled by users, by @WofWca
  */
 
   // Date.now polyfill
@@ -378,20 +379,28 @@
   /** Formats the HTML string content of the tooltip. */
   SmoothieChart.tooltipFormatter = function (timestamp, data) {
       var timestampFormatter = this.options.timestampFormatter || SmoothieChart.timeFormatter,
-          lines = [timestampFormatter(new Date(timestamp))],
+          // A dummy element to hold children. Maybe there's a better way.
+          elements = document.createElement('div'),
           label;
+      elements.appendChild(document.createTextNode(
+        timestampFormatter(new Date(timestamp))
+      ));
 
       for (var i = 0; i < data.length; ++i) {
         label = data[i].series.options.tooltipLabel || ''
         if (label !== ''){
             label = label + ' ';
         }
-        lines.push('<span style="color:' + data[i].series.options.strokeStyle + '">' +
-        label +
-        this.options.yMaxFormatter(data[i].value, this.options.labels.precision) + '</span>');
+        var dataEl = document.createElement('span');
+        dataEl.style.color = data[i].series.options.strokeStyle;
+        dataEl.appendChild(document.createTextNode(
+          label + this.options.yMaxFormatter(data[i].value, this.options.labels.precision)
+        ));
+        elements.appendChild(document.createElement('br'));
+        elements.appendChild(dataEl);
       }
 
-      return lines.join('<br>');
+      return elements.innerHTML;
   };
 
   SmoothieChart.defaultChartOptions = {
@@ -627,6 +636,8 @@
     }
 
     if (data.length) {
+      // TODO make `tooltipFormatter` return element(s) instead of an HTML string so it's harder for users
+      // to introduce an XSS. This would be a breaking change.
       el.innerHTML = this.options.tooltipFormatter.call(this, t, data);
       el.style.display = 'block';
     } else {
