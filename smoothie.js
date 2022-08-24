@@ -149,12 +149,30 @@
     },
     // So lines (especially vertical and horizontal) look a) consistent along their length and b) sharp.
     pixelSnap: function(position, lineWidth) {
-      if (lineWidth % 2 === 0) {
+      // TODO grid lines and bezier lines still (occasionally) wobble. But it's still better than it was.
+
+      var dpr = window.devicePixelRatio,
+          coordinatesPerPixel = 1 / dpr;
+
+      // return position - position % window.devicePixelRatio;
+      // return position - position % coordinatesPerPixel;
+
+      // if (lineWidth % (2 * dpr) === 0) {
+
+      // TODO may need to replace the strict comparison with `<= coordinatesPerPixel / 2` (or something
+      // like this), that will minimize smudging instead of only removing it when it's strictly divisible.
+      // Not only because of truncation error that comes with `dpr !== 1` but because it also makes sense for
+      // `dpr === 1`.
+      if (lineWidth % (2 * coordinatesPerPixel) === 0) {
         // Closest pixel edge.
-        return Math.round(position);
+        // return Math.round(position);
+
+        // TODO It's not the closest, it's round down.
+        return position - position % coordinatesPerPixel;
       } else {
         // Closest pixel center.
-        return Math.floor(position) + 0.5;
+        // return Math.floor(position) + 0.5;
+        return position - position % coordinatesPerPixel + coordinatesPerPixel / 2;
       }
     },
   };
@@ -840,7 +858,9 @@
     time = (time || nowMillis) - (this.delay || 0);
 
     // Round time down to pixel granularity, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    // time -= time % this.options.millisPerPixel;
+    // time -= time % (this.options.millisPerPixel / window.devicePixelRatio);
+    time -= time % (this.options.millisPerPixel / window.devicePixelRatio);
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether
