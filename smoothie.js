@@ -876,9 +876,10 @@
           return Util.pixelSnap(unsnapped, lineWidth);
         }.bind(this),
         timeToXPosition = function(t, lineWidth) {
+          var offset = (time - t) / chartOptions.millisPerPixel;
           var unsnapped = chartOptions.scrollBackwards
-            ? (time - t) / chartOptions.millisPerPixel
-            : dimensions.width - ((time - t) / chartOptions.millisPerPixel);
+            ? offset
+            : dimensions.width - offset;
           return Util.pixelSnap(unsnapped, lineWidth);
         };
 
