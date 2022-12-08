@@ -7,7 +7,7 @@
       // Randomly add a data point every 500ms
       var random = new TimeSeries();
       setInterval(function() {
-        random.append(new Date().getTime(), Math.random() * 10000);
+        random.append(Date.now(), Math.random() * 10000);
       }, 500);
       
       function createTimeline() {

@@ -17,17 +17,17 @@ function initHost(hostId) {
   // Initialize an empty TimeSeries for each CPU.
   var cpuDataSets = [new TimeSeries(), new TimeSeries(), new TimeSeries(), new TimeSeries()];
 
-  var now = new Date().getTime();
+  var now = Date.now();
   for (var t = now - 1000 * 50; t <= now; t += 1000) {
     addRandomValueToDataSets(t, cpuDataSets);
   }
   // Every second, simulate a new set of readings being taken from each CPU.
   setInterval(function() {
-    addRandomValueToDataSets(new Date().getTime(), cpuDataSets);
+    addRandomValueToDataSets(Date.now(), cpuDataSets);
   }, 1000);
 
   // Build the timeline
-  var timeline = new SmoothieChart({ millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4 }});
+  var timeline = new SmoothieChart({ fps: 30, millisPerPixel: 20, grid: { strokeStyle: '#555555', lineWidth: 1, millisPerLine: 1000, verticalSections: 4}, tooltip: true});
   for (var i = 0; i < cpuDataSets.length; i++) {
     timeline.addTimeSeries(cpuDataSets[i], seriesOptions[i]);
   }
