@@ -413,13 +413,14 @@
             return value !== 0;
           }
         });
+
         // Series
         startControlSection('Series');
         bindColor({target: chart.seriesSet[0].options, name: 'Series line color', propertyName: 'strokeStyle', optional: true, enabled: true, opacity: 1, emptyValue: 'none'});
         bindColor({target: chart.seriesSet[0].options, name: 'Series fill color', propertyName: 'fillStyle', optional: true, enabled: false, opacity: 0.3});
         bindRange({target: chart.seriesSet[0].options, name: 'Series line width', propertyName: 'lineWidth', min: 0.5, max: 5, scale: 10});
         bindDropDown({
-          target: chart.options,
+          target: chart.seriesSet[0].options,
           name: 'Interpolation',
           propertyName: 'interpolation',
           values: ['bezier', 'linear', 'step']
@@ -430,8 +431,18 @@
         bindColor({target: chart.options.grid, name: 'Grid line color', propertyName: 'strokeStyle', opacity: 1});
         bindRange({target: chart.options.grid, name: 'Vertical sections', propertyName: 'verticalSections', min: 0, max: 20});
         bindRange({target: chart.options.grid, name: 'Time line spacing', propertyName: 'millisPerLine', min: 1000, max: 10000, step: 1000});
-        bindCheckBox({target: chart.options.grid, name: 'Sharp grid lines', propertyName: 'sharpLines'});
-        bindCheckBox({target: chart.options.grid, name: 'Draw border', propertyName: 'borderVisible'});
+        bindCheckBox({target: chart.options.grid, name: 'Draw outer border', propertyName: 'borderVisible'});
+        bindCheckBox({
+          target: chart.options,
+          name: 'Show y-value lines',
+          propertyName: 'horizontalLines',
+          convert: function (checked) {
+            return checked ? sampleHorizontalLines : [];
+          },
+          convertBack: function (value) {
+            return value && !!value.length;
+          }
+        });
 
         // Labels
         startControlSection('Labels');
@@ -447,6 +458,16 @@
             return !value;
           }
         });
+        bindCheckBox({
+          target: chart.options.labels,
+          name: 'Show intermediate labels',
+          propertyName: 'showIntermediateLabels',
+        });
+        bindCheckBox({
+          target: chart.options.labels,
+          name: 'Show intermediate labels on same axis',
+          propertyName: 'intermediateLabelSameAxis',
+        });
         bindRange({target: chart.options.labels, name: 'Font size', propertyName: 'fontSize', min: 1, max: 20});
         bindRange({target: chart.options.labels, name: 'Label precision', propertyName: 'precision', min: 0, max: 6});
         bindCheckBox({
@@ -457,6 +478,12 @@
             return checked ? SmoothieChart.timeFormatter : undefined;
           }
         });
+
+        // Tool tip
+        startControlSection('Tool tip');
+        bindCheckBox({target: chart.options, name: 'Show tool tip on hover', propertyName: 'tooltip'});
+        bindRange({target: chart.options.tooltipLine, name: 'Tool tip line width', propertyName: 'lineWidth', min: 1, max: 5});
+        bindColor({target: chart.options.tooltipLine, name: 'Tool tip line color', propertyName: 'strokeStyle', opacity: 1});
 
         // Y-scaling
         startControlSection('Y-scaling');
@@ -485,19 +512,6 @@
           propertyName: 'yRangeFunction',
           convert: function (checked) {
             return checked ? customYRangeFunction : undefined;
-          }
-        });
-
-        // Misc
-        bindCheckBox({
-          target: chart.options,
-          name: 'Show y-value lines',
-          propertyName: 'horizontalLines',
-          convert: function (checked) {
-            return checked ? sampleHorizontalLines : [];
-          },
-          convertBack: function (value) {
-            return value && !!value.length;
           }
         });
       }
