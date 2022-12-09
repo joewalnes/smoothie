@@ -840,7 +840,8 @@
 
     time = (time || nowMillis) - (this.delay || 0);
 
-    // Round time down to pixel granularity, so motion appears smoother.
+    // Round time down to pixel granularity, so that pixel sample values remain the same,
+    // just shifted 1px to the left, so motion appears smoother.
     time -= time % this.options.millisPerPixel;
 
     if (!this.isAnimatingScale) {
