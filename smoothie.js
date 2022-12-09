@@ -107,6 +107,7 @@
  *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  * v1.36.1: Fix a potential XSS when `tooltipLabel` or `strokeStyle` are controlled by users, by @WofWca
+ * v1.36.2: fix: 1px lines jumping 1px left and right at rational `millisPerPixel`, by @WofWca
  */
 
   // Date.now polyfill
@@ -876,7 +877,18 @@
           return Util.pixelSnap(unsnapped, lineWidth);
         }.bind(this),
         timeToXPosition = function(t, lineWidth) {
-          var offset = (time - t) / chartOptions.millisPerPixel;
+          // Why not write it as `(time - t) / chartOptions.millisPerPixel`:
+          // If a datapoint's `t` is very close or is at the center of a pixel, that expression,
+          // due to floating point error, may take value whose `% 1` sometimes is very close to
+          // 0 and sometimes is close to 1, depending on the value of render time (`time`),
+          // which would make `pixelSnap` snap it sometimes to the right and sometimes to the left,
+          // which would look like it's jumping.
+          // You can try the default examples, with `millisPerPixel = 100 / 3` and
+          // `grid.lineWidth = 1`. The grid would jump.
+          // Writing it this way seems to avoid such inconsistency because in the above example
+          // `offset` is (almost?) always a whole number.
+          // TODO Maybe there's a more elegant (and reliable?) way.
+          var offset = time / chartOptions.millisPerPixel - t / chartOptions.millisPerPixel;
           var unsnapped = chartOptions.scrollBackwards
             ? offset
             : dimensions.width - offset;
