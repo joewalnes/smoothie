@@ -109,6 +109,7 @@
  * v1.36.1: Fix a potential XSS when `tooltipLabel` or `strokeStyle` are controlled by users, by @WofWca
  * v1.36.2: fix: 1px lines jumping 1px left and right at rational `millisPerPixel`, by @WofWca
  *          perf: improve `render()` performane a bit, by @WofWca
+ * v1.37: Add `fillToBottom` option to fill timeSeries to 0 instead of to the bottom of the canvas, by @socketpair & @WofWca (#140)
  */
 
   // Date.now polyfill
@@ -493,7 +494,9 @@
 
   SmoothieChart.defaultSeriesPresentationOptions = {
     lineWidth: 1,
-    strokeStyle: '#ffffff'
+    strokeStyle: '#ffffff',
+    // Maybe default to false in the next breaking version.
+    fillToBottom: true,
   };
 
   /**
@@ -507,7 +510,8 @@
    *   strokeStyle: '#ffffff',
    *   fillStyle: undefined,
    *   interpolation: undefined;
-   *   tooltipLabel: undefined
+   *   tooltipLabel: undefined,
+   *   fillToBottom: true,
    * }
    * </pre>
    */
@@ -1051,8 +1055,11 @@
 
       if (seriesOptions.fillStyle) {
         // Close up the fill region.
-        context.lineTo(lastX, dimensions.height + lineWidthMaybeZero + 1);
-        context.lineTo(firstX, dimensions.height + lineWidthMaybeZero + 1);
+        var fillEndY = seriesOptions.fillToBottom
+          ? dimensions.height + lineWidthMaybeZero + 1
+          : valueToYPosition(0, 0);
+        context.lineTo(lastX, fillEndY);
+        context.lineTo(firstX, fillEndY);
 
         context.fillStyle = seriesOptions.fillStyle;
         context.fill();
