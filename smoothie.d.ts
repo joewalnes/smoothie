@@ -18,6 +18,11 @@ export interface ITimeSeriesPresentationOptions {
      */
     interpolation?: "linear" | "step" | "bezier";
     tooltipLabel?: string;
+    /**
+     * Determines how far on the Y axis the fill region spans. Truthy value (default) - to the
+     * bottom of the canvas, falsy value - to 0.
+     */
+    fillToBottom?: boolean;
 }
 
 export declare class TimeSeries {
