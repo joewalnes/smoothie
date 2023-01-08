@@ -108,6 +108,7 @@
  *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  * v1.36.1: Fix a potential XSS when `tooltipLabel` or `strokeStyle` are controlled by users, by @WofWca
  * v1.36.2: fix: 1px lines jumping 1px left and right at rational `millisPerPixel`, by @WofWca
+ *          perf: improve `render()` performane a bit, by @WofWca
  */
 
   // Date.now polyfill
