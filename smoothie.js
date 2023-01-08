@@ -107,6 +107,9 @@
  *        Fix `this.delay` not being respected with `nonRealtimeData: true`, by @WofWca (#137)
  *        Fix series fill & stroke being inconsistent for last data time < render time, by @WofWca (#138)
  * v1.36.1: Fix a potential XSS when `tooltipLabel` or `strokeStyle` are controlled by users, by @WofWca
+ * v1.36.2: fix: 1px lines jumping 1px left and right at rational `millisPerPixel`, by @WofWca
+ *          perf: improve `render()` performane a bit, by @WofWca
+ * v1.37: Add `fillToBottom` option to fill timeSeries to 0 instead of to the bottom of the canvas, by @socketpair & @WofWca (#140)
  */
 
   // Date.now polyfill
@@ -491,7 +494,9 @@
 
   SmoothieChart.defaultSeriesPresentationOptions = {
     lineWidth: 1,
-    strokeStyle: '#ffffff'
+    strokeStyle: '#ffffff',
+    // Maybe default to false in the next breaking version.
+    fillToBottom: true,
   };
 
   /**
@@ -505,7 +510,8 @@
    *   strokeStyle: '#ffffff',
    *   fillStyle: undefined,
    *   interpolation: undefined;
-   *   tooltipLabel: undefined
+   *   tooltipLabel: undefined,
+   *   fillToBottom: true,
    * }
    * </pre>
    */
@@ -831,16 +837,18 @@
   };
 
   SmoothieChart.prototype.render = function(canvas, time) {
-    var nowMillis = Date.now();
+    var chartOptions = this.options,
+        nowMillis = Date.now();
 
     // Respect any frame rate limit.
-    if (this.options.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/this.options.limitFPS))
+    if (chartOptions.limitFPS > 0 && nowMillis - this.lastRenderTimeMillis < (1000/chartOptions.limitFPS))
       return;
 
     time = (time || nowMillis) - (this.delay || 0);
 
-    // Round time down to pixel granularity, so motion appears smoother.
-    time -= time % this.options.millisPerPixel;
+    // Round time down to pixel granularity, so that pixel sample values remain the same,
+    // just shifted 1px to the left, so motion appears smoother.
+    time -= time % chartOptions.millisPerPixel;
 
     if (!this.isAnimatingScale) {
       // We're not animating. We can use the last render time and the scroll speed to work out whether
@@ -863,7 +871,6 @@
 
     canvas = canvas || this.canvas;
     var context = canvas.getContext('2d'),
-        chartOptions = this.options,
         // Using `this.clientWidth` instead of `canvas.clientWidth` because the latter is slow.
         dimensions = { top: 0, left: 0, width: this.clientWidth, height: this.clientHeight },
         // Calculate the threshold time for the oldest data points.
@@ -876,9 +883,21 @@
           return Util.pixelSnap(unsnapped, lineWidth);
         }.bind(this),
         timeToXPosition = function(t, lineWidth) {
+          // Why not write it as `(time - t) / chartOptions.millisPerPixel`:
+          // If a datapoint's `t` is very close or is at the center of a pixel, that expression,
+          // due to floating point error, may take value whose `% 1` sometimes is very close to
+          // 0 and sometimes is close to 1, depending on the value of render time (`time`),
+          // which would make `pixelSnap` snap it sometimes to the right and sometimes to the left,
+          // which would look like it's jumping.
+          // You can try the default examples, with `millisPerPixel = 100 / 3` and
+          // `grid.lineWidth = 1`. The grid would jump.
+          // Writing it this way seems to avoid such inconsistency because in the above example
+          // `offset` is (almost?) always a whole number.
+          // TODO Maybe there's a more elegant (and reliable?) way.
+          var offset = time / chartOptions.millisPerPixel - t / chartOptions.millisPerPixel;
           var unsnapped = chartOptions.scrollBackwards
-            ? (time - t) / chartOptions.millisPerPixel
-            : dimensions.width - ((time - t) / chartOptions.millisPerPixel);
+            ? offset
+            : dimensions.width - offset;
           return Util.pixelSnap(unsnapped, lineWidth);
         };
 
@@ -922,7 +941,6 @@
         context.lineTo(gx, dimensions.height);
       }
       context.stroke();
-      context.closePath();
     }
 
     // Horizontal (value) dividers.
@@ -932,13 +950,10 @@
       context.moveTo(0, gy);
       context.lineTo(dimensions.width, gy);
       context.stroke();
-      context.closePath();
     }
     // Bounding rectangle.
     if (chartOptions.grid.borderVisible) {
-      context.beginPath();
       context.strokeRect(0, 0, dimensions.width, dimensions.height);
-      context.closePath();
     }
     context.restore();
 
@@ -954,7 +969,6 @@
         context.moveTo(0, hly);
         context.lineTo(dimensions.width, hly);
         context.stroke();
-        context.closePath();
       }
     }
 
@@ -1041,8 +1055,11 @@
 
       if (seriesOptions.fillStyle) {
         // Close up the fill region.
-        context.lineTo(lastX, dimensions.height + lineWidthMaybeZero + 1);
-        context.lineTo(firstX, dimensions.height + lineWidthMaybeZero + 1);
+        var fillEndY = seriesOptions.fillToBottom
+          ? dimensions.height + lineWidthMaybeZero + 1
+          : valueToYPosition(0, 0);
+        context.lineTo(lastX, fillEndY);
+        context.lineTo(firstX, fillEndY);
 
         context.fillStyle = seriesOptions.fillStyle;
         context.fill();
@@ -1058,7 +1075,6 @@
       context.beginPath();
       context.moveTo(this.mouseX, 0);
       context.lineTo(this.mouseX, dimensions.height);
-      context.closePath();
       context.stroke();
     }
     this.updateTooltip();
